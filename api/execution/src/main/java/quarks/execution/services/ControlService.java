@@ -15,8 +15,9 @@ package quarks.execution.services;
  * that do not support JMX, such as Android.
  * <P>
  * Different implementations of the control service provide the mechanism
- * to execute methods of the control interfaces. For example JMX control
- * registers the MBeans in the platform JMXserver.
+ * to execute methods of the control interfaces. For example
+ * {@link quarks.runtime.jmxcontrol.JMXControlService JMXControlService}
+ * registers the MBeans in the JMX platform MBean server.
  * <BR>
  * The control service is intended to allow remote execution of a control interface
  * through any mechanism. The control service provides operations and attributes
