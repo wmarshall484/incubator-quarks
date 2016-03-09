@@ -12,7 +12,7 @@ public interface JobMXBean {
      * TYPE is used to identify this bean as a job bean when building the bean's {@code ObjectName}.
      * The value is {@value} 
      */
-    public static final String TYPE = "job";
+    String TYPE = "job";
 
     /**
      * Returns the identifier of the job.

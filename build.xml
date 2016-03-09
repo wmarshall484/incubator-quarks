@@ -90,6 +90,7 @@
         <ant dir="api/topology" target="@{target}" useNativeBasedir="true"/>
         <ant dir="spi/graph" target="@{target}" useNativeBasedir="true"/>
         <ant dir="spi/topology" target="@{target}" useNativeBasedir="true"/>
+        <ant dir="runtime/appservice" target="@{target}" useNativeBasedir="true"/>
         <ant dir="runtime/etiao" target="@{target}" useNativeBasedir="true"/>
         <ant dir="runtime/jmxcontrol" target="@{target}" useNativeBasedir="true"/>
         <ant dir="runtime/jsoncontrol" target="@{target}" useNativeBasedir="true"/>
@@ -124,6 +125,7 @@
         <ant dir="samples/console" target="@{target}" useNativeBasedir="true" />
         <ant dir="android/topology" target="@{target}" useNativeBasedir="true" />
         <ant dir="android/hardware" target="@{target}" useNativeBasedir="true" />
+        <ant dir="test/fvtiot" target="@{target}" useNativeBasedir="true" />
         <ant dir="test/svt" target="@{target}" useNativeBasedir="true" />
       </sequential>
   </macrodef>
