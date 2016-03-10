@@ -37,10 +37,17 @@ import quarks.topology.TopologyElement;
  * If no {@link PublishSubscribeService} is registered then published
  * tuples are discarded and subscribers see no tuples.
  * </P>
+ * <P>
+ * The recommended style for topics is MQTT topics, where {@code /}
+ * is used to provide a hierarchy into topics. For example {@code engine/sensors/temperature}
+ * might be a topic that represents temperature sensors in an engine.
+ * <BR>
+ * Topics that start with {@code quarks/} are reserved for use by Quarks.
+ * <BR>
+ * MQTT style wild-cards are not supported.
+ * </P>
  */
 public class PublishSubscribe {
-
-
 
     /**
      * Publish this stream to a topic.
