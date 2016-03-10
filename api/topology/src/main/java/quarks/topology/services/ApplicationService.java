@@ -32,7 +32,7 @@ import quarks.topology.mbeans.ApplicationServiceMXBean;
  */
 public interface ApplicationService {
     
-    String ALIAS = "quarksApplication";
+    String ALIAS = "quarksApplicationService";
     
     /**
      * Add a topology that can be started though a control mbean.

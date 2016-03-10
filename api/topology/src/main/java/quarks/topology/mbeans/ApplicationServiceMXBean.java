@@ -30,7 +30,8 @@ public interface ApplicationServiceMXBean {
      * @param applicationName Name of the application.
      * @param jsonConfig JSON configuration serialized as a String.
      * 
+     * @throws Exception Error submitting application.
      * @see ApplicationService
      */
-    void submit(String applicationName, String jsonConfig);
+    void submit(String applicationName, String jsonConfig) throws Exception;
 }
