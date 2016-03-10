@@ -18,6 +18,8 @@ under the License.
 */
 package quarks.runtime.appservice;
 
+import java.util.concurrent.ExecutionException;
+
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -35,7 +37,7 @@ public class AppServiceControl implements ApplicationServiceMXBean {
     }
 
     @Override
-    public void submit(String applicationName, String jsonConfig) {
+    public void submit(String applicationName, String jsonConfig) throws Exception {
         
         BiConsumer<Topology, JsonObject> builder = service.getBuilder(applicationName);
         if (builder == null)
@@ -56,6 +58,16 @@ public class AppServiceControl implements ApplicationServiceMXBean {
         if (!config.has(Configs.JOB_NAME))
             config.addProperty(Configs.JOB_NAME, applicationName);
         
-        service.getSubmitter().submit(topology, config);
+        try {
+            service.getSubmitter().submit(topology, config).get();
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            Throwable t = e.getCause();
+            if (t instanceof Error)
+                throw (Error) t;
+            throw (Exception) t;
+        }
     }
 }

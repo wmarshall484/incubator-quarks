@@ -25,6 +25,7 @@ import java.util.Map;
 import com.google.gson.JsonObject;
 
 import quarks.execution.DirectSubmitter;
+import quarks.execution.Job;
 import quarks.execution.services.ControlService;
 import quarks.function.BiConsumer;
 import quarks.topology.Topology;
@@ -48,9 +49,10 @@ public class AppService implements ApplicationService {
             Collections.synchronizedMap(new HashMap<>());
     
     private final TopologyProvider provider;
-    private final DirectSubmitter submitter;
+    private final DirectSubmitter<Topology, Job> submitter;
     
-    public AppService(TopologyProvider provider, DirectSubmitter submitter, String alias) {
+    public AppService(TopologyProvider provider,
+            DirectSubmitter<Topology, Job> submitter, String alias) {
         this.provider = provider;
         this.submitter = submitter;
         
@@ -76,7 +78,7 @@ public class AppService implements ApplicationService {
     }
     
     
-    DirectSubmitter getSubmitter() {
+    DirectSubmitter<Topology, Job> getSubmitter() {
         return submitter;
     }   
 }

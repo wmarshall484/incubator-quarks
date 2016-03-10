@@ -17,7 +17,7 @@ package quarks.execution;
  *    <td align=center><b>Description</b></td>
  *  </tr>
  * <tr>
- *    <td>{@link #JOB_NAME}</td>
+ *    <td>{@link #JOB_NAME jobName}</td>
  *    <td>String</td>
  *    <td>The name of the job.</td>
  *  </tr>
@@ -30,5 +30,5 @@ public interface Configs {
      * containing the job name.
      * The value is {@value}.
      */
-    static final String JOB_NAME = "jobName";
+    String JOB_NAME = "jobName";
 }

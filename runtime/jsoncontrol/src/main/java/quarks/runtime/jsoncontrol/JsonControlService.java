@@ -11,6 +11,7 @@ import java.lang.reflect.Parameter;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
@@ -57,6 +58,7 @@ public class JsonControlService implements ControlService {
      */
     public static final String ARGS_KEY = "args";
 
+    private final Gson gson = new Gson();
     private final Map<String, ControlMBean<?>> mbeans = new HashMap<>();
 
     private static String getControlId(String type, String id, String alias) {
@@ -177,8 +179,12 @@ public class JsonControlService implements ControlService {
             final JsonElement arg = args.get(i);
             Object jarg;
             
-            if (String.class == pt.getType())
-                jarg = arg.getAsString();
+            if (String.class == pt.getType()) {
+                if (arg instanceof JsonObject)
+                    jarg = gson.toJson(arg);
+                else
+                    jarg = arg.getAsString();
+            }
             else if (Integer.TYPE == pt.getType())
                 jarg = arg.getAsInt();
             else if (Long.TYPE == pt.getType())
