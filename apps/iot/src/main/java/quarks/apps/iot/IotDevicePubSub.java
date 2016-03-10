@@ -19,9 +19,6 @@ under the License.
 
 package quarks.apps.iot;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import com.google.gson.JsonObject;
 
 import quarks.connectors.iot.IotDevice;
@@ -41,9 +38,9 @@ import quarks.topology.TopologyElement;
  * device will route events and commands to/from the actual message hub
  * {@code IotDevice} through publish-subscribe.
  * <P>
- * An instance of this application is created by creating a new topology and
+ * An instance of this application is created by first creating a new topology and
  * then creating a {@link IotDevice} specific to the desired message hub. Then
- * the application is created by calling {@link #IotDevicePubSub(IotDevice)}
+ * the application is created by calling {@link #createApplication(IotDevice)}
  * passing the {@code IotDevice}. <BR>
  * Then additional independent applications (topologies) can be created and they
  * create a proxy {@code IotDevice} for their topology using
@@ -51,19 +48,9 @@ import quarks.topology.TopologyElement;
  * used to send device events and receive device commands in that topology. <BR>
  * Once all the topologies have been declared they can be submitted.
  * </P>
- * <P>
- * Limitations:
- * <UL>
- * <LI>Subscribing to all device commands (passing no arguments to
- * {@link IotDevice#commands(String...)} is not supported by the proxy
- * {@code IotDevice}.</LI>
- * <LI>All applications that subscribe to device commands must be declared
- * before the instance of this application is submitted.</LI>
- * </UL>
- * </P>
  */
 public class IotDevicePubSub {
-
+    
     /**
      * Events published to topic {@value} are sent as device events using the
      * actual message hub {@link IotDevice}. <BR>
@@ -71,30 +58,29 @@ public class IotDevicePubSub {
      * {@link #addIotDevice(TopologyElement)} to send events rather than
      * publishing streams to this topic.
      */
-    public static final String EVENTS = "quarks/iot/events";
-
+    public static final String EVENTS_TOPIC = "quarks/iot/events";
+    
     /**
-     * Device commands are published to {@code quarks/iot/command/commandId} by
+     * Device commands are published to {@code value} by
      * this application. <BR>
      * it is recommended applications use the {@code IotDevice} returned by
      * {@link #addIotDevice(TopologyElement)} to send events rather than
      * subscribing to streams with this topic prefix.
      */
-    public static final String COMMANDS_PREFIX = "quarks/iot/command/";
-
-    private final IotDevice device;
-    private final Set<String> publishedCommandTopics = new HashSet<>();
+    public static final String COMMANDS_TOPIC = "quarks/iot/commands";
 
     /**
      * Create an instance of this application using {@code device} as the device
      * connection to a message hub.
-     * 
-     * @param device
-     *            Device to a message hub.
      */
-    public IotDevicePubSub(IotDevice device) {
-        this.device = device;
-        createApplication();
+    public static void createApplication(IotDevice device) {
+
+        TStream<JsonObject> events = PublishSubscribe.subscribe(device, EVENTS_TOPIC, JsonObject.class);
+
+        device.events(events, ew -> ew.getAsJsonPrimitive("eventId").getAsString(), ew -> ew.getAsJsonObject("event"),
+                ew -> ew.getAsJsonPrimitive("qos").getAsInt());
+        
+        PublishSubscribe.publish(device.commands(), COMMANDS_TOPIC, JsonObject.class);
     }
 
     /**
@@ -110,41 +96,9 @@ public class IotDevicePubSub {
      *            Topology the returned device is contained in.
      * @return Proxy device.
      */
-    public IotDevice addIotDevice(TopologyElement te) {
-        return new ProxyIotDevice(this, te.topology());
+    public static IotDevice addIotDevice(TopologyElement te) {
+        return new PubSubIotDevice(te.topology());
     }
-
-    /**
-     * Create initial application subscribing to events and delivering them to
-     * the message hub IotDevice.
-     * 
-     */
-    private void createApplication() {
-
-        TStream<JsonObject> events = PublishSubscribe.subscribe(device, EVENTS, JsonObject.class);
-
-        device.events(events, ew -> ew.getAsJsonPrimitive("eventId").getAsString(), ew -> ew.getAsJsonObject("event"),
-                ew -> ew.getAsJsonPrimitive("qos").getAsInt());
-    }
-
-    /**
-     * Subscribe to device commands. Keep track of which command identifiers are
-     * subscribed to so the stream for a command identifier is only created
-     * once.
-     * 
-     * @param commandIdentifier
-     * @return Topic that needs to be subscribed to in the subscriber
-     *         application.
-     */
-    synchronized String subscribeToCommand(String commandIdentifier) {
-
-        String topic = COMMANDS_PREFIX + commandIdentifier;
-
-        if (!publishedCommandTopics.contains(topic)) {
-            TStream<JsonObject> systemStream = device.commands(commandIdentifier);
-            PublishSubscribe.publish(systemStream, topic, JsonObject.class);
-        }
-
-        return topic;
-    }
+    
+    
 }

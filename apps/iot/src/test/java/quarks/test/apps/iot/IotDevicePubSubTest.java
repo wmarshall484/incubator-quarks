@@ -52,11 +52,11 @@ public class IotDevicePubSubTest {
         dp.getServices().addService(PublishSubscribeService.class, new ProviderPubSub());
         
         Topology iot = dp.newTopology("IotPubSub");
-        IotDevicePubSub iotApp = new IotDevicePubSub(new EchoIotDevice(iot));
+        IotDevicePubSub.createApplication(new EchoIotDevice(iot));
         
         Topology app1 = dp.newTopology("App1");
         
-        IotDevice app1Iot = iotApp.addIotDevice(app1);
+        IotDevice app1Iot = IotDevicePubSub.addIotDevice(app1);
         
         TStream<String> data = app1.strings("A", "B", "C");
         

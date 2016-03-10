@@ -18,6 +18,10 @@ under the License.
 */
 package quarks.apps.iot;
 
+import static quarks.apps.iot.IotDevicePubSub.COMMANDS_TOPIC;
+import static quarks.apps.iot.IotDevicePubSub.EVENTS_TOPIC;
+
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -31,13 +35,12 @@ import quarks.topology.TSink;
 import quarks.topology.TStream;
 import quarks.topology.Topology;
 
+
 /**
- * Proxy IotDevice that uses publish-subscribe and IotDevicePubSub application
+ * Pub-sub IotDevice that uses publish-subscribe and IotDevicePubSub application
  * to communicate with a single IotDevice connected to a message hub.
  */
-class ProxyIotDevice implements IotDevice {
-
-    private IotDevicePubSub app;
+class PubSubIotDevice implements IotDevice {
 
     private final Topology topology;
 
@@ -49,8 +52,7 @@ class ProxyIotDevice implements IotDevice {
      * @param topology
      *            Topology of the subscribing application.
      */
-    ProxyIotDevice(IotDevicePubSub app, Topology topology) {
-        this.app = app;
+    PubSubIotDevice(Topology topology) {
         this.topology = topology;
     }
 
@@ -61,7 +63,7 @@ class ProxyIotDevice implements IotDevice {
 
     /**
      * Publishes events derived from {@code stream} using the topic
-     * {@link IotDevicePubSub#EVENTS} as a JsonObject containing eventId, event,
+     * {@link EVENTS} as a JsonObject containing eventId, event,
      * and qos keys.
      */
     @Override
@@ -78,7 +80,7 @@ class ProxyIotDevice implements IotDevice {
             return publishedEvent;
         });
 
-        return PublishSubscribe.publish(stream, IotDevicePubSub.EVENTS, JsonObject.class);
+        return PublishSubscribe.publish(stream, IotDevicePubSub.EVENTS_TOPIC, JsonObject.class);
     }
 
     /**
@@ -99,25 +101,21 @@ class ProxyIotDevice implements IotDevice {
             return publishedEvent;
         });
 
-        return PublishSubscribe.publish(stream, IotDevicePubSub.EVENTS, JsonObject.class);
+        return PublishSubscribe.publish(stream, EVENTS_TOPIC, JsonObject.class);
     }
 
     /**
-     * Subscribes to commands. Doesn't yet support subscribing to all commands.
+     * Subscribes to commands.
      */
     @Override
     public TStream<JsonObject> commands(String... commandIdentifiers) {
 
-        final String firstTopic = app.subscribeToCommand(commandIdentifiers[0]);
-        TStream<JsonObject> commandsStream = PublishSubscribe.subscribe(this, firstTopic, JsonObject.class);
-
-        if (commandIdentifiers.length > 1) {
-            Set<TStream<JsonObject>> additionalStreams = new HashSet<>();
-            for (int i = 1; i < commandIdentifiers.length; i++) {
-                String topic = app.subscribeToCommand(commandIdentifiers[i]);
-                additionalStreams.add(PublishSubscribe.subscribe(this, topic, JsonObject.class));
-            }
-            commandsStream = commandsStream.union(additionalStreams);
+        TStream<JsonObject> commandsStream = PublishSubscribe.subscribe(this, COMMANDS_TOPIC, JsonObject.class);
+        
+        if (commandIdentifiers.length > 0) {
+            Set<String> cmdIds = new HashSet<>(Arrays.asList(commandIdentifiers));
+            commandsStream = commandsStream.filter(
+                    cmd -> cmdIds.contains(cmd.get(CMD_ID).getAsString()));
         }
 
         return commandsStream;
