@@ -5,7 +5,6 @@
 package quarks.topology.spi.graph;
 
 import static quarks.window.Policies.alwaysInsert;
-import static quarks.window.Policies.processOnInsert;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
