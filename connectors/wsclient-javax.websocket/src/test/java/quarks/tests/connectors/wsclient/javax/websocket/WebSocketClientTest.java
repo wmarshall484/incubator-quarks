@@ -11,6 +11,7 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -290,20 +291,24 @@ public class WebSocketClientTest extends ConnectorTestBase {
         s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);
         
         // send one, two, restart the server to force reconnect, send the next
-        AtomicInteger cnt = new AtomicInteger();
+        AtomicInteger numSent = new AtomicInteger();
+        int restartAfterTupleCnt = 2;
+        CountDownLatch latch = new CountDownLatch(restartAfterTupleCnt);
         s = s.filter(tuple -> {
-            if (cnt.getAndIncrement() != 2)
+            if (numSent.incrementAndGet() <= restartAfterTupleCnt )
                 return true;
             else {
-                // delay so we rcv the prior echo'd tuple
-                try { Thread.sleep(2000); } catch (Exception e) {};
+                // to keep validation sane/simple wait till the tuples are rcvd before restarting
+                try { latch.await(); } catch (Exception e) {};
                 restartEchoer(2/*secDelay*/);
                 return true;
             }
         });
         wsClient.sendString(s);
         
-        TStream<String> rcvd = wsClient.receiveString();
+        TStream<String> rcvd = wsClient.receiveString()
+                                    .peek(tuple -> latch.countDown());
+
         
         completeAndValidate("", t, rcvd, SEC_TMO + 10, expected);
     }
@@ -325,13 +330,15 @@ public class WebSocketClientTest extends ConnectorTestBase {
         s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);
         
         // send one, two, restart the server to force reconnect, send the next
-        AtomicInteger cnt = new AtomicInteger();
+        AtomicInteger numSent = new AtomicInteger();
+        int restartAfterTupleCnt = 2;
+        CountDownLatch latch = new CountDownLatch(restartAfterTupleCnt);
         s = s.filter(tuple -> {
-            if (cnt.getAndIncrement() != 2)
+            if (numSent.incrementAndGet() <= restartAfterTupleCnt )
                 return true;
             else {
-                // delay so we rcv the prior echo'd tuple
-                try { Thread.sleep(2000); } catch (Exception e) {};
+                // to keep validation sane/simple wait till the tuples are rcvd before restarting
+                try { latch.await(); } catch (Exception e) {};
                 restartEchoer(2/*secDelay*/);
                 return true;
             }
@@ -339,6 +346,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
         wsClient.sendBytes(s);
         
         TStream<String> rcvd = wsClient.receiveBytes()
+                                .peek(tuple -> latch.countDown())
                                 .map(tup -> new String(tup));
         
         completeAndValidate("", t, rcvd, SEC_TMO + 10, expected);
