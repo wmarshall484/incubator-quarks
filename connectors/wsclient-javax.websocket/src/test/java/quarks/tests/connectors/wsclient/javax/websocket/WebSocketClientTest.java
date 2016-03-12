@@ -295,7 +295,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
         int restartAfterTupleCnt = 2;
         CountDownLatch latch = new CountDownLatch(restartAfterTupleCnt);
         s = s.filter(tuple -> {
-            if (numSent.incrementAndGet() <= restartAfterTupleCnt )
+            if (numSent.getAndIncrement() != restartAfterTupleCnt )
                 return true;
             else {
                 // to keep validation sane/simple wait till the tuples are rcvd before restarting
@@ -334,7 +334,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
         int restartAfterTupleCnt = 2;
         CountDownLatch latch = new CountDownLatch(restartAfterTupleCnt);
         s = s.filter(tuple -> {
-            if (numSent.incrementAndGet() <= restartAfterTupleCnt )
+            if (numSent.getAndIncrement() != restartAfterTupleCnt )
                 return true;
             else {
                 // to keep validation sane/simple wait till the tuples are rcvd before restarting
