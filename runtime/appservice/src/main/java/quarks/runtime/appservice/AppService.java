@@ -33,9 +33,26 @@ import quarks.topology.TopologyProvider;
 import quarks.topology.mbeans.ApplicationServiceMXBean;
 import quarks.topology.services.ApplicationService;
 
+/**
+ * Application service for a {@code TopologyProvider}.
+ * <BR>
+ * Applications {@link #registerTopology(String, BiConsumer) registered}
+ * can be submitted through the control {@link ApplicationServiceMXBean}
+ * registered with the {@link ControlService} for the topology provider.
+ * <BR>
+ * If a control service is not available then no control MBean is registered
+ * and the application service is effectively inactive.
+ *
+ */
 public class AppService implements ApplicationService {
     
-    public static ApplicationService createAndRegister(TopologyProvider provider, DirectSubmitter submitter) {
+	/**
+	 * Create an register an application service using the default alias {@link ApplicationService#ALIAS}.
+	 * @param provider Provider to create topology instances for registered applications.
+	 * @param submitter Submitter for registered applications.
+	 * @return Application service instance.
+	 */
+    public static ApplicationService createAndRegister(TopologyProvider provider, DirectSubmitter<Topology, Job> submitter) {
         
         AppService service = new AppService(provider, submitter, ALIAS);
         
@@ -51,6 +68,12 @@ public class AppService implements ApplicationService {
     private final TopologyProvider provider;
     private final DirectSubmitter<Topology, Job> submitter;
     
+    /**
+     * Create an {@code ApplicationService} instance.
+     * @param provider Provider to create topology instances for registered applications.
+     * @param submitter Submitter for registered applications.
+     * @param alias Alias used to register the control MBean.
+     */
     public AppService(TopologyProvider provider,
             DirectSubmitter<Topology, Job> submitter, String alias) {
         this.provider = provider;
