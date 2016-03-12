@@ -27,11 +27,17 @@ import quarks.topology.mbeans.ApplicationServiceMXBean;
 
 /**
  * Application registration service.
+ * A service that allows registration of applications and
+ * the ability to submit them through a control MBean.
  *
  * @see ApplicationServiceMXBean
  */
 public interface ApplicationService {
     
+	/**
+	 * Default alias a service registers its control MBean as.
+	 * Value is {@value}.
+	 */
     String ALIAS = "quarksApplicationService";
     
     /**
