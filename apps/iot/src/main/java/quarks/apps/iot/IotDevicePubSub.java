@@ -48,6 +48,8 @@ import quarks.topology.TopologyElement;
  * used to send device events and receive device commands in that topology. <BR>
  * Once all the topologies have been declared they can be submitted.
  * </P>
+ * 
+ * @see PublishSubscribe
  */
 public class IotDevicePubSub {
     
@@ -58,16 +60,16 @@ public class IotDevicePubSub {
      * {@link #addIotDevice(TopologyElement)} to send events rather than
      * publishing streams to this topic.
      */
-    public static final String EVENTS_TOPIC = "quarks/iot/events";
+    public static final String EVENTS_TOPIC = PublishSubscribe.RESERVED_TOPIC_PREFIX + "iot/events";
     
     /**
-     * Device commands are published to {@code value} by
+     * Device commands are published to {@value} by
      * this application. <BR>
      * it is recommended applications use the {@code IotDevice} returned by
-     * {@link #addIotDevice(TopologyElement)} to send events rather than
+     * {@link #addIotDevice(TopologyElement)} to receive commands rather than
      * subscribing to streams with this topic prefix.
      */
-    public static final String COMMANDS_TOPIC = "quarks/iot/commands";
+    public static final String COMMANDS_TOPIC = PublishSubscribe.RESERVED_TOPIC_PREFIX + "iot/commands";
 
     /**
      * Create an instance of this application using {@code device} as the device
@@ -99,6 +101,4 @@ public class IotDevicePubSub {
     public static IotDevice addIotDevice(TopologyElement te) {
         return new PubSubIotDevice(te.topology());
     }
-    
-    
 }
