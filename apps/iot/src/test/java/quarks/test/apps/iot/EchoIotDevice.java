@@ -38,7 +38,7 @@ import quarks.topology.plumbing.PlumbingStreams;
 /**
  * A test IotDevice that echos back every event as a command with command
  * identifier equal to the {@code cmdId} value in the event payload. If {@code cmdId}
- * is not set then {@code ec_eventId} is used.
+ * is not set then the event identifier is used.
  *
  */
 public class EchoIotDevice implements IotDevice {
@@ -78,7 +78,7 @@ public class EchoIotDevice implements IotDevice {
         if (evPayload.has(EVENT_CMD_ID))
             return evPayload.getAsJsonPrimitive(EVENT_CMD_ID).getAsString();
         else
-            return "ec_" + eventId;
+            return eventId;
     }
 
     @Override
