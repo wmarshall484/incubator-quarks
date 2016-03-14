@@ -7,7 +7,7 @@
   <import file="../../common-build.xml"/>
 
   <path id="compile.classpath">
-    <pathelement location="${quarks.lib}/quarks.providers.direct.jar"/>
+    <pathelement location="${quarks.lib}/quarks.providers.iot.jar"/>
     <pathelement location="${quarks.lib}/quarks.runtime.appservice.jar"/>
     <pathelement location="${quarks.lib}/quarks.runtime.jsoncontrol.jar"/>
     <path refid="quarks.ext.classpath"/>
@@ -15,6 +15,7 @@
 
   <path id="test.compile.classpath">
     <pathelement location="${jar}" />
+    <pathelement location="../../apps/iot/test.classes" />
     <path refid="compile.classpath"/>
   </path>
 
