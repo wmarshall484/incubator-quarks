@@ -19,7 +19,6 @@ under the License.
 
 package quarks.test.apps.iot;
 
-import static quarks.function.Functions.alwaysTrue;
 import static quarks.function.Functions.discard;
 
 import java.util.HashSet;
@@ -109,20 +108,10 @@ public class EchoIotDevice implements IotDevice {
     @Override
     public TStream<JsonObject> commands(String... commands) {
         if (commands.length == 0)
-            return echoCmds.filter(alwaysTrue());
-
-        TStream<JsonObject> cmd0 = echoCmds
-                .filter(j -> j.getAsJsonPrimitive(CMD_ID).getAsString().equals(commands[0]));
-
-        if (commands.length == 1)
-            return cmd0;
+            return echoCmds;
 
         Set<TStream<JsonObject>> cmds = new HashSet<>();
-        for (int i = 1; i < commands.length; i++) {
-            final int idx = i;
-            cmds.add(echoCmds.filter(j -> j.getAsJsonPrimitive(CMD_ID).getAsString().equals(commands[idx])));
-        }
-
-        return cmd0.union(cmds);
+        return echoCmds.filter(cmd -> cmds.contains(cmd.getAsJsonPrimitive(CMD_ID).getAsString()));
     }
 }
+
