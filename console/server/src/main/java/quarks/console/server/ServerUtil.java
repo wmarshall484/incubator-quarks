@@ -87,7 +87,7 @@ public class ServerUtil {
      */
     public String getEclipseWarFilePath(ProtectionDomain pDomain, String warFileName) {
         URL location = pDomain.getCodeSource().getLocation();
-        File topQuarks = new File(location.getPath()).getParentFile().getParentFile().getParentFile();
+        File topQuarks = new File(location.getPath()).getParentFile().getParentFile();
         File warFile = new File(topQuarks, "./target/java8/console/webapps/" +warFileName);
         if (warFile.exists()) {
         	return warFile.getAbsolutePath();
