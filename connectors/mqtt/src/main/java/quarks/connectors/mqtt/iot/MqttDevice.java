@@ -75,12 +75,12 @@ import quarks.topology.json.JsonFunctions;
  * 
  * // publish JSON "status" device event tuples every hour
  * TStream<JsonObject> myStatusEvents = t.poll(myGetStatusAsJson(), 1, TimeUnit.HOURS);
- * mqttDevice.events(myJsonEvents, "status", QoS.FIRE_AND_FORGET);
+ * mqttDevice.events(myStatusEvents, "status", QoS.FIRE_AND_FORGET);
  * 
  * // handle a device command.  In this example the payload is expected
  * // to be JSON and have a "value" property containing the new threshold. 
  * mqttDevice.command("setSensorThreshold")
- *     .sink(json -> setSensorThreshold(json.get("payload").getAsJsonObject().get("value").getAsString());
+ *     .sink(json -> setSensorThreshold(json.get(CMD_PAYLOAD).getAsJsonObject().get("value").getAsString());
  * }</pre>
  */
 public class MqttDevice implements IotDevice {
@@ -215,7 +215,7 @@ public class MqttDevice implements IotDevice {
         if (commands.length != 0) {
             Set<String> uniqueCommands = new HashSet<>();
             uniqueCommands.addAll(Arrays.asList(commands));
-            all = all.filter(jo -> uniqueCommands.contains(jo.get("command").getAsString()));
+            all = all.filter(jo -> uniqueCommands.contains(jo.get(CMD_ID).getAsString()));
         }
         
         return all;
@@ -227,15 +227,15 @@ public class MqttDevice implements IotDevice {
             commandStream = connector.subscribe(topicFilter, commandQoS,
                     (topic, payload) -> {
                         JsonObject jo = new JsonObject();
-                        jo.addProperty("command", extractCmd(topic));
-                        jo.addProperty("tsms", System.currentTimeMillis());
+                        jo.addProperty(CMD_ID, extractCmd(topic));
+                        jo.addProperty(CMD_TS, System.currentTimeMillis());
                         String fmt = extractCmdFmt(topic);
-                        jo.addProperty("format", fmt);
+                        jo.addProperty(CMD_FORMAT, fmt);
                         if ("json".equals(fmt)) {
-                            jo.add("payload", JsonFunctions.fromBytes().apply(payload));
+                            jo.add(CMD_PAYLOAD, JsonFunctions.fromBytes().apply(payload));
                         }
                         else {
-                            jo.addProperty("payload", new String(payload, StandardCharsets.UTF_8));
+                            jo.addProperty(CMD_PAYLOAD, new String(payload, StandardCharsets.UTF_8));
                         }
                         return jo;
                     });
