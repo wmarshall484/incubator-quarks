@@ -187,6 +187,7 @@ public class EtiaoJob extends AbstractGraphJob implements JobContext {
     }
     
     private void updateRegistry() {
-        jobs.update(this);
+        if (jobs != null)
+            jobs.update(this);
     }
 }
