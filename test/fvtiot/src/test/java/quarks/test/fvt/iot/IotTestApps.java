@@ -18,43 +18,19 @@ under the License.
 */
 package quarks.test.fvt.iot;
 
-import static org.junit.Assert.assertTrue;
-
-import org.junit.Test;
-
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
-import quarks.execution.services.ControlService;
-import quarks.providers.direct.DirectProvider;
-import quarks.runtime.appservice.AppService;
+import quarks.connectors.pubsub.PublishSubscribe;
+import quarks.execution.DirectSubmitter;
 import quarks.runtime.jsoncontrol.JsonControlService;
+import quarks.topology.TStream;
+import quarks.topology.Topology;
 import quarks.topology.mbeans.ApplicationServiceMXBean;
 import quarks.topology.services.ApplicationService;
 
-public class IotAppServiceTest {
-    
-    @Test
-    public void testAppService() throws Exception {
-        
-        DirectProvider provider = new DirectProvider();
-        
-        JsonControlService control = new JsonControlService();
-        provider.getServices().addService(ControlService.class, control);
-        
-        ApplicationService apps = AppService.createAndRegister(provider, provider);
-        provider.getServices().addService(ApplicationService.class, apps);
-        
-        IotTestApps.registerApplications(provider);       
-        
-        JsonObject submitAppOne = newSubmitRequest("AppOne");
-        
-        JsonElement crr = control.controlRequest(submitAppOne);
-        
-        assertTrue(crr.getAsBoolean());
-    }
+public class IotTestApps {
     
     public static JsonObject newSubmitRequest(String name) {
         JsonObject submitApp = new JsonObject();   
@@ -67,5 +43,16 @@ public class IotAppServiceTest {
         submitApp.add(JsonControlService.ARGS_KEY, args); 
         
         return submitApp;
+    }
+    
+    public static void registerApplications(DirectSubmitter<?, ?> submitter) {
+        ApplicationService apps = submitter.getServices().getService(ApplicationService.class);
+        
+        apps.registerTopology("AppOne", IotTestApps::createApplicationOne);
+    }
+    
+    public static void createApplicationOne(Topology topology, JsonObject config) {
+        TStream<String> out = topology.strings("APP1_A", "APP1_B", "APP1_C");
+        PublishSubscribe.publish(out, "appOne", String.class);
     }
 }
