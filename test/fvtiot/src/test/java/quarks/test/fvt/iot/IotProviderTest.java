@@ -44,10 +44,10 @@ public class IotProviderTest {
         
             provider.start();
             
-            provider.getApplicationService().registerTopology("AppOne", IotAppService::createApplicationOne);
+            provider.getApplicationService().registerTopology("AppOne", IotAppServiceTest::createApplicationOne);
 
             //
-            JsonObject submitAppOne = IotAppService.newSubmitRequest("AppOne");
+            JsonObject submitAppOne = IotAppServiceTest.newSubmitRequest("AppOne");
             
             
             Topology submitter = provider.newTopology();
@@ -57,11 +57,5 @@ public class IotProviderTest {
             publishedDevice.events(cmds, Commands.CONTROL_SERVICE, 0);
             
             provider.submit(submitter).get();
-    }
-    
-    
-    
-    public static void createApplicationOne(Topology topology, JsonObject config) {
-        topology.strings("A", "B", "C").print();
     }
 }

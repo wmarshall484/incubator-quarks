@@ -21,6 +21,7 @@ package quarks.test.apps.iot;
 
 import static quarks.function.Functions.discard;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -110,7 +111,7 @@ public class EchoIotDevice implements IotDevice {
         if (commands.length == 0)
             return echoCmds;
 
-        Set<TStream<JsonObject>> cmds = new HashSet<>();
+        Set<String> cmds = new HashSet<>(Arrays.asList(commands));
         return echoCmds.filter(cmd -> cmds.contains(cmd.getAsJsonPrimitive(CMD_ID).getAsString()));
     }
 }

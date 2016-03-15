@@ -35,7 +35,7 @@ import quarks.topology.Topology;
 import quarks.topology.mbeans.ApplicationServiceMXBean;
 import quarks.topology.services.ApplicationService;
 
-public class IotAppService {
+public class IotAppServiceTest {
     
     @Test
     public void testAppService() throws Exception {
@@ -47,7 +47,7 @@ public class IotAppService {
         
         ApplicationService apps = AppService.createAndRegister(provider, provider);
         
-        apps.registerTopology("AppOne", IotAppService::createApplicationOne);
+        apps.registerTopology("AppOne", IotAppServiceTest::createApplicationOne);
         
         JsonObject submitAppOne = newSubmitRequest("AppOne");
         
