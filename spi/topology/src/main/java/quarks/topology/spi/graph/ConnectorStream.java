@@ -4,19 +4,7 @@
 */
 package quarks.topology.spi.graph;
 
-import static quarks.function.Functions.synchronizedFunction;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
-
-import quarks.function.Consumer;
-import quarks.function.Function;
-import quarks.function.Functions;
-import quarks.function.Predicate;
-import quarks.function.ToIntFunction;
+import quarks.function.*;
 import quarks.graph.Connector;
 import quarks.graph.Graph;
 import quarks.graph.Vertex;
@@ -33,6 +21,11 @@ import quarks.topology.TStream;
 import quarks.topology.TWindow;
 import quarks.topology.Topology;
 import quarks.topology.spi.AbstractTStream;
+
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+
+import static quarks.function.Functions.synchronizedFunction;
 
 /**
  * A stream that directly adds oplets to the graph.
@@ -93,6 +86,35 @@ public class ConnectorStream<G extends Topology, T> extends AbstractTStream<G, T
         }
 
         return outputs;
+    }
+
+    @Override
+    public <E extends Enum<E>> EnumMap<E,TStream<T>> split(Class<E> enumClass, Function<T, E> splitter) {
+
+        E[] es = enumClass.getEnumConstants();
+
+/*
+        List<TStream<T>> outputs = split(es.length, e -> IntStream.range(0, es.length).filter(i-> es[i].equals(splitter.apply(e)))
+            .mapToObj(i -> es[i].ordinal()).findAny().orElse(-1));
+*/
+
+        List<TStream<T>> outputs = split(es.length, new ToIntFunction<T>() {
+            @Override
+            public int applyAsInt(T input) {
+                for(int i = 0; i < es.length; i++){
+                    if(es[i].equals(splitter.apply(input))){
+                        return es[i].ordinal();
+                    }
+                }
+                return -1;
+            }});
+
+        EnumMap<E,TStream<T>> returnMap = new EnumMap<>(enumClass);
+        for (int i = 0; i < es.length ; i++){
+            returnMap.put(es[i], outputs.get(es[i].ordinal()));
+        }
+
+        return returnMap;
     }
 
     @Override
