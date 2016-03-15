@@ -11,9 +11,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import quarks.execution.JobRegistryService;
 import quarks.execution.mbeans.JobMXBean;
 import quarks.execution.services.ControlService;
+import quarks.execution.services.JobRegistryService;
 import quarks.execution.services.ServiceContainer;
 import quarks.graph.spi.execution.AbstractGraphJob;
 import quarks.oplet.JobContext;
@@ -32,7 +32,7 @@ public class EtiaoJob extends AbstractGraphJob implements JobContext {
     private final String topologyName;
     private String name;
     private final ServiceContainer containerServices;
-    private final JobRegistry jobs;
+    private final JobRegistryService jobs;
 
     private static final AtomicInteger jobID = new AtomicInteger(0);
 
@@ -54,7 +54,7 @@ public class EtiaoJob extends AbstractGraphJob implements JobContext {
         if (cs != null)
             cs.registerControl(JobMXBean.TYPE, getId(), getName(), JobMXBean.class, new EtiaoJobBean(this));
         
-        this.jobs = (JobRegistry) container.getService(JobRegistryService.class);
+        this.jobs = container.getService(JobRegistryService.class);
         if (jobs != null)
             jobs.add(this);
     }
@@ -187,7 +187,6 @@ public class EtiaoJob extends AbstractGraphJob implements JobContext {
     }
     
     private void updateRegistry() {
-        if (jobs != null)
-            jobs.update(this);
+        jobs.update(this);
     }
 }

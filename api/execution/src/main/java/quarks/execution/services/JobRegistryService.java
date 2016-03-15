@@ -16,25 +16,32 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 */
-package quarks.execution;
+package quarks.execution.services;
 
 import java.util.Set;
 
+import quarks.execution.Job;
 import quarks.function.BiConsumer;
 
 /**
- * Contains the methods necessary for the registration and removal
- * of {@link Job} instances as well as access methods for registered jobs.
- * Allows clients to register listeners, which are notified on job 
- * registrations, removals, and updates.
+ * Job registry service. 
  * <p>
- * Events are sent to registered listeners when jobs are added, removed, 
- * or their state changes:
+ * Keeps the list of {@link Job} instances registered by the runtime and 
+ * provides the necessary methods to register and remove jobs, access 
+ * registered jobs, as well as register listeners which are notified on job 
+ * registrations, removals, and updates.
+ * The following event types are sent to registered listeners:
  * <ul>
- * <li>An {@link EventType#ADD} event type is sent when a job is added.</li>
- * <li>An {@link EventType#REMOVE} event type is sent when a job is removed.</li>
- * <li>An {@link EventType#UPDATE} event type is sent when a job is updated.</li>
+ * <li>An {@link EventType#ADD} event is sent when a job is added.</li>
+ * <li>An {@link EventType#REMOVE} event is sent when a job is removed.</li>
+ * <li>An {@link EventType#UPDATE} event is sent when a job is updated.</li>
  * </ul>
+ * <p>
+ * <h3>Event dispatch</h3>
+ * If a listener invocation throws an Exception, then the exception
+ * will not prevent the remaining listeners from being invoked. However, 
+ * if the invocation throws an Error, then it is recommended that 
+ * the event dispatch stop.
  */
 public interface JobRegistryService {
     /**
@@ -84,12 +91,27 @@ public interface JobRegistryService {
     Job getJob(String id);
 
     /**
+     * Adds the specified job.
+     *
+     * @param job the job to register
+     */
+    void add(Job job) throws IllegalArgumentException;
+
+    /**
      * Removes the job specified by the given identifier.
      *
      * @param jobId the identifier of the job to remove
      * @return whether or not the job was removed
      */
     boolean removeJob(String jobId);
+
+    /**
+     * Notifies listeners that the specified registered job has 
+     * been updated.
+     *
+     * @param job the job
+     */
+    void update(Job job);
 
     // TODO add job retrieval given its name
 }
