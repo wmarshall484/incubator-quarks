@@ -56,7 +56,7 @@ public class EtiaoJob extends AbstractGraphJob implements JobContext {
         
         this.jobs = container.getService(JobRegistryService.class);
         if (jobs != null)
-            jobs.add(this);
+            jobs.addJob(this);
     }
 
     /**
@@ -188,6 +188,6 @@ public class EtiaoJob extends AbstractGraphJob implements JobContext {
     
     private void updateRegistry() {
         if (jobs != null)
-            jobs.update(this);
+            jobs.updateJob(this);
     }
 }

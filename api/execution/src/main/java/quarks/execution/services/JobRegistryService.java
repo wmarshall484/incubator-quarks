@@ -64,15 +64,19 @@ public interface JobRegistryService {
      * A listener is notified of all existing jobs when it is first added.
      *
      * @param listener the listener that will be added
+     * @throws IllegalArgumentException if the listener parameter is 
+     *      {@code null}
      */
-    void addListener(BiConsumer<JobRegistryService.EventType, Job> listener);
+    void addListener(BiConsumer<JobRegistryService.EventType, Job> listener)
+            throws IllegalArgumentException;
 
     /**
      * Removes a handler from this registry's collection of listeners.
      *
      * @param listener the listener that will be removed
+     * @return whether or not the listener has been removed
      */
-    void removeListener(
+    boolean removeListener(
             BiConsumer<JobRegistryService.EventType, Job> listener);
 
     /**
@@ -94,8 +98,11 @@ public interface JobRegistryService {
      * Adds the specified job.
      *
      * @param job the job to register
+     *
+     * @throws IllegalArgumentException if a job is null, or if a job with 
+     *      the same identifier is already registered
      */
-    void add(Job job) throws IllegalArgumentException;
+    void addJob(Job job) throws IllegalArgumentException;
 
     /**
      * Removes the job specified by the given identifier.
@@ -110,8 +117,9 @@ public interface JobRegistryService {
      * been updated.
      *
      * @param job the job
+     * @return whether or not the job was found in the registry
      */
-    void update(Job job);
+    boolean updateJob(Job job);
 
     // TODO add job retrieval given its name
 }

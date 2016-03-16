@@ -16,7 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 */
-package quarks.runtime.etiao;
+package quarks.runtime.jobregistry;
 
 import java.util.Collections;
 import java.util.List;
@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import quarks.execution.Job;
 import quarks.execution.services.JobRegistryService;
+import quarks.execution.services.ServiceContainer;
 import quarks.function.BiConsumer;
 
 /**
@@ -37,10 +38,6 @@ import quarks.function.BiConsumer;
  * Notifies listeners on job additions, deletions and updates.
  */
 public class JobRegistry implements JobRegistryService {
-    private final ConcurrentMap<String /*JobId*/, Job> jobs;
-    private final Broadcaster<JobRegistryService.EventType, Job> listeners;
-    private static final Logger logger = LoggerFactory.getLogger(JobRegistry.class);
-
     /**
      * Job event types.
      */
@@ -52,6 +49,23 @@ public class JobRegistry implements JobRegistryService {
         /** A registered Job has been updated. */
         UPDATE
     }
+
+    /**
+     * Creates and registers a {@link JobRegistry} with the given service 
+     * container.
+     * 
+     * @param services provides access to service registration
+     * @return service instance.
+     */
+    public static JobRegistryService createAndRegister(ServiceContainer services) {
+        JobRegistryService service = new JobRegistry();
+        services.addService(JobRegistryService.class, service);
+        return service;        
+    }
+
+    private final ConcurrentMap<String /*JobId*/, Job> jobs;
+    private final Broadcaster<JobRegistryService.EventType, Job> listeners;
+    private static final Logger logger = LoggerFactory.getLogger(JobRegistry.class);
 
     /**
      * Creates a new {@link JobRegistry}.
@@ -71,8 +85,8 @@ public class JobRegistry implements JobRegistryService {
     }
 
     @Override
-    public void removeListener(BiConsumer<JobRegistryService.EventType, Job> listener) {
-        listeners.remove(listener);
+    public boolean removeListener(BiConsumer<JobRegistryService.EventType, Job> listener) {
+        return listeners.remove(listener);
     }
 
     @Override
@@ -96,7 +110,7 @@ public class JobRegistry implements JobRegistryService {
     }
 
     @Override
-    public void add(Job job) throws IllegalArgumentException {
+    public void addJob(Job job) throws IllegalArgumentException {
         final Job existing = jobs.putIfAbsent(job.getId(), job);
         if (existing == null) {
             listeners.onEvent(JobRegistryService.EventType.ADD, job);
@@ -107,10 +121,12 @@ public class JobRegistry implements JobRegistryService {
     }
 
     @Override
-    public void update(Job job) {
+    public boolean updateJob(Job job) {
         if (jobs.containsValue(job)) {
             listeners.onEvent(JobRegistryService.EventType.UPDATE, job);
+            return true;
         }
+        return false;
     }
 
     private static class Broadcaster<T, O> {
