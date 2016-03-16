@@ -15,6 +15,7 @@ import quarks.connectors.pubsub.service.ProviderPubSub;
 import quarks.connectors.pubsub.service.PublishSubscribeService;
 import quarks.execution.Job;
 import quarks.execution.Job.Action;
+import quarks.execution.Job.State;
 import quarks.providers.direct.DirectProvider;
 import quarks.topology.TStream;
 import quarks.topology.Topology;
@@ -64,7 +65,7 @@ public class PubSubTest {
         return PublishSubscribe.subscribe(subscriber, topic, streamType);     
     }
 
-    @Test
+    @Test(timeout=10000)
     public void testProviderServiceSingleSubscriber() throws Exception {
         DirectProvider dp = new DirectProvider();
 
@@ -79,9 +80,13 @@ public class PubSubTest {
         Condition<List<String>> tcSub = testSub.streamContents(subscribedStream, "A", "B", "C"); // Expect all tuples
 
         Job js = dp.submit(subscribedStream.topology()).get();
+        // Give the subscriber a chance to setup.
+        while (js.getCurrentState() != State.RUNNING)
+            Thread.sleep(50);
+        
         Job jp = dp.submit(publishedStream.topology()).get();
         
-        for (int i = 0; i < 30 && !tcSub.valid(); i++)
+        while (!tcSub.valid() || !tcPub.valid())
             Thread.sleep(50);
 
         assertTrue(tcPub.valid());
@@ -91,7 +96,7 @@ public class PubSubTest {
         jp.stateChange(Action.CLOSE);
     }
     
-    @Test
+    @Test(timeout=10000)
     public void testProviderServiceMultipleSubscriber() throws Exception {
         DirectProvider dp = new DirectProvider();
 
@@ -118,9 +123,16 @@ public class PubSubTest {
         Job js2 = dp.submit(subscribedStream2.topology()).get();
         Job js3 = dp.submit(subscribedStream3.topology()).get();
         
+        // Give the subscribers a chance to setup.
+        while (
+                (js1.getCurrentState() != State.RUNNING) &&
+                (js2.getCurrentState() != State.RUNNING) &&
+                (js3.getCurrentState() != State.RUNNING))
+            Thread.sleep(50);
+                
         Job jp = dp.submit(publishedStream.topology()).get();
-        
-        for (int i = 0; i < 30 && !tcSub1.valid() && !tcSub2.valid() && !tcSub3.valid(); i++)
+          
+        while (!tcSub1.valid() || !tcSub2.valid() || !tcSub3.valid() || !tcPub.valid())
             Thread.sleep(50);
 
         assertTrue(tcPub.valid());
@@ -134,7 +146,7 @@ public class PubSubTest {
         jp.stateChange(Action.CLOSE);
     }
     
-    @Test
+    @Test(timeout=10000)
     public void testProviderServiceMultiplePublisher() throws Exception {
         DirectProvider dp = new DirectProvider();
 
@@ -159,17 +171,21 @@ public class PubSubTest {
                 1,2,3,82,5,432,34,99,35,456,888,263,578); // Expect all tuples
 
         Job js = dp.submit(subscribedStream.topology()).get();
+        // Give the subscriber a chance to setup.
+        while (js.getCurrentState() != State.RUNNING)
+            Thread.sleep(50);
+        
         Job jp1 = dp.submit(publishedStream1.topology()).get();
         Job jp2 = dp.submit(publishedStream2.topology()).get();
         Job jp3 = dp.submit(publishedStream3.topology()).get();
         
-        for (int i = 0; i < 30 && !tcSub.valid(); i++)
+        while (!tcSub.valid() || !tcPub1.valid() || !tcPub2.valid()  || !tcPub3.valid())
             Thread.sleep(50);
 
-        assertTrue(tcPub1.valid());
-        assertTrue(tcPub2.valid());
-        assertTrue(tcPub3.valid());
-        assertTrue(tcSub.valid());
+        assertTrue(tcPub1.getResult().toString(), tcPub1.valid());
+        assertTrue(tcPub2.getResult().toString(), tcPub2.valid());
+        assertTrue(tcPub3.getResult().toString(), tcPub3.valid());
+        assertTrue(tcSub.getResult().toString(), tcSub.valid());
 
         js.stateChange(Action.CLOSE);
         jp1.stateChange(Action.CLOSE);
