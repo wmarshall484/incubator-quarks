@@ -7,6 +7,7 @@ package quarks.topology.spi.graph;
 import static quarks.function.Functions.synchronizedFunction;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -93,6 +94,28 @@ public class ConnectorStream<G extends Topology, T> extends AbstractTStream<G, T
         }
 
         return outputs;
+    }
+
+    @Override
+    public <E extends Enum<E>> EnumMap<E,TStream<T>> split(Class<E> enumClass, Function<T, E> splitter) {
+
+        E[] es = enumClass.getEnumConstants();
+        if(es == null) {
+            throw new IllegalArgumentException("Class object does not represent an enum type");
+        }
+
+        List<TStream<T>> outputs = split(es.length, t -> {
+            E split = splitter.apply(t);
+            return split != null ? split.ordinal() : -1;
+        });
+
+        EnumMap<E,TStream<T>> returnMap = new EnumMap<>(enumClass);
+
+        for (E e : es) {
+            returnMap.put(e, outputs.get(e.ordinal()));
+        }
+
+        return returnMap;
     }
 
     @Override

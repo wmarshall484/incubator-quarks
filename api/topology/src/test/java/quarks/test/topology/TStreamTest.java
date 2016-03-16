@@ -15,6 +15,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -283,6 +284,73 @@ public abstract class TStreamTest extends TopologyAbstractTest {
     @Test(expected = IllegalArgumentException.class)
     public void testSplitWithNegativeOutputs() throws Exception {
         newTopology().strings("a1").split(-28, tuple -> 0);
+    }
+
+    /**
+     * Test enum data structure
+     */
+    private enum LogSeverityEnum {
+        ALERT(1), CRITICAL(2), ERROR(3), WARNING(4), NOTICE(5), INFO(6), DEBUG(7);
+
+        private final int code;
+
+        LogSeverityEnum(final int code) {
+            this.code = code;
+        }
+    }
+
+    /**
+     * Test split(enum) with integer type enum.
+     */
+    @Test
+    public void testSplitWithEnum() throws Exception {
+
+        Topology t = newTopology();
+
+        TStream<String> s = t.strings("Log1_ALERT", "Log2_INFO", "Log3_INFO", "Log4_INFO", "Log5_ERROR", "Log6_ERROR", "Log7_CRITICAL");
+        TStream<String> i = s.map(String::toString);
+        EnumMap<LogSeverityEnum,TStream<String>> splits = i.split(LogSeverityEnum.class, e -> LogSeverityEnum.valueOf(e.split("_")[1]));
+
+        assertStream(t, i);
+
+        Condition<Long> tc0 = t.getTester().tupleCount(splits.get(LogSeverityEnum.ALERT), 1);
+        Condition<Long> tc1 = t.getTester().tupleCount(splits.get(LogSeverityEnum.INFO), 3);
+        Condition<Long> tc2 = t.getTester().tupleCount(splits.get(LogSeverityEnum.ERROR), 2);
+        Condition<Long> tc3 = t.getTester().tupleCount(splits.get(LogSeverityEnum.CRITICAL), 1);
+        Condition<Long> tc4 = t.getTester().tupleCount(splits.get(LogSeverityEnum.WARNING), 0);
+
+        Condition<List<String>> contents0 = t.getTester().streamContents(splits.get(LogSeverityEnum.ALERT), "Log1_ALERT");
+        Condition<List<String>> contents1 = t.getTester().streamContents(splits.get(LogSeverityEnum.INFO), "Log2_INFO",
+            "Log3_INFO", "Log4_INFO");
+        Condition<List<String>> contents2 = t.getTester().streamContents(splits.get(LogSeverityEnum.ERROR), "Log5_ERROR",
+            "Log6_ERROR");
+        Condition<List<String>> contents3 = t.getTester().streamContents(splits.get(LogSeverityEnum.CRITICAL), "Log7_CRITICAL");
+        Condition<List<String>> contents4 = t.getTester().streamContents(splits.get(LogSeverityEnum.WARNING));
+
+        complete(t, t.getTester().and(tc0, tc1, tc2, tc3, tc4));
+
+
+        assertTrue(contents0.toString(), contents0.valid());
+        assertTrue(contents1.toString(), contents1.valid());
+        assertTrue(contents2.toString(), contents2.valid());
+        assertTrue(contents3.toString(), contents3.valid());
+        assertTrue(contents4.toString(), contents4.valid());
+    }
+
+    private enum EnumClassWithZerosize {
+        ;
+    }
+
+    /**
+     * Test split(enum) with integer type enum.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testSplitWithEnumForZeroSizeClass() throws Exception {
+
+        Topology t = newTopology();
+
+        TStream<String> s = t.strings("Test");
+        s.split(EnumClassWithZerosize.class, e -> EnumClassWithZerosize.valueOf("Test"));
     }
 
     @Test
