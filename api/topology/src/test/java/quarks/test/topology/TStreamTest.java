@@ -4,19 +4,35 @@
 */
 package quarks.test.topology;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.junit.Ignore;
 import org.junit.Test;
+
 import quarks.topology.TSink;
 import quarks.topology.TStream;
 import quarks.topology.Topology;
 import quarks.topology.tester.Condition;
-
-import java.io.Serializable;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicLong;
-
-import static org.junit.Assert.*;
 
 @Ignore
 public abstract class TStreamTest extends TopologyAbstractTest {
@@ -274,7 +290,7 @@ public abstract class TStreamTest extends TopologyAbstractTest {
      * Test enum data structure
      */
     private enum LogSeverityEnum {
-        EMERG(0), ALERT(1), CRITICAL(2), ERROR(3), WARNING(4), NOTICE(5), INFO(6), DEBUG(7);
+        ALERT(1), CRITICAL(2), ERROR(3), WARNING(4), NOTICE(5), INFO(6), DEBUG(7);
 
         private final int code;
 
@@ -319,6 +335,22 @@ public abstract class TStreamTest extends TopologyAbstractTest {
         assertTrue(contents2.toString(), contents2.valid());
         assertTrue(contents3.toString(), contents3.valid());
         assertTrue(contents4.toString(), contents4.valid());
+    }
+
+    private enum EnumClassWithZerosize {
+        ;
+    }
+
+    /**
+     * Test split(enum) with integer type enum.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testSplitWithEnumForZeroSizeClass() throws Exception {
+
+        Topology t = newTopology();
+
+        TStream<String> s = t.strings("Test");
+        s.split(EnumClassWithZerosize.class, e -> EnumClassWithZerosize.valueOf("Test"));
     }
 
     @Test
