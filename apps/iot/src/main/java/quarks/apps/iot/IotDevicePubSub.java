@@ -28,7 +28,7 @@ import quarks.topology.TopologyElement;
 
 /**
  * Application sharing an {@code IotDevice} through publish-subscribe. <BR>
- * This application allows sharing an {@link IotDevice} across multiple running
+ * This application shares an {@link IotDevice} across multiple running
  * jobs. This allows a single connection to a back-end message hub to be shared
  * across multiple independent applications, without having to build a single
  * topology.

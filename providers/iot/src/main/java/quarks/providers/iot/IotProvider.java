@@ -44,13 +44,37 @@ import quarks.topology.TopologyProvider;
 import quarks.topology.services.ApplicationService;
 
 /**
- * IoT provider supporting multiple topologies with a single connection to a
+ * Abstract IoT provider supporting multiple topologies with a single connection to a
  * message hub. A provider that uses a single {@link IotDevice} to communicate
  * with an IoT scale message hub.
  * {@link quarks.connectors.pubsub.PublishSubscribe Publish-subscribe} is
  * used to allow multiple topologies to communicate through the single
  * connection.
+ * <P>
+ * This provider registers these services:
+ * <UL>
+ * <LI>{@link ControlService control} - An instance of {@link JsonControlService}.</LI>
+ * <LI>{@link ApplicationService application} - An instance of {@link AppService}.</LI>
+ * <LI>{@link PublishSubscribeService publish-subscribe} - An instance of {@link ProviderPubSub}</LI>
+ * </UL>
+ * System applications provide this functionality:
+ * <UL>
+ * <LI>
+ * </LI>
+ * </UL>
+ * <UL>
+ * <LI>Single connection to the message hub using an {@code IotDevice}
+ * using {@link IotDevicePubSub}.
+ * Applications using this provider that want to connect
+ * to the message hub for device events and commands must create an instance of
+ * {@code IotDevice} using {@link IotDevicePubSub#addIotDevice(quarks.topology.TopologyElement)}</LI>
+ * <LI>Access to the control service through device commands from the message hub using command
+ * identifier {@link Commands#CONTROL_SERVICE quarksControl}.
+ * </UL>
+ * </P>
  * 
+ * @see IotDevice
+ * @see IotDevicePubSub
  */
 public abstract class IotProvider implements TopologyProvider,
  DirectSubmitter<Topology, Job> {
@@ -129,12 +153,12 @@ public abstract class IotProvider implements TopologyProvider,
      * Subscribes to device events and sends them to the messages hub.
      * Publishes device commands from the message hub.
      * @see IotDevicePubSub
-     * @see #getMessageHubDevice(Topology)
+     * @see #createMessageHubDevice(Topology)
      */
     protected void createIotDeviceApp() {
         Topology topology = newTopology("QuarksIotDevice");
              
-        IotDevice msgHub = getMessageHubDevice(topology);
+        IotDevice msgHub = createMessageHubDevice(topology);
         IotDevicePubSub.createApplication(msgHub);
         systemApps.add(topology);
     }
@@ -173,5 +197,23 @@ public abstract class IotProvider implements TopologyProvider,
         }
     }
 
-    protected abstract IotDevice getMessageHubDevice(Topology topology);
+    /**
+     * Create the connection to the message hub.
+     * 
+     * A sub-class creates an instance of {@link IotDevice}
+     * used to communicate with the message hub. This
+     * provider creates and submits an application
+     * that subscribes to published events to send
+     * as device events and publishes device commands.
+     * <BR>
+     * The application is created using
+     * {@link IotDevicePubSub#createApplication(IotDevice)}.
+     * 
+     * @param topology Topology the {@code IotDevice} will be contained in.
+     * @return IotDevice device used to communicate with the message hub.
+     * 
+     * @see IotDevice
+     * @see IotDevicePubSub
+     */
+    protected abstract IotDevice createMessageHubDevice(Topology topology);
 }

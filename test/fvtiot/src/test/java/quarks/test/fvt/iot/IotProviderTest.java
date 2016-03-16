@@ -57,7 +57,7 @@ public class IotProviderTest {
         IotProvider provider = new IotProvider() {
 
             @Override
-            protected IotDevice getMessageHubDevice(Topology topology) {
+            protected IotDevice createMessageHubDevice(Topology topology) {
                 return new EchoIotDevice(topology);
             }
         };
