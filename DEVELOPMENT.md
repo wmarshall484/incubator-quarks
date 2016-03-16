@@ -120,14 +120,14 @@ For a description of the github workflow see:
     https://guides.github.com/activities/hello-world/
 
 In summary:
-    * fork the incubator-quarks github repository
-    * clone your fork, use lightweight per-task branches, and commit / push changes to your fork
-      * descriptive branch names are good. You can also include a reference
-        to the Jira issue.  e.g., mqtt-ssl-quarks-100 for issue QUARKS-100
-    * when ready, create a pull request.  Committers will get notified.
-      * include QUARKS-XXXX (the Jira issue) in the name of your pull request
-      * for early preview / feedback, create a pull request with [WIP] in the title.  
-        Committers won’t consider it for merging until after [WIP] is removed.
+* fork the incubator-quarks github repository
+* clone your fork, use lightweight per-task branches, and commit / push changes to your fork
+  * descriptive branch names are good. You can also include a reference
+    to the Jira issue.  e.g., mqtt-ssl-quarks-100 for issue QUARKS-100
+* when ready, create a pull request.  Committers will get notified.
+  * include QUARKS-XXXX (the Jira issue) in the name of your pull request
+  * for early preview / feedback, create a pull request with [WIP] in the title.  
+    Committers won’t consider it for merging until after [WIP] is removed.
 
 Since the github incubator-quarks repository is a mirror of the ASF repository,
 the usual github based merge workflow for committers isn’t supported.
