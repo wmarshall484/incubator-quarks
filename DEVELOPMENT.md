@@ -102,7 +102,10 @@ In general most code is expected to work on Android (but might not yet) with the
 
 ### The ASF / Github Integration
 
-The Quarks code is in ASF resident git repositories.  
+The Quarks code is in ASF resident git repositories:
+
+    https://git-wip-us.apache.org/repos/asf/incubator-quarks.git
+
 The repositories are mirrored on github:
 
     https://github.com/apache/incubator-quarks
@@ -113,14 +116,16 @@ for both committers and non-committers.
 
 For a description of the github workflow see:
 
+    https://guides.github.com/introduction/flow/
     https://guides.github.com/activities/hello-world/
 
 In summary:
     * fork the incubator-quarks github repository
     * clone your fork, use lightweight per-task branches, and commit / push changes to your fork
-      * name your branch quarks-xxxx - typically xxxx is a Jira ticket number
+      * descriptive branch names are good. You can also include a reference
+        to the Jira issue.  e.g., mqtt-ssl-quarks-100 for issue QUARKS-100
     * when ready, create a pull request.  Committers will get notified.
-      * include QUARKS-XXXX in the name of your pull request
+      * include QUARKS-XXXX (the Jira issue) in the name of your pull request
       * for early preview / feedback, create a pull request with [WIP] in the title.  
         Committers won’t consider it for merging until after [WIP] is removed.
 
@@ -133,7 +138,6 @@ into the repo at the ASF. One way is described here:
     http://mail-archives.apache.org/mod_mbox/incubator-quarks-dev/201603.mbox/%3C1633289677.553519.1457733763078.JavaMail.yahoo%40mail.yahoo.com%3E
 
 Notes with the above PR merge directions:
-  * seems like it should be using  `git merge --squash pr-<N>`
   * use an https url unless you have a ssh key setup at github:
     `git remote add mirror https://github.com/apache/incubator-quarks.git`
 
@@ -154,6 +158,11 @@ into your Eclipse workspace directly from your fork.
 1. Set the directory where your local clone will be stored and click Next (the directory quarks under this directory is where you can build and run tests using the Ant targets)
 1. Select Import existing Eclipse projects and click Next
 1. In the Import Projects window, make sure that the Search for nested projects checkbox is selected. Click Finish to bring in all Quarks projects
+
+The project `_quarks` exists to make the top level artifacts such as 
+`build.xml` manageable via Eclipse.  Unfortunately folders for the
+other projects (e.g., `api`) also show up in the `_quarks` folder and
+are best ignored.
 
 Note. Specifics may change depending on your version of Eclipse or the Eclipse Git Team Provider.
 
