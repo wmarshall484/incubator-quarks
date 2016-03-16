@@ -781,7 +781,7 @@ var fetchMetrics = function() {
     var metricSelected = d3.select("#metrics").node().value;
     var queryString = "metrics?job=" + selectedJobId + "&metric=" + metricSelected;
     if (metricSelected !== "") {
-    	metricFunction(selectedJobId, metricSelected);
+    	metricFunction(selectedJobId, metricSelected, true);
     }
 };
 

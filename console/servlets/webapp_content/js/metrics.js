@@ -1,7 +1,6 @@
 var margin = {top: 15, right: 20, bottom: 30, left: 40};
 var metricCWidth = 860 - margin.left - margin.right;
 var metricCWideWidth = 1160 - margin.left - margin.right;
-var useWideWidth = false;
 var svgCounterPadding = 40;
 var metricCHeight = 380 - margin.top - margin.bottom - svgCounterPadding;
 var runLineChart = null;
@@ -183,7 +182,7 @@ getTupleCountBucketsIndex = function(counterMetrics, aValue, bIsDerivedValue, is
 };
 
 
-metricFunction = function(selectedJobId, metricSelected) {
+metricFunction = function(selectedJobId, metricSelected, bUseWideWidth) {
 	stopLineChart();
 	// metric selected, i.e: name:Count,type:counter
 	var queryString = "metrics?job=" + selectedJobId + "&metric=" + metricSelected;
@@ -191,7 +190,7 @@ metricFunction = function(selectedJobId, metricSelected) {
 	var metricName = metricSelected.split(",")[0].split(":")[1];
 	var metricType = metricSelected.split(",")[1].split(":")[1];
 	
-	var chartWidth = useWideWidth === true ? metricCWideWidth : metricCWidth;
+	var chartWidth = metricCWideWidth;
 	
 	// rangeRoundBands specifies the width of each bar 
 	// and the distance between each bar (second arg) and
@@ -206,7 +205,7 @@ metricFunction = function(selectedJobId, metricSelected) {
 	    .scale(x)
 	    .orient("bottom");
 	
-	if (useWideWidth) {
+	if (bUseWideWidth) {
 		 xAxis.tickFormat("");
 	  }
 	
@@ -373,9 +372,7 @@ plotMetricChartType = function(jobId, metricSelected) {
     var yAxisScale;
     var yAxis;
     var clipPath;
-    
-    useWideWidth = false;
-    
+        
     if (runLineChart) {
     	clearInterval(runLineChart);
     }
@@ -544,7 +541,6 @@ plotMetricChartType = function(jobId, metricSelected) {
 					   .transition()
 					   .duration(2500)
 					   .ease("linear");
-					  // .each("end", getMetric);
 				   
 			   }
 			   if (timeInt < refreshT) {
@@ -646,7 +642,7 @@ metricsAvailable = function(queryString, jobId, bIsNewJob) {
         	    	metricsSelect.selectAll("*").remove();
         	    	var selectWidth = 0;
         	    	var rateUnitVal = "";
-        	    	useWideWidth = false;
+        	    	var useWideWidth = false;
         	    	objectArray.forEach(function(obj) {
         	    		var tempWidth;
         	    		var value = "name:" + obj.name +",type:" + obj.type;
@@ -722,7 +718,7 @@ metricsAvailable = function(queryString, jobId, bIsNewJob) {
 	    			});
         	    	var jobId = d3.select("#jobs").node().value;
         	    	if ( selectedChart === "barChart") {
-        	    		metricFunction(jobId, metricsSelect.node().value);
+        	    		metricFunction(jobId, metricsSelect.node().value, useWideWidth);
         	    		// if multiple is true, disable the linechart option
         	    		if (multiple === "true") {
         	    			lineChartOption.property("disabled", true);
@@ -735,7 +731,7 @@ metricsAvailable = function(queryString, jobId, bIsNewJob) {
         	    			stopLineChart();
         	    			lineChartOption.property("disabled", true);
         	    			d3.select("#mChartType").node().value = "barChart";
-            	    		metricFunction(jobId, metricsSelect.node().value);	
+            	    		metricFunction(jobId, metricsSelect.node().value, useWideWidth);	
         	    		} else if (multiple === "false" && bIsNewJob && bIsNewJob === true) {
         	    			stopLineChart();
         	    			// restart it
