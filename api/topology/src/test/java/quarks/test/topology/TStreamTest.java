@@ -292,6 +292,7 @@ public abstract class TStreamTest extends TopologyAbstractTest {
     private enum LogSeverityEnum {
         ALERT(1), CRITICAL(2), ERROR(3), WARNING(4), NOTICE(5), INFO(6), DEBUG(7);
 
+        @SuppressWarnings("unused")
         private final int code;
 
         LogSeverityEnum(final int code) {
