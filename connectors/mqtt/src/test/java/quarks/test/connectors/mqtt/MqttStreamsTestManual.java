@@ -838,6 +838,9 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
         // Exercise connection retry by first specifying
         // a bogus server url then a good one.
         
+        // Note qos==0 so its critical for the test that the subscriber
+        // is connected before the pub connects and sends.
+        
         TStream<String> s = PlumbingStreams.blockingOneShotDelay(
                 top.collection(msgs), PUB_DELAY_MSEC, TimeUnit.MILLISECONDS);
         
@@ -866,7 +869,8 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
 
         TStream<String> rcvd = subMqtt.subscribe(topic, qos);
 
-        completeAndValidate(subClientId, top, rcvd, mgen, SEC_TIMEOUT, msgs.toArray(new String[0]));
+        // add extra TMO delay. getting intermittent TMO failures
+        completeAndValidate(subClientId, top, rcvd, mgen, SEC_TIMEOUT + 5, msgs.toArray(new String[0]));
     }
     
     @Test
@@ -882,9 +886,21 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
 
         // Exercise connection retry by first specifying
         // a bogus server url then a good one.
+
+        // Note qos==0 so its critical for the test that the subscriber
+        // is connected before the pub connects and sends.
+        // Even if we pub @ qos>0, since the broker doesn't know of
+        // the sub's new clientId, the msgs will get tossed.
+        // (and if it did know of the clientId we'd also have to
+        // subConfig.setCleanSession(false) to avoid the msgs getting
+        // tossed upon connect).
+        //
+        // The 15s pub delay below *should* cover things.  We've seen
+        // intermittent 11s sub connect delays.  Still, would be
+        // better to have a more robust scheme/interlock here.
         
         TStream<String> s = PlumbingStreams.blockingOneShotDelay(
-                top.collection(msgs), 7, TimeUnit.SECONDS);
+                top.collection(msgs), 15, TimeUnit.SECONDS);
         
         final String goodServerURI = getServerURI();
 
@@ -913,7 +929,8 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
 
         TStream<String> rcvd = subMqtt.subscribe(topic, qos);
 
-        completeAndValidate(subClientId, top, rcvd, mgen, SEC_TIMEOUT, msgs.toArray(new String[0]));
+        // add extra TMO delay. getting intermittent TMO failures
+        completeAndValidate(subClientId, top, rcvd, mgen, SEC_TIMEOUT + 5, msgs.toArray(new String[0]));
     }
     
     @Test
