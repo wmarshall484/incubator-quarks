@@ -16,7 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 */
-package quarks.execution.services;
+package quarks.execution.services.job;
 
 import java.util.Set;
 
