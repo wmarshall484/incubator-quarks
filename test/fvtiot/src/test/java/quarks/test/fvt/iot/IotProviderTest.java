@@ -54,13 +54,7 @@ public class IotProviderTest {
     @Test
     public void testIotProviderStartApplications() throws Exception {
 
-        IotProvider provider = new IotProvider() {
-
-            @Override
-            protected IotDevice createMessageHubDevice(Topology topology) {
-                return new EchoIotDevice(topology);
-            }
-        };
+        IotProvider provider = new IotProvider(EchoIotDevice::new);
         
         assertSame(provider.getApplicationService(),
                 provider.getServices().getService(ApplicationService.class));
