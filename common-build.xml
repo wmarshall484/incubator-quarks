@@ -34,6 +34,7 @@
    </condition>
 
    <property name="quarks.analytics" location="${target.java8.dir}/analytics"/>
+   <property name="quarks.apps" location="${target.java8.dir}/apps"/>
    <property name="quarks.connectors" location="${target.java8.dir}/connectors"/>
    <property name="quarks.console" location="${target.java8.dir}/console"/>
    <property name="quarks.utils" location="${target.java8.dir}/utils"/>

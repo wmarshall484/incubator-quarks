@@ -68,7 +68,7 @@ public class IotDevicePubSubTest {
                 s -> {JsonObject j = new JsonObject(); j.addProperty("v", s); return j;});       
         app1Iot.events(events, "ps1", QoS.FIRE_AND_FORGET);
         
-        TStream<JsonObject> echoedCmds = app1Iot.commands("ec_ps1");
+        TStream<JsonObject> echoedCmds = app1Iot.commands("ps1");
         
         TStream<String> ecs = echoedCmds.map(j -> j.getAsJsonObject(IotDevice.CMD_PAYLOAD).getAsJsonPrimitive("v").getAsString());
         Condition<List<String>> tcEcho = app1.getTester().streamContents(ecs, "A", "B", "C"); // Expect all tuples

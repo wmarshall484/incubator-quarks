@@ -19,9 +19,9 @@ under the License.
 
 package quarks.test.apps.iot;
 
-import static quarks.function.Functions.alwaysTrue;
 import static quarks.function.Functions.discard;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -38,7 +38,7 @@ import quarks.topology.plumbing.PlumbingStreams;
 /**
  * A test IotDevice that echos back every event as a command with command
  * identifier equal to the {@code cmdId} value in the event payload. If {@code cmdId}
- * is not set then {@code ec_eventId} is used.
+ * is not set then the event identifier is used.
  *
  */
 public class EchoIotDevice implements IotDevice {
@@ -78,7 +78,7 @@ public class EchoIotDevice implements IotDevice {
         if (evPayload.has(EVENT_CMD_ID))
             return evPayload.getAsJsonPrimitive(EVENT_CMD_ID).getAsString();
         else
-            return "ec_" + eventId;
+            return eventId;
     }
 
     @Override
@@ -109,20 +109,10 @@ public class EchoIotDevice implements IotDevice {
     @Override
     public TStream<JsonObject> commands(String... commands) {
         if (commands.length == 0)
-            return echoCmds.filter(alwaysTrue());
+            return echoCmds;
 
-        TStream<JsonObject> cmd0 = echoCmds
-                .filter(j -> j.getAsJsonPrimitive(CMD_ID).getAsString().equals(commands[0]));
-
-        if (commands.length == 1)
-            return cmd0;
-
-        Set<TStream<JsonObject>> cmds = new HashSet<>();
-        for (int i = 1; i < commands.length; i++) {
-            final int idx = i;
-            cmds.add(echoCmds.filter(j -> j.getAsJsonPrimitive(CMD_ID).getAsString().equals(commands[idx])));
-        }
-
-        return cmd0.union(cmds);
+        Set<String> cmds = new HashSet<>(Arrays.asList(commands));
+        return echoCmds.filter(cmd -> cmds.contains(cmd.getAsJsonPrimitive(CMD_ID).getAsString()));
     }
 }
+
