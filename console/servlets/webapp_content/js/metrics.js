@@ -4,6 +4,7 @@ var metricCWideWidth = 1160 - margin.left - margin.right;
 var svgCounterPadding = 40;
 var metricCHeight = 380 - margin.top - margin.bottom - svgCounterPadding;
 var runLineChart = null;
+var max_bucket_idx = null;
 
 stopLineChart = function() {
     if (runLineChart) {
@@ -42,6 +43,9 @@ getCounterMetricsForJob = function(callback, jobId, bIsNewJob) {
 					  data.push(obj);
 				   });
 				   metricData = data;
+				   if (bIsNewJob) {
+					   clearTupleMaxBucketIdx();
+				   }
 			   }
 			   callback(jobId, metricData, bIsNewJob);
 		  }
@@ -177,8 +181,26 @@ getTupleCountBucketsIndex = function(counterMetrics, aValue, bIsDerivedValue, is
 	}
 	returnObj.bucketIdx = whichBucket;
 	returnObj.buckets = buckets;
+	
+	if (max_bucket_idx === null) {
+		setTupleMaxBucketIdx(returnObj);
+	} else if (returnObj.buckets.length >= max_bucket_idx.buckets.length) {
+		setTupleMaxBucketIdx(returnObj);
+	}
 
 	return returnObj;	
+};
+
+setTupleMaxBucketIdx = function(nVal) {
+	max_bucket_idx = nVal;
+}
+
+getTupleMaxBucketIdx = function() {
+	return max_bucket_idx;
+};
+
+clearTupleMaxBucketIdx = function() {
+	max_bucket_idx = null;
 };
 
 
