@@ -12,7 +12,7 @@ import quarks.runtime.etiao.EtiaoJob;
 import quarks.runtime.etiao.graph.model.GraphType;
 
 /**
- * Implementation of a JMX control interface for a job.
+ * Implementation of a JMX control interface for the {@code EtiaoJob}.
  */
 public class EtiaoJobBean implements JobMXBean {
     private final EtiaoJob job;
@@ -44,5 +44,15 @@ public class EtiaoJobBean implements JobMXBean {
     public String graphSnapshot() {
         Gson gson = new GsonBuilder().create();
         return gson.toJson(new GraphType(job.graph()));
+    }
+
+    @Override
+    public Health getHealth() {
+        return Health.fromString(job.getHealth().name());
+    }
+
+    @Override
+    public String getLastError() {
+        return job.getLastError();
     }
 }
