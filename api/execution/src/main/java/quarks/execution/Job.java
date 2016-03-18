@@ -10,7 +10,7 @@ import java.util.concurrent.TimeoutException;
 
 /**
  * Actions and states for execution of a Quarks job.
- * <p>
+ * 
  * The interface provides the main job lifecycle control, taking on the following 
  * execution state values:
  *
@@ -31,8 +31,16 @@ import java.util.concurrent.TimeoutException;
  *      while the job is making a state transition after the client code 
  *      calls {@link #stateChange(Job.Action)}.</li>
  * <li> {@link #getNextState() Next} - The destination state while the job 
- *      is making a state transition; same as the {@link #getCurrentState() current} 
- *      state while the job state is stable (that is, not making a transition).</LI>
+ *      is making a state transition; same as the current state while 
+ *      the job state is stable (that is, not making a transition).</LI>
+ * </ul>
+ * 
+ * The interface provides access to the job nodes 
+ * {@linkplain #getHealth() health summary}, described by the following values:
+ * <ul>
+ * <li><b>HEALTHY</b>  All graph nodes in the job are healthy.</li>
+ * <li><b>UNHEALTHY</b>  At least one graph node in the job is stopped or 
+ *      stopping.</li>
  * </ul>
  */
 public interface Job {
@@ -53,20 +61,19 @@ public interface Job {
     }
 
     /**
-     * Retrieves the current state of this job.
-     *
-     * @return the current state.
+     * Enumeration for the summarized health indicator of the graph nodes.
      */
-    State getCurrentState();
-
-    /**
-     * Retrieves the next execution state when this job makes a state 
-     * transition.
-     *
-     * @return the destination state while in a state transition; 
-     *      otherwise the same as {@link #getCurrentState()}.
-     */
-    State getNextState();
+    public enum Health { 
+        /** 
+         * All graph nodes in the job are healthy.
+         */
+        HEALTHY,
+        /** 
+         * The execution of at least one graph node in the job has stopped
+         * because of an abnormal condition.
+         */
+        UNHEALTHY
+    }
 
     /**
      * Actions which trigger {@link Job.State} transitions.
@@ -85,7 +92,23 @@ public interface Job {
     }
 
     /**
-     * Initiates a {@link Job.State State} change.
+     * Retrieves the current state of this job.
+     *
+     * @return the current state.
+     */
+    State getCurrentState();
+
+    /**
+     * Retrieves the next execution state when this job makes a state 
+     * transition.
+     *
+     * @return the destination state while in a state transition; 
+     *      otherwise the same as {@link #getCurrentState()}.
+     */
+    State getNextState();
+
+    /**
+     * Initiates an execution state change.
      * 
      * @param action which triggers the state change.
      * @throws IllegalArgumentException if the job is not in an appropriate 
@@ -93,6 +116,20 @@ public interface Job {
      */
     void stateChange(Action action) throws IllegalArgumentException;
     
+    /**
+     * Returns the summarized health indicator of the graph nodes.  
+     * 
+     * @return the summarized Job node health.
+     */
+    Health getHealth();
+    
+    /**
+     * Returns the last error message caught by the current job execution.  
+     * @return the last error message or an empty string if no error has 
+     *      been caught.
+     */
+    String getLastError();
+
     /**
      * Returns the name of this job. The name may be set when the job is 
      * {@linkplain quarks.execution.Submitter#submit(java.lang.Object,com.google.gson.JsonObject) submitted}.
