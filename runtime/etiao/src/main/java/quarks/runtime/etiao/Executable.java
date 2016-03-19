@@ -16,6 +16,9 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import quarks.execution.Job;
 import quarks.execution.services.RuntimeServices;
 import quarks.execution.services.ServiceContainer;
@@ -36,7 +39,8 @@ public class Executable implements RuntimeServices {
     private final TrackingScheduledExecutor controlScheduler;
     private final TrackingScheduledExecutor userScheduler;
     private Throwable lastError;
-    
+    private static final Logger logger = LoggerFactory.getLogger(Executable.class);
+
     /**
      * Services specific to this job.
      */
@@ -63,8 +67,6 @@ public class Executable implements RuntimeServices {
         this.job = job;
         this.controlThreads = (threads != null) ? threads : Executors.defaultThreadFactory();
         this.completionHandler = new BiConsumer<Object, Throwable>() {
-            // XXX Use the project's BiConsumer (serializable) implementation to avoid 
-            // depending on Java 8's functional interfaces.
             private static final long serialVersionUID = 1L;
 
             /**
@@ -82,10 +84,9 @@ public class Executable implements RuntimeServices {
                     cleanup();
                 }
                 else if (job.getCurrentState() == Job.State.RUNNING &&
-                        (source == userScheduler || source == userThreads) && 
+                        (source == userScheduler || source == userThreads) &&
                         !hasActiveTasks()) {
-                    // TODO trace message, debugging
-                    // System.err.println("No more active user tasks");
+                    logger.info("No more active user tasks");
                 }
                 notifyCompleter();
             }  
@@ -167,8 +168,7 @@ public class Executable implements RuntimeServices {
                 invocation.close();
             }
             catch (Throwable t) {
-                // TODO log, don't rethrow
-                t.printStackTrace();
+                logger.debug("Exception caught while closing invocation {}: {}", invocation.getId(), t);
             } finally {
                 jobServices.cleanOplet(job.getId(), invocation.getId());
                 job.getContainerServices().cleanOplet(job.getId(), invocation.getId());
@@ -178,8 +178,7 @@ public class Executable implements RuntimeServices {
         notifyCompleter();
         List<Runnable> unfinished = controlScheduler.shutdownNow();
         if (!unfinished.isEmpty()) {
-            // TODO log warning if there are unfinished tasks
-            System.err.println("Could not finish " + unfinished.size() + " tasks");
+            logger.warn("Scheduler could not finish {} tasks", unfinished.size());
         }
     }
 
@@ -197,8 +196,7 @@ public class Executable implements RuntimeServices {
             try {
                 Future<Boolean> completed = completer.poll(10, TimeUnit.SECONDS);
                 if (completed == null) {
-                    // TODO logging
-                    System.err.println("Completer timed out");
+                    // TODO during close log exception and wait on the next task to complete
                     throw new RuntimeException(new TimeoutException());
                 }
                 else {
@@ -206,8 +204,7 @@ public class Executable implements RuntimeServices {
                         completed.get();
                     }
                     catch (ExecutionException | InterruptedException | CancellationException e) {
-                        // TODO logging
-                        e.printStackTrace();
+                        logger.error("Exception caught while invoking action: {}", e);
                     }
                 }
             } catch (InterruptedException e) {
@@ -215,7 +212,7 @@ public class Executable implements RuntimeServices {
             }
             remainingTasks--;
         }
-        
+
         job.onActionComplete();
     }
 

@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import quarks.execution.mbeans.JobMXBean;
 import quarks.execution.services.ControlService;
 import quarks.execution.services.ServiceContainer;
+import quarks.execution.services.job.JobRegistryService;
 import quarks.graph.spi.execution.AbstractGraphJob;
 import quarks.oplet.JobContext;
 import quarks.runtime.etiao.graph.DirectGraph;
@@ -31,6 +32,7 @@ public class EtiaoJob extends AbstractGraphJob implements JobContext {
     private final String topologyName;
     private String name;
     private final ServiceContainer containerServices;
+    private final JobRegistryService jobs;
 
     private static final AtomicInteger jobID = new AtomicInteger(0);
 
@@ -51,6 +53,10 @@ public class EtiaoJob extends AbstractGraphJob implements JobContext {
         ControlService cs = container.getService(ControlService.class);
         if (cs != null)
             cs.registerControl(JobMXBean.TYPE, getId(), getName(), JobMXBean.class, new EtiaoJobBean(this));
+        
+        this.jobs = container.getService(JobRegistryService.class);
+        if (jobs != null)
+            jobs.addJob(this);
     }
 
     /**
@@ -125,6 +131,7 @@ public class EtiaoJob extends AbstractGraphJob implements JobContext {
             throw new IllegalArgumentException(cause.name());
         else {
             setNextState(desiredState);
+            updateRegistry();
             return getCurrentState();
         }
     }
@@ -133,6 +140,11 @@ public class EtiaoJob extends AbstractGraphJob implements JobContext {
         return !inTransition() && stateMap.get(getCurrentState()).contains(desiredState);
     }
     
+    protected synchronized void completeTransition() {
+        super.completeTransition();
+        updateRegistry();
+    }
+
     void onActionComplete() {
         completeTransition();
     }
@@ -171,5 +183,11 @@ public class EtiaoJob extends AbstractGraphJob implements JobContext {
 
     public void setName(String name) {
         this.name = name;
+        updateRegistry();
+    }
+    
+    private void updateRegistry() {
+        if (jobs != null)
+            jobs.updateJob(this);
     }
 }

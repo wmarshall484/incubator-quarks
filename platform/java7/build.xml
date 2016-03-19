@@ -158,7 +158,18 @@
 		</sequential>
 	</macrodef>
 
-	<target name="test7.setup"
+        <target name="verify.java7.built">
+           <fail message="Java 7 jars not built!">
+             <condition>
+               <not>
+                 <available file="${quarks7.target}/lib" type="dir"/>
+               </not>
+             </condition>
+           </fail>
+        </target>
+
+        <!-- Ensure previous separate build steps built the Java 7 jars -->
+	<target name="test7.setup" depends="verify.java7.built"
     description="Setup  Quarks tests for the Java 7.Must be run with Java 8 to run retrolambda."
     >
 		<path id="quarks.java7.classpath">
@@ -194,7 +205,7 @@
 	</target>
 
 	<!-- this must be preceeded by test7.setup (run with a Java 8 vm) -->
-	<target name="test7.run"
+	<target name="test7.run" depends="verify.java7.built"
 	    description="Run Quarks tests for the Java 7. Should be run with JAVA_HOME pointing to a Java 7 virtual machine, though can also be run with Java 8"
 	    >
 		<retro7.test.run tdir="api/function"/>

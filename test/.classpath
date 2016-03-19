@@ -14,5 +14,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/apps"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/runtime"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/provider_iot"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

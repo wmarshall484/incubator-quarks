@@ -51,7 +51,6 @@ d3.legend = function(g, chartSvg, pItems, legendTitle) {
 				   }
 			   });
     else  {
-    	
 	    items = d3.entries(items).sort(
 	    		function(a,b) {
 	    			if (a.key < b.key) {
@@ -71,7 +70,7 @@ d3.legend = function(g, chartSvg, pItems, legendTitle) {
         .call(function(d) { d.enter().append("text")})
         .call(function(d) { d.exit().remove()})
         .attr("y",function(d,i) { return i+"em"})
-        .attr("x","1em")
+        .attr("x","1.5em")
         .text(function(d) {
         	return d.key;
         	})
@@ -87,15 +86,14 @@ d3.legend = function(g, chartSvg, pItems, legendTitle) {
         .call(function(d) { d.exit().remove()})
         .attr("y", function(d,i) { 
         	return i-0.75+ "em"}) 
-        .attr("width", 8)                          
+        .attr("width", 10)                          
         .attr("height", 8)
         .style("fill",function(d) {
         	return d.value.color
         	})
         .style("stroke", "none")
         .style("fill-opacity", legendOpacity);
-    } else if (legendTitle && legendTitle === "Oplet kind"){
-    	
+    } else if (legendTitle && legendTitle === "Oplet kind" || legendTitle === "Tuple count"){
     	liG.selectAll("g")
     		.data(items, function(d) { 
     			return d.key;
@@ -115,7 +113,7 @@ d3.legend = function(g, chartSvg, pItems, legendTitle) {
         .attr("y", function(d,i) {
         	count++;
         	return i-0.75+ "em"}) 
-        .attr("width", 8)                          
+        .attr("width", legendTitle === "Oplet kind" ? 8 : 10)                          
         .attr("height", 8)
         .style("fill",function(d) {
         	return d.value.color

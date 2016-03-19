@@ -31,11 +31,6 @@ d3.select("#jobs")
   resetAll(true);
 });
 
-d3.select("#tags")
-.on("change", function(){
-	resetAll(false);
-});
-
 d3.select("#layers")
 .on("change", function() {
     layerVal = this.value;
@@ -469,7 +464,6 @@ var renderGraph = function(jobId, counterMetrics, bIsNewJob) {
 		.layout(32);
   
   refreshedRowValues = sankey.nodes();
-  var tupleMaxBucketsIdx = null;
 
   var link = svg.append("g").selectAll(".link")
   			.data(graph.edges)
@@ -478,7 +472,7 @@ var renderGraph = function(jobId, counterMetrics, bIsNewJob) {
   			.style("stroke", function(d){
   				var matchedTags = [];
   				
-  				if (d.tags && selectedTags.length > 0 && layer !== "flow") {
+  				if (d.tags && selectedTags.length > 0) {
   					var tags = d.tags;
   					/*
   					 * if this stream has multiple tags on it
@@ -506,30 +500,16 @@ var renderGraph = function(jobId, counterMetrics, bIsNewJob) {
   					} else {
   						return d.color = "#d3d3d3";
   					}
-  				} else if (layer ==="flow" && (counterMetrics && counterMetrics.length > 0)) {
-  					var tupleValue = parseInt(d.value, 10);
-  					var derived = d.derived ? true : false;
-  					var isZero = d.realValue === 0 && d.value === 0.45 ? true : false;
-  					tupleBucketsIdx = getTupleCountBucketsIndex(counterMetrics, tupleValue, derived, isZero);
-  					if (tupleMaxBucketsIdx === null) {
-  						tupleMaxBucketsIdx = tupleBucketsIdx;
-  					} else if (tupleBucketsIdx.buckets.length >= tupleMaxBucketsIdx.buckets.length) {
-  						tupleMaxBucketsIdx = tupleBucketsIdx;
-  					}
-
-  					var myScale = d3.scale.linear().domain([0,tupleBucketsIdx.buckets.length -1]).range(tupleColorRange);
-  					return d.color = myScale(tupleBucketsIdx.bucketIdx); 
   				} else {
   					// layer is not flow, but no stream tags available
   					return d.color = "#d3d3d3";
   				}
-  				
   			})
   			.style("stroke-opacity", function(d){
   				if (d.tags && selectedTags.length > 0) {
   					// if the link has this color it is not the selected tag, make it more transparent
   					if (d.color === "#d3d3d3") {
-  						return 0.2;
+  						return 0.6;
   					}
   				}
   			})
@@ -596,13 +576,15 @@ var renderGraph = function(jobId, counterMetrics, bIsNewJob) {
   		if (!opletColor[d.invocation.kind]) {
   			opletColor[d.invocation.kind] = color20(d.invocation.kind);
   		}
-  		return getVertexFillColor(layer, d);  		
+  		
+  		return getVertexFillColor(layer, d, counterMetrics);
+  	
   	})
   	.attr("data-legend", function(d) {
   		return getLegendText(layer, d);
   	 })
   	.style("stroke", function(d) {
-  		return getLegendColor(layer, d);
+  		return getLegendColor(layer, d, counterMetrics);
 
   	});
   	
@@ -620,13 +602,13 @@ var renderGraph = function(jobId, counterMetrics, bIsNewJob) {
   		if (!opletColor[d.invocation.kind]) {
   			opletColor[d.invocation.kind] = color20(d.invocation.kind);
   		}
-  		return getVertexFillColor(layer, d);  		
+  		return getVertexFillColor(layer, d, counterMetrics);  		
   	})
   	.attr("data-legend", function(d) {
   		return getLegendText(layer, d);
   	 })
   	.style("stroke", function(d) {
-  		return getLegendColor(layer, d);
+  		return getLegendColor(layer, d, counterMetrics);
 
   	});
   
@@ -722,11 +704,23 @@ var renderGraph = function(jobId, counterMetrics, bIsNewJob) {
 		  .attr("transform","translate(10,10)")
 		  .style("font-size","11px")
 		  .call(d3.legend, svg, null, "Oplet kind"); 
- }
+  }
+  
+  if (layer === "flow" && counterMetrics.length > 0) {
+	  var maxBucketIdx = getTupleMaxBucketIdx();
+	  var bucketScale = d3.scale.linear().domain([0,maxBucketIdx.buckets.length - 1]).range(tupleColorRange);
+	  var flowItems = getFormattedTupleLegend(maxBucketIdx, bucketScale);
+	  legend = svgLegend
+	  .append("g")
+	  .attr("class","legend")
+	  .attr("transform","translate(10,10)")
+	  .style("font-size","11px")
+	  .call(d3.legend, svg, flowItems, "Tuple count");
+  } 
   
   var showTagsChecked = $("#showTags").prop("checked");
   // add a second legend for tags, even if opletColor has been chosen
-  if (tagsArray.length > 0 && layer !== "flow" && showTagsChecked) {
+  if (tagsArray.length > 0  && showTagsChecked) {
 	  var tItems = getFormattedTagLegend(tagsArray);
 	  if (!svgLegend.select("g").empty()) {
 		  // get the dimensions of the other legend and append this one after it
@@ -746,16 +740,9 @@ var renderGraph = function(jobId, counterMetrics, bIsNewJob) {
 		  .style("font-size","11px")
 		  .call(d3.legend, svg, tItems, "Stream tags");
   	}
-  } else if (layer === "flow" && counterMetrics.length > 0) {
-	  var bucketScale = d3.scale.linear().domain([0,tupleMaxBucketsIdx.buckets.length - 1]).range(tupleColorRange);
-	  var flowItems = getFormattedTupleLegend(tupleMaxBucketsIdx, bucketScale);
-	  legend = svgLegend
-	  .append("g")
-	  .attr("class","legend")
-	  .attr("transform","translate(10,10)")
-	  .style("font-size","11px")
-	  .call(d3.legend, svg, flowItems, "Tuple count");
   } 
+  
+
   if (bIsNewJob !== undefined) {
 	  fetchAvailableMetricsForJob(bIsNewJob);
   } else {

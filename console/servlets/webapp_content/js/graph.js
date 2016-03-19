@@ -41,15 +41,20 @@ addValuesToEdges = function(graph, counterMetrics) {
 	return graph;
 };
 
-getVertexFillColor = function(layer, data) {
+getVertexFillColor = function(layer, data, cMetrics) {
 	if (layer === "opletColor" || layer === "static") {
 		return opletColor[data.invocation.kind];
 	} else if (layer === "flow") {
-		// return a muted color if it is a counter op
+		var tupleValue = parseInt(data.value, 10);
+		var derived = data.derived ? true : false;
+		var isZero = data.realValue === 0 && d.value === 0.45 ? true : false;
+		var tupleBucketsIdx = getTupleCountBucketsIndex(cMetrics, tupleValue, derived, isZero);
+
+		var myScale = d3.scale.linear().domain([0,tupleBucketsIdx.buckets.length -1]).range(tupleColorRange);
 		if (data.invocation.kind.toUpperCase().endsWith("COUNTEROP")) {
 			return "#c7c7c7";
 		} else {
-			return d3.rgb("rgb(31, 119, 180)");
+			return myScale(tupleBucketsIdx.bucketIdx);
 		}
 	} else {
 		return colorMap[data.id.toString()];
@@ -120,13 +125,10 @@ parseOpletKind = function(kind) {
 	return returnName;
 };
 
-getLegendColor = function(layer, d) {
-	return getVertexFillColor(layer, d);
+getLegendColor = function(layer, d, cMetrics) {
+	return getVertexFillColor(layer, d, cMetrics);
 };
 
-getEdgeColor = function(layer) {
-	
-};
 
 setVertexColorByFlowRate = function() {
 	

@@ -94,6 +94,7 @@
         <ant dir="runtime/etiao" target="@{target}" useNativeBasedir="true"/>
         <ant dir="runtime/jmxcontrol" target="@{target}" useNativeBasedir="true"/>
         <ant dir="runtime/jsoncontrol" target="@{target}" useNativeBasedir="true"/>
+        <ant dir="runtime/jobregistry" target="@{target}" useNativeBasedir="true"/>
         <ant dir="utils/metrics" target="@{target}" useNativeBasedir="true"/>
 
         <ant dir="providers/direct" target="@{target}" useNativeBasedir="true"/>
@@ -116,6 +117,7 @@
         <ant dir="console/servlets" target="@{target}" useNativeBasedir="true" />
         <ant dir="apps/iot" target="@{target}" useNativeBasedir="true" />
         <ant dir="providers/development" target="@{target}" useNativeBasedir="true"/>
+        <ant dir="providers/iot" target="@{target}" useNativeBasedir="true"/>
         <ant dir="analytics/math3" target="@{target}" useNativeBasedir="true"/>
         <ant dir="analytics/sensors" target="@{target}" useNativeBasedir="true"/>
         <ant dir="samples/utils" target="@{target}" useNativeBasedir="true"/>

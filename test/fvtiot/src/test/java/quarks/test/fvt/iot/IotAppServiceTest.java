@@ -31,11 +31,10 @@ import quarks.execution.services.ControlService;
 import quarks.providers.direct.DirectProvider;
 import quarks.runtime.appservice.AppService;
 import quarks.runtime.jsoncontrol.JsonControlService;
-import quarks.topology.Topology;
 import quarks.topology.mbeans.ApplicationServiceMXBean;
 import quarks.topology.services.ApplicationService;
 
-public class IotAppService {
+public class IotAppServiceTest {
     
     @Test
     public void testAppService() throws Exception {
@@ -46,25 +45,27 @@ public class IotAppService {
         provider.getServices().addService(ControlService.class, control);
         
         ApplicationService apps = AppService.createAndRegister(provider, provider);
+        provider.getServices().addService(ApplicationService.class, apps);
         
-        apps.registerTopology("AppOne", IotAppService::createApplicationOne);
+        IotTestApps.registerApplications(provider);       
         
-
-        JsonObject submitAppOne = new JsonObject();   
-        submitAppOne.addProperty(JsonControlService.TYPE_KEY, ApplicationServiceMXBean.TYPE);
-        submitAppOne.addProperty(JsonControlService.ALIAS_KEY, ApplicationService.ALIAS);
-        JsonArray args = new JsonArray();
-        args.add(new JsonPrimitive("AppOne"));
-        args.add(new JsonObject());
-        submitAppOne.addProperty(JsonControlService.OP_KEY, "submit");
-        submitAppOne.add(JsonControlService.ARGS_KEY, args);
+        JsonObject submitAppOne = newSubmitRequest("AppOne");
         
         JsonElement crr = control.controlRequest(submitAppOne);
         
         assertTrue(crr.getAsBoolean());
     }
     
-    public static void createApplicationOne(Topology topology, JsonObject config) {
-        topology.strings("A", "B", "C").print();
+    public static JsonObject newSubmitRequest(String name) {
+        JsonObject submitApp = new JsonObject();   
+        submitApp.addProperty(JsonControlService.TYPE_KEY, ApplicationServiceMXBean.TYPE);
+        submitApp.addProperty(JsonControlService.ALIAS_KEY, ApplicationService.ALIAS);
+        JsonArray args = new JsonArray();
+        args.add(new JsonPrimitive(name));
+        args.add(new JsonObject());
+        submitApp.addProperty(JsonControlService.OP_KEY, "submit");
+        submitApp.add(JsonControlService.ARGS_KEY, args); 
+        
+        return submitApp;
     }
 }

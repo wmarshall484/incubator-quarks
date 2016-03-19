@@ -48,6 +48,11 @@ import quarks.topology.TopologyElement;
  * </P>
  */
 public class PublishSubscribe {
+    
+    /**
+     * Topics that start with {@value} are reserved for use by Quarks.
+     */
+    public static final String RESERVED_TOPIC_PREFIX= "quarks/";
 
     /**
      * Publish this stream to a topic.

@@ -14,11 +14,18 @@ $( "#dialog" ).dialog({
 	autoOpen: false,
 	dialogClass: "no-close-dialog",
 	modal: true,
-	buttons: [ { text: "Done", click: function(){
-					$( this ).dialog( "close" );
-					// rerender the graph with the selected tags
-				}}
-	          ],
+	buttons: [ { text: "Done", 
+		click: function(){
+			$( this ).dialog( "close" );
+		    clearInterval(run);
+		    clearTableGraphs();
+
+			d3.select("#graphLoading").style("display", "none");
+			var selectedJob = d3.select("#jobs").node().value;
+			getCounterMetricsForJob(renderGraph, selectedJob);
+			startGraph(refreshInt);
+		}
+	}],
 	})
 	.css("font-size", "0.8em");
 
@@ -37,14 +44,19 @@ d3.select("#showTags")
 		showAllTags.property("disabled", true);
 		selectTagButton.property("disabled", true);	
 	}
-	resetAll();
+    clearInterval(run);
+    clearTableGraphs();
+
+	d3.select("#graphLoading").style("display", "none");
+	var selectedJob = d3.select("#jobs").node().value;
+	getCounterMetricsForJob(renderGraph, selectedJob);
+	startGraph(refreshInt);
 });
 
 showAllTags.on("change", function() {
 	if (this.checked === true) {
 		selectTagButton.property("disabled", true);
 		// render the graph with all the tags shown
-		resetAll();
 	} else {
 		// enable it
 		selectTagButton.property("disabled", false);
@@ -57,8 +69,14 @@ showAllTags.on("change", function() {
 			var selectedValue = firstOpt.prop("value");
 			$("#tags").val([selectedValue]);
 		}
-		resetAll();
 	}
+    clearInterval(run);
+    clearTableGraphs();
+
+	d3.select("#graphLoading").style("display", "none");
+	var selectedJob = d3.select("#jobs").node().value;
+	getCounterMetricsForJob(renderGraph, selectedJob);
+	startGraph(refreshInt);
 });
 
 selectTagButton.on("click", function() {
@@ -105,11 +123,7 @@ showTagDiv = function(bNewJob) {
 	// check which layer is selected, if type is not tuple count, display tag info
 	var layer = d3.select("#layers").property("value");
 	var tagsDiv = d3.select("#tagsDiv");
-	if (layer === "flow") {
-		tagsDiv.style("visibility", "hidden");
-		return;
-	}
-	
+
 	if (!tagsArray || tagsArray.length === 0) {
 		tagsDiv.style("visibility", "hidden");
 		return;
