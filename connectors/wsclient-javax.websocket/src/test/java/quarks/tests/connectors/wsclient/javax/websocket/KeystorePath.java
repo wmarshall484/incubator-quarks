@@ -5,22 +5,25 @@
 package quarks.tests.connectors.wsclient.javax.websocket;
 
 import java.io.File;
+import java.nio.file.Path;
 
 public class KeystorePath {
     
     public static String getStorePath(String storeLeaf) {
-        String path = System.getProperty("user.dir");
+        String pathStr = System.getProperty("user.dir");
         // Under eclipse/junit: path to project in repo: <repo>/connectors
         // Under ant/junit: <repo>/connectors/<project>/unittests/testrunxxxxxxx
-        if (!path.endsWith("/connectors")) {
-            int indx = path.indexOf("/connectors/");
-            indx += "/connectors/".length() - 1;
-            path = path.substring(0, indx);
-        }
-        path += "/wsclient-javax.websocket/src/test/keystores/" + storeLeaf;
-        if (!new File(path).exists())
+        // Get the path to the <repo>/connectors
+        Path path = new File(pathStr).toPath();
+        do {
+            if (path.endsWith("connectors"))
+                break;
+            path = path.getParent();
+        } while (path.getNameCount() > 0);
+        path = path.resolve("wsclient-javax.websocket/src/test/keystores/" + storeLeaf);
+        if (!path.toFile().exists())
             throw new IllegalArgumentException("File does not exist: "+path);
-        return path;
+        return path.toString();
     }
 
 }
