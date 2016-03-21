@@ -238,7 +238,8 @@ public class MqttDevice implements IotDevice {
                             jo.addProperty(CMD_PAYLOAD, new String(payload, StandardCharsets.UTF_8));
                         }
                         return jo;
-                    });
+                    })
+                    .tag("allDeviceCmds");
         }
         return commandStream;
     }
