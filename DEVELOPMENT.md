@@ -1,10 +1,12 @@
-## Development of Quarks
+## Development of Apache Quarks
 
-This describes development of Quarks itself, not how to develop Quarks applications.
-*ADD LINK TO GETTING STARTED*
+*Apache Quarks is an effort undergoing incubation at The Apache Software Foundation (ASF), sponsored by the Incubator PMC. Incubation is required of all newly accepted projects until a further review indicates that the infrastructure, communications, and decision making process have stabilized in a manner consistent with other successful ASF projects. While incubation status is not necessarily a reflection of the completeness or stability of the code, it does indicate that the project has yet to be fully endorsed by the ASF.*
+
+This describes development of Apache Quarks itself, not how to develop Quarks applications.
+ * See http://quarks.incubator.apache.org/docs/quarks-getting-started for getting started using Quarks
 
 The Quarks community welcomes contributions, please *Get Involved*!
-*ADD LINK TO GET INVOLVED*
+ * http://quarks.incubator.apache.org/docs/community
 
 ### Setup
 
