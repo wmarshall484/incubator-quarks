@@ -190,4 +190,12 @@ public class EtiaoJob extends AbstractGraphJob implements JobContext {
         if (jobs != null)
             jobs.updateJob(this);
     }
+    
+    void updateHealth(Throwable t) {
+        if (t != null) {
+            setHealth(Health.UNHEALTHY);
+            setLastError(t.getMessage());
+        }
+        updateRegistry();
+    }
 }

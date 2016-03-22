@@ -100,9 +100,6 @@ public class ConnectorStream<G extends Topology, T> extends AbstractTStream<G, T
     public <E extends Enum<E>> EnumMap<E,TStream<T>> split(Class<E> enumClass, Function<T, E> splitter) {
 
         E[] es = enumClass.getEnumConstants();
-        if(es == null) {
-            throw new IllegalArgumentException("Class object does not represent an enum type");
-        }
 
         List<TStream<T>> outputs = split(es.length, t -> {
             E split = splitter.apply(t);

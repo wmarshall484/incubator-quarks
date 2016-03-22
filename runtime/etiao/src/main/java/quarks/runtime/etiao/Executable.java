@@ -81,6 +81,7 @@ public class Executable implements RuntimeServices {
             public void accept(Object source, Throwable t) {
                 if (t != null) {
                     Executable.this.setLastError(t);
+                    job.updateHealth(t);
                     cleanup();
                 }
                 else if (job.getCurrentState() == Job.State.RUNNING &&

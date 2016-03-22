@@ -13,10 +13,14 @@ import quarks.execution.Job;
 public abstract class AbstractGraphJob implements Job {
     private State currentState;
     private State nextState;
-    
+    private Health health;
+    private String lastError;
+
     protected AbstractGraphJob() {
         this.currentState = State.CONSTRUCTED;
         this.nextState = currentState;
+        this.health = Health.HEALTHY;
+        this.lastError = new String();
     }
 
     @Override
@@ -32,6 +36,16 @@ public abstract class AbstractGraphJob implements Job {
     @Override
     public abstract void stateChange(Action action);
     
+    @Override
+    public Health getHealth() {
+        return health;
+    }
+
+    @Override
+    public String getLastError() {
+        return lastError;
+    }
+
     protected synchronized boolean inTransition() {
         return getNextState() != getCurrentState();
     }
@@ -44,5 +58,13 @@ public abstract class AbstractGraphJob implements Job {
         if (inTransition()) {
             currentState = nextState;
         }
+    }
+    
+    protected void setHealth(Health value) {
+        this.health = value;
+    }
+    
+    protected void setLastError(String value) {
+        this.lastError = value;
     }
 }
