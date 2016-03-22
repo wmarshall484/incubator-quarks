@@ -6,6 +6,7 @@ package quarks.tests.connectors.wsclient.javax.websocket;
 
 import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class KeystorePath {
     
@@ -19,8 +20,9 @@ public class KeystorePath {
             if (path.endsWith("connectors"))
                 break;
             path = path.getParent();
-        } while (path.getNameCount() > 0);
-        path = path.resolve("wsclient-javax.websocket/src/test/keystores/" + storeLeaf);
+        } while (path != null);
+        path = path.resolve(Paths.get("wsclient-javax.websocket",
+                            "src", "test", "keystores", storeLeaf));
         if (!path.toFile().exists())
             throw new IllegalArgumentException("File does not exist: "+path);
         return path.toString();
