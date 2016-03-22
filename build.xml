@@ -295,9 +295,9 @@
         </fileset>
       </classpath>
 
-       <doctitle>Quarks v${quarks.version}</doctitle>
-       <footer><![CDATA[<a href="http://quarks-edge.github.io">quarks-edge community @ github.com</a>]]></footer>
-       <bottom>Copyright IBM 2015,2016 - ${commithash}-${DSTAMP}-${TSTAMP}</bottom>
+       <doctitle>Apache Quarks (incubating) v${quarks.version}</doctitle>
+       <footer><![CDATA[<a href="http://quarks.incubator.apache.org">Apache Quarks (incubating)</a>]]></footer>
+       <bottom>Copyright &amp;copy; 2016 The Apache Software Foundation. All Rights Reserved - ${commithash}-${DSTAMP}-${TSTAMP}</bottom>
        <group title="Quarks API" packages="quarks.execution,quarks.function,quarks.topology,quarks.topology.*,quarks.execution.*"/>
        <group title="Quarks Providers" packages="quarks.providers.*"/>
        <group title="Quarks Connectors" packages="quarks.connectors.*"/>

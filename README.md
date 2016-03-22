@@ -1,9 +1,11 @@
-# Welcome to Quarks!
+# Welcome to Apache Quarks!
 
-Quarks is an open source programming model and runtime for edge devices that enables you to analyze data and events at the device.
+*Apache Quarks is an effort undergoing incubation at The Apache Software Foundation (ASF), sponsored by the Incubator PMC. Incubation is required of all newly accepted projects until a further review indicates that the infrastructure, communications, and decision making process have stabilized in a manner consistent with other successful ASF projects. While incubation status is not necessarily a reflection of the completeness or stability of the code, it does indicate that the project has yet to be fully endorsed by the ASF.*
 
-We are transitioning to an incubator project (podling) at the Apache Software Foundation. Please joins us by subscribing to the
-developer mailing list [dev at quarks.incubator.apache.org](http://mail-archives.apache.org/mod_mbox/incubator-quarks-dev/).
+Apache Quarks is an open source programming model and runtime for edge devices that enables you to analyze data and events at the device.
+
+Please joins us by subscribing to the developer mailing list
+[dev at quarks.incubator.apache.org](http://mail-archives.apache.org/mod_mbox/incubator-quarks-dev/).
 To subscribe, send an email to `dev-subscribe at quarks.incubator.apache.org`.
 
 We want to build a community around Quarks for analytics at the edge, so welcome contributions to any aspect of Quarks including:
@@ -67,7 +69,7 @@ Your back-end systems can also use analytics to interact with and control edge d
 * A traffic alert system can send an alert to vehicles that are heading towards an area where an accident occurred
 * A vehicle monitoring system can reduce the maximum engine revs to reduce the chance of failure before the next scheduled service if it detects patterns that indicate a potential problem
 
-See http://quarks-edge.github.io/ for more information on all aspects of Quarks!
+See http://quarks.incubator.apache.org/ for more information on all aspects of Quarks!
 
 Additional information for how to contribute to the development of Quarks can also be found [here](DEVELOPMENT.md)
 
