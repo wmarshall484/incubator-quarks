@@ -20,7 +20,10 @@ package quarks.tests.connectors.wsclient.javax.websocket;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assume.assumeTrue;
 
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -692,6 +695,24 @@ public class WebSocketClientTest extends ConnectorTestBase {
         completeAndValidate("", t, rcvd, SEC_TMO, new String[0]);  //rcv nothing
     }
     
+    private void skipTestIfCantConnect(Properties config) throws Exception {
+        String wsUri = config.getProperty("ws.uri");
+        // Skip tests if the WebSocket server can't be contacted.
+        try {
+            URI uri = new URI(wsUri);
+            int port = uri.getPort();
+            if (port == -1)
+                port = uri.getScheme().equals("ws") ? 80 : 443;
+            Socket s = new Socket();
+            s.connect(new InetSocketAddress(uri.getHost(), port), 5*1000/*cn-timeout-msec*/);
+            s.close();
+        } catch (Exception e) {
+            System.err.println("Unable to connect to WebSocket server "+wsUri+" : "+e.getMessage());
+            e.printStackTrace();
+            assumeTrue(false);
+        }
+    }
+    
     @Test
     public void testPublicServer() throws Exception {
         Topology t = newTopology("testPublicServer");
@@ -701,6 +722,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
         
         Properties config = getConfig();
         config.setProperty("ws.uri", "ws://echo.websocket.org");
+        skipTestIfCantConnect(config);
 
         // System.setProperty("javax.net.debug", "ssl"); // or "all"; "help" for full list
         
@@ -732,6 +754,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
         
         Properties config = getConfig();
         config.setProperty("ws.uri", "wss://echo.websocket.org");
+        skipTestIfCantConnect(config);
 
         // System.setProperty("javax.net.debug", "ssl"); // or "all"; "help" for full list
         
@@ -764,6 +787,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
 
         Properties config = getConfig();
         config.setProperty("ws.uri", "wss://echo.websocket.org");
+        skipTestIfCantConnect(config);
 
         SslSystemPropMgr sslProps = new SslSystemPropMgr();
         try {
