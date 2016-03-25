@@ -509,20 +509,23 @@ public class WebSocketClientTest extends ConnectorTestBase {
          s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);
          
          // send one, two, restart the server to force reconnect, send the next
-         AtomicInteger cnt = new AtomicInteger();
+         AtomicInteger numSent = new AtomicInteger();
+         int restartAfterTupleCnt = 2;
+         CountDownLatch latch = new CountDownLatch(restartAfterTupleCnt);
          s = s.filter(tuple -> {
-             if (cnt.getAndIncrement() != 2)
+             if (numSent.getAndIncrement() != restartAfterTupleCnt )
                  return true;
              else {
-                 // delay so we rcv the prior echo'd tuple
-                 try { Thread.sleep(2000); } catch (Exception e) {};
+                 // to keep validation sane/simple wait till the tuples are rcvd before restarting
+                 try { latch.await(); } catch (Exception e) {};
                  restartEchoer(2/*secDelay*/);
                  return true;
              }
          });
          wsClient.sendString(s);
          
-         TStream<String> rcvd = wsClient.receiveString();
+         TStream<String> rcvd = wsClient.receiveString()
+                                 .peek(tuple -> latch.countDown());
          
          completeAndValidate("", t, rcvd, SEC_TMO + 10, expected);
      }
