@@ -16,7 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 */
-package quarks.test.samples.apps;
+package quarks.test.analytics.sensors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -30,8 +30,8 @@ import org.junit.Test;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import quarks.analytics.sensors.Range;
 import quarks.function.Supplier;
-import quarks.samples.apps.Range;
 
 /**
  * Test Range.
