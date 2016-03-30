@@ -60,12 +60,27 @@ public class MqttConfig {
      * <li>mqtt.connectionTimeoutSec</li>
      * <li>mqtt.idleTimeoutSec</li>
      * <li>mqtt.keepAliveSec</li>
+     * <li>mqtt.keyStore - optional. Only used with "ssl:" serverURL when the
+     *     server is configured for client auth.
+     *     Path to key store file in JKS format.
+     *     The first key in the store is used.  The key must have the same
+     *     password as the store if any.
+     *     If not set, the standard JRE and javax.net.ssl system properties
+     *     control the SSL behavior.</li>
+     * <li>mqtt.keyStorePassword - required if mqtt.keyStore is set.</li>
      * <li>mqtt.password</li>
      * <li>mqtt.persistence</li>
      * <li>mqtt.serverURLs - csv list of MQTT URLs of the form: 
-     *                          {@code tcp://<host>:<port>}
+     *                          {@code tcp://<host>:<port>} or
+     *                          {@code ssl://<host>:<port>}
      *    </li>
      * <li>mqtt.subscriberIdleReconnectIntervalSec</li>
+     * <li>mqtt.trustStore - optional. Only used with "ssl:" serverURL.
+     *     Path to trust store file in JKS format.
+     *     If not set, the standard JRE and javax.net.ssl system properties
+     *     control the SSL behavior.
+     *     Generally not required if server has a CA-signed certificate.</li>
+     * <li>mqtt.trustStorePassword - required if mqtt.trustStore is set</li>
      * <li>mqtt.userName</li>
      * <li>mqtt.will - JSON for with the following properties:
      *     <ul>
@@ -96,6 +111,15 @@ public class MqttConfig {
                 val -> config.setIdleTimeout(Integer.valueOf(val)));
         setConfig(p, "mqtt.keepAliveSec", 
                 val -> config.setKeepAliveInterval(Integer.valueOf(val)));
+        setConfig(p, "mqtt.keyStore", 
+                val -> config.setKeyStore(val));
+        setConfig(p, "mqtt.keyStorePassword", 
+                val -> config.setKeyStorePassword(val.toCharArray()));
+// paho MqttConnectOptions.setSslProperties() doesn't support this control
+//        setConfig(p, "mqtt.keyPassword", 
+//                val -> config.setKeyPassword(val.toCharArray()));
+//        setConfig(p, "mqtt.keyCertificateAlias", 
+//                val -> config.setKeyCertificateAlias(val));
         setConfig(p, "mqtt.password", 
                 val -> config.setPassword(val.toCharArray()));
         setConfig(p, "mqtt.persistence", 
@@ -104,6 +128,10 @@ public class MqttConfig {
                 val -> config.setServerURLs(val.split(",")));
         setConfig(p, "mqtt.subscriberIdleReconnectIntervalSec", 
                 val -> config.setSubscriberIdleReconnectInterval(Integer.valueOf(val)));
+        setConfig(p, "mqtt.trustStore", 
+                val -> config.setTrustStore(val));
+        setConfig(p, "mqtt.trustStorePassword", 
+                val -> config.setTrustStorePassword(val.toCharArray()));
         setConfig(p, "mqtt.userName", 
                 val -> config.setUserName(val));
         setConfig(p, "mqtt.will", val -> {
@@ -407,6 +435,146 @@ public class MqttConfig {
     public void setUserName(String userName) {
         options.setUserName(userName);
     }
+
+    /**
+     * @param name option name
+     * @param value option value. null to unset.
+     */
+    private void setSslOption(String name, String value) {
+        Properties props = options.getSSLProperties();
+        if (props == null)
+            props = new Properties();
+        if (value == null)
+            props.remove(name);
+        else
+            props.setProperty(name, value);
+        options.setSSLProperties(props);
+    }
+
+    /**
+     * @param name option name
+     * @return option's value. null if not set.
+     */
+    private String getSslOption(String name) {
+        Properties props = options.getSSLProperties(); 
+        return props == null ? null : props.getProperty(name);
+    }
+
+    /**
+     * Set the SSL trust store path.
+     * <p>
+     * Only used with "ssl:" serverURL.
+     * Path to trust store file in JKS format.
+     * If not set, the standard JRE and javax.net.ssl system properties
+     * control the SSL behavior.
+     * Generally not required if server has a CA-signed certificate.
+     * @param path the path. null to unset.
+     */
+    public void setTrustStore(String path) {
+        setSslOption("com.ibm.ssl.trustStore", path);
+    }
+
+    /**
+     * Get the SSL trust store path.
+     * @return the path. null if not set.
+     */
+    public String getTrustStore() {
+        return getSslOption("com.ibm.ssl.trustStore");
+    }
+    
+    /**
+     * Set the SSL trust store password.
+     * <p>
+     * Required if the trust store path is set.
+     * 
+     * @param password the password
+     */
+    public void setTrustStorePassword(char[] password) {
+        setSslOption("com.ibm.ssl.trustStorePassword", new String(password));
+    }
+
+    /**
+     * Get the SSL trust store path password.
+     * @return the password. null if not set.
+     */
+    public char[] getTrustStorePassword() {
+        String s = getSslOption("com.ibm.ssl.trustStorePassword");
+        return s == null ? null : s.toCharArray();
+    }
+    
+    /**
+     * Set the SSL key store path.
+     * <p>
+     * Only used with "ssl:" serverURL when the server is configured for
+     * client auth.
+     * Path to trust store file in JKS format.
+     * If not set, the standard JRE and javax.net.ssl system properties
+     * control the SSL behavior.
+     * @param path the path. null to unset.
+     */
+    public void setKeyStore(String path) {
+        setSslOption("com.ibm.ssl.keyStore", path);
+    }
+
+    /**
+     * Get the SSL trust store path.
+     * @return the path. null if not set.
+     */
+    public String getKeyStore() {
+        return getSslOption("com.ibm.ssl.keyStore");
+    }
+    
+    /**
+     * Set the SSL key store password.
+     * <p>
+     * Required if the key store path is set.
+     * 
+     * @param password the password. null to unset.
+     */
+    public void setKeyStorePassword(char[] password) {
+        setSslOption("com.ibm.ssl.keyStorePassword", new String(password));
+    }
+
+    /**
+     * Get the SSL key store path password.
+     * @return the password. null if not set.
+     */
+    public char[] getKeyStorePassword() {
+        String s = getSslOption("com.ibm.ssl.keyStorePassword");
+        return s == null ? null : s.toCharArray();
+    }
+
+// paho MqttConnectOptions.setSslProperties() doesn't support this control
+//    /**
+//     * Set the SSL key password.
+//     * <p>
+//     * Defaults to using the key store password if not set.
+//     * 
+//     * @param password the password. null to unset.
+//     */
+//    public void setKeyPassword(char[] password) {
+//        setSslOption("com.ibm.ssl.XXXX-NO-SUCH-KEY-XXXX.keyPassword", new String(password));
+//    }
+//    
+//    public char[] getKeyPassword() {
+//        String s = getSslOption("com.ibm.ssl.XXXX-NO-SUCH-KEY-XXXX.keyPassword");
+//        return s == null ? null : s.toCharArray();
+//    }
+
+ // paho MqttConnectOptions.setSslProperties() doesn't support this control
+//    /**
+//     * Set the SSL key certificate alias.
+//     * <p>
+//     * Defaults to using "default" if not set.
+//     * @param alias the alias. null to unset.
+//     */
+//    public void setKeyCertificateAlias(String alias) {
+//        setSslOption("com.ibm.ssl.XXXX-NO-SUCH-KEY-XXXX.keyCertificateAlias", alias);
+//    }
+//
+//    public String getKeyCertificateAlias() {
+//        return getSslOption("com.ibm.ssl.XXXX-NO-SUCH-KEY-XXXX.keyCertificateAlias");
+//    }
 
     /**
      * INTERNAL USE ONLY.

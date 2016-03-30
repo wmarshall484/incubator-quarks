@@ -34,7 +34,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
@@ -43,12 +45,15 @@ import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.gson.JsonObject;
+
 import quarks.connectors.mqtt.MqttConfig;
 import quarks.connectors.mqtt.MqttStreams;
 import quarks.function.BiFunction;
 import quarks.function.Function;
 import quarks.function.Supplier;
 import quarks.test.connectors.common.ConnectorTestBase;
+import quarks.test.connectors.common.KeystorePath;
 import quarks.topology.TSink;
 import quarks.topology.TStream;
 import quarks.topology.Topology;
@@ -64,33 +69,9 @@ import quarks.topology.tester.Condition;
  * <li>if the server is configured for authentication requiring
  * a username/pw, it is configured for userName="testUserName" and password="testUserNamePw"</li>
  * </ul>
- * 
- * The expected configuration can be overriden via the following
- * system properties:
- * <ul>
- * <li>{@code quarks.test.connectors.mqtt.serverURI} the
- *      MQTT broker serverURI. Defaults to "tcp:://localhost:1883"
- *      or "ssl:://localhost:8883" if sslAuthMode starts with ssl.</li>
- * <li>{@code quarks.test.connectors.mqtt.sslAuthMode} the
- *      authentication mode: null, "ssl", "sslClientAuth".
- *      Default is null - not ssl.</li>
- * <li>{@code quarks.test.connectors.mqtt.userID}
- *      Default is "testUserName"</li>
- * <li>{@code quarks.test.connectors.mqtt.password}
- *      Default is "testUserNamePw"</li>
- * <li>{@code quarks.test.connectors.mqtt.trustStore}
- *      trustStore pathname for sslAuthMode=ssl,sslClientAuth.</li>
- * <li>{@code quarks.test.connectors.mqtt.trustStorePassword}
- *      trustStore password for sslAuthMode=ssl,sslClientAuth.</li>
- * <li>{@code quarks.test.connectors.mqtt.keyStore}
- *      keyStore pathname for sslAuthMode=sslClientAuth.</li>
- * <li>{@code quarks.test.connectors.mqtt.keyStorePassword}
- *      keyStore password for sslAuthMode=sslClientAuth.</li>
- * </ul>
  */
 public class MqttStreamsTestManual extends ConnectorTestBase {
 
-    protected static final String PROP_PREFIX = "quarks.test.connectors.mqtt.";
     private static final int SEC_TIMEOUT = 15;
     private static final int PUB_DELAY_MSEC = 2*1000;
     private final String BASE_CLIENT_ID = "mqttStreamsTestClientId";
@@ -101,24 +82,27 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
     
     @Before
     public void setupAuthInfo() {
-        System.setProperty(PROP_PREFIX+"userID", TEST_USERNAME);
-        System.setProperty(PROP_PREFIX+"password", TEST_PASSWORD);
-        initAuthInfo("userID");
-        initAuthInfo("password");
-        initAuthInfo("trustStore");
-        initAuthInfo("trustStorePassword");
-        initAuthInfo("keyStore");
-        initAuthInfo("keyStorePassword");
+        authInfo.clear();
+        authInfo.put("userID", TEST_USERNAME);
+        authInfo.put("password", TEST_PASSWORD);
     }
-
-    private void initAuthInfo(String item) {
-        String val = System.getProperty(PROP_PREFIX + item);
-        if (val != null) {
-            authInfo.put(item, val);
-            if (item.toLowerCase().contains("password"))
-                val = "*****";
-            System.out.println("Using "+item+"="+val);
+    
+    protected void setSslAuthInfo(String sslAuthMode) {
+        String trustStore = getKeystorePath("clientTrustStore.jks");
+        authInfo.put("trustStore", trustStore);
+        authInfo.put("trustStorePassword", "passw0rd");
+        
+        if (sslAuthMode.equals("sslClientAuth")) {
+            String keyStore = getKeystorePath("clientKeyStore.jks");
+            authInfo.put("keyStore", keyStore);
+            authInfo.put("keyStorePassword", "passw0rd");
+            // authInfo.put("keyPassword", value);
+            // authInfo.put("keyCertificateAlias", value);
         }
+    }
+    
+    protected String getKeystorePath(String storeLeaf) {
+        return KeystorePath.getPath("connectors", "mqtt", "src", "test", "keystores", storeLeaf);
     }
     
     private MqttConfig newConfig(String serverURL, String clientId) {
@@ -127,15 +111,18 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
             config.setUserName(authInfo.get("userID"));
         if (authInfo.get("password") != null)
             config.setPassword(authInfo.get("password").toCharArray());
-        // TODO
-//        if (authInfo.get("trustStore") != null)
-//            ...;
-//        if (authInfo.get("trustStorePassword") != null)
-//            ...;
-//        if (authInfo.get("keyStore") != null)
-//            ...;
-//        if (authInfo.get("keyStorePassword") != null)
-//            ...;
+        if (authInfo.get("trustStore") != null)
+            config.setTrustStore(authInfo.get("trustStore"));
+        if (authInfo.get("trustStorePassword") != null)
+            config.setTrustStorePassword(authInfo.get("trustStorePassword").toCharArray());
+        if (authInfo.get("keyStore") != null)
+            config.setKeyStore(authInfo.get("keyStore"));
+        if (authInfo.get("keyStorePassword") != null)
+            config.setKeyStorePassword(authInfo.get("keyStorePassword").toCharArray());
+//        if (authInfo.get("keyPassword") != null)
+//            config.setKeyPassword(authInfo.get("keyPassword").toCharArray());
+//        if (authInfo.get("keyCertificateAlias") != null)
+//            config.setKeyCertificateAlias(authInfo.get("keyCertificateAlias"));
         return config;
     }
        
@@ -176,18 +163,21 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
     }
     
     protected String[] getMqttTopics() {
-        String csvTopics = System.getProperty(PROP_PREFIX+"csvTopics", "testTopic1,testTopic2");
+        String csvTopics = "testTopic1,testTopic2";
         String[] topics = csvTopics.split(",");
         return topics;
     }
     
     protected String getServerURI() {
-        String authMode = System.getProperty(PROP_PREFIX+"sslAuthMode", "");
-        String serverURI = System.getProperty(PROP_PREFIX+"serverURI",
-                authMode.startsWith("ssl")
-                    ? "ssl:://localhost:8883"
-                    : "tcp://localhost:1883");
-        return serverURI;
+        return "tcp://localhost:1883";
+    }
+    
+    protected String getSslServerURI() {
+        return "ssl://localhost:8883";
+    }
+    
+    protected String getSslClientAuthServerURI() {
+        return "ssl://localhost:8884";
     }
     
     @Test
@@ -659,6 +649,16 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
             assertEquals(12, config.getKeepAliveInterval());
         }
         {
+            assertEquals(null, config.getKeyStore());
+            config.setKeyStore("some/path");
+            assertEquals("some/path", config.getKeyStore());
+        }
+        {
+            assertArrayEquals(null, config.getKeyStorePassword());
+            config.setKeyStorePassword("xyzzy".toCharArray());
+            assertArrayEquals("xyzzy".toCharArray(), config.getKeyStorePassword());
+        }
+        {
             assertEquals(0, config.getIdleTimeout());
             config.setIdleTimeout(13);
             assertEquals(13, config.getIdleTimeout());
@@ -687,6 +687,16 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
             assertEquals(p, config.getPersistence());
         }
         {
+            assertEquals(null, config.getTrustStore());
+            config.setTrustStore("some/path");
+            assertEquals("some/path", config.getTrustStore());
+        }
+        {
+            assertArrayEquals(null, config.getTrustStorePassword());
+            config.setTrustStorePassword("xyzzy".toCharArray());
+            assertArrayEquals("xyzzy".toCharArray(), config.getTrustStorePassword());
+        }
+        {
             assertArrayEquals(new String[]{getServerURI()}, config.getServerURLs());
             String[] urls = new String[]{"tcp://localhost:30000","tcp://localhost:30001"};
             config.setServerURLs(urls);
@@ -709,6 +719,101 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
             assertEquals(1, config.getWillQOS());
             assertTrue(config.getWillRetained());
         }
+    }
+    
+    private static class PropertyTester {
+        private final Properties props;
+        private List<Checker> checkers = new ArrayList<>();
+
+        private static class Checker {
+            String name;
+            String value;
+            Supplier<String> getterFn;
+            public Checker(String name, String value, Supplier<String> getterFn) {
+                this.name = name;
+                this.value = value;
+                this.getterFn = getterFn;
+            }
+        }
+        
+        public PropertyTester(Properties props) {
+            this.props = props;
+        }
+        
+        public void add(String name, String value, Supplier<String> getterFn) {
+            props.setProperty(name, value);
+            checkers.add(new Checker(name, value, getterFn));
+        }
+        
+        public void checkAll() throws Exception {
+            for (Checker checker : checkers) {
+                String val = checker.getterFn.get();
+                //System.out.println("checking name="+checker.name+" exp="+checker.value+" act="+val);
+                assertEquals(checker.name, checker.value, val);
+            }
+        }
+    }
+    
+    @Test
+    public void testConfigFromProperties() throws Exception {
+        
+        Properties props = new Properties();
+        AtomicReference<MqttConfig> configRef = new AtomicReference<>();
+        
+        PropertyTester propTester = new PropertyTester(props);
+        
+        propTester.add("mqtt.actionTimeToWaitMillis", "10", 
+                () -> ((Long)configRef.get().getActionTimeToWaitMillis()).toString());
+        propTester.add("mqtt.cleanSession", "false",
+                () -> ((Boolean)configRef.get().isCleanSession()).toString());
+        propTester.add("mqtt.clientId", "xyzzy-clientId",
+                () -> configRef.get().getClientId());
+        propTester.add("mqtt.connectionTimeoutSec", "11", 
+                () -> ((Integer)configRef.get().getConnectionTimeout()).toString());
+        propTester.add("mqtt.idleTimeoutSec", "12", 
+                () -> ((Integer)configRef.get().getIdleTimeout()).toString());
+        propTester.add("mqtt.keepAliveSec", "13", 
+                () -> ((Integer)configRef.get().getKeepAliveInterval()).toString());
+        propTester.add("mqtt.keyStore", "some/path/keystore",
+                () -> configRef.get().getKeyStore());
+        propTester.add("mqtt.keyStorePassword", "some-keystore-password",
+                () -> new String(configRef.get().getKeyStorePassword()));
+//        propTester.add("mqtt.keyPassword", "some-key-password",
+//                () -> new String(configRef.get().getKeyPassword()));
+//        propTester.add("mqtt.keyCertificateAlias", "someKeyCertificateAlias",
+//                () -> configRef.get().getKeyCertificateAlias());
+        propTester.add("mqtt.password", "some-password",
+                () -> new String(configRef.get().getPassword()));
+//        propTester.add("mqtt.persistence", "some.persistence.classname",
+//                () -> configRef.get().getPersistence());
+        propTester.add("mqtt.serverURLs", "tcp://somehost:1234,ssl://somehost:5678",
+                () -> String.join(",", configRef.get().getServerURLs()));
+        propTester.add("mqtt.subscriberIdleReconnectIntervalSec", "14", 
+                () -> ((Integer)configRef.get().getSubscriberIdleReconnectInterval()).toString());
+        propTester.add("mqtt.trustStore", "some/path/truststore",
+                () -> configRef.get().getTrustStore());
+        propTester.add("mqtt.trustStorePassword", "some-truststore-password",
+                () -> new String(configRef.get().getTrustStorePassword()));
+        propTester.add("mqtt.userName", "xyzzy-username",
+                () -> configRef.get().getUserName());
+        
+        JsonObject will = new JsonObject();
+        will.addProperty("topic", "someWillTopic");
+        will.addProperty("payload", "someWillPayload");
+        will.addProperty("qos", 1);
+        will.addProperty("retained", true);
+        propTester.add("mqtt.will", will.toString(),
+                () -> {
+                        JsonObject actWill = new JsonObject();
+                        actWill.addProperty("topic", configRef.get().getWillDestination());
+                        actWill.addProperty("payload", new String(configRef.get().getWillPayload()));
+                        actWill.addProperty("qos", configRef.get().getWillQOS());
+                        actWill.addProperty("retained", configRef.get().getWillRetained());
+                        return actWill.toString();
+                      });
+
+        configRef.set(MqttConfig.fromProperties(props));
+        propTester.checkAll();
     }
     
     @Test
@@ -1028,6 +1133,70 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
         TStream<String> rcvd = mqtt.subscribe(topic, qos);
 
         completeAndValidate(clientId, top, rcvd, mgen, SEC_TIMEOUT, expectMsgs.toArray(new String[0]));
+    }
+    
+    /* 
+     * See mqtt/src/test/keystores/README for info about SSL/TLS and mosquitto
+     */
+    
+    @Test
+    public void testSsl() throws Exception {
+        Topology top = newTopology("testSsl");
+        MsgGenerator mgen = new MsgGenerator(top.getName());
+        int qos = 0;
+        boolean retain = false;
+        String clientId = newClientId(top.getName());
+        String topic = getMqttTopics()[0];
+        List<String> msgs = createMsgs(mgen, topic);
+        
+        TStream<String> s = PlumbingStreams.blockingOneShotDelay(
+                top.collection(msgs), PUB_DELAY_MSEC, TimeUnit.MILLISECONDS);
+        
+        // Test publish(TStream<String>, topic, qos)
+        // Test TStream<String> subscribe(topic, qos)
+
+        // System.setProperty("javax.net.debug", "ssl"); // or "all"; "help" for full list
+        
+        setSslAuthInfo("ssl");
+        MqttConfig config = newConfig(getSslServerURI(), clientId);
+        MqttStreams mqtt = new MqttStreams(top, () -> config);
+
+        TSink<String> sink = mqtt.publish(s, topic, qos, retain);
+        TStream<String> rcvd = mqtt.subscribe(topic, qos);
+
+        completeAndValidate(clientId, top, rcvd, mgen, SEC_TIMEOUT, msgs.toArray(new String[0]));
+        
+        assertNotNull(sink);
+    }
+    
+    @Test
+    public void testSslClientAuth() throws Exception {
+        Topology top = newTopology("testSslClientAuth");
+        MsgGenerator mgen = new MsgGenerator(top.getName());
+        int qos = 0;
+        boolean retain = false;
+        String clientId = newClientId(top.getName());
+        String topic = getMqttTopics()[0];
+        List<String> msgs = createMsgs(mgen, topic);
+        
+        TStream<String> s = PlumbingStreams.blockingOneShotDelay(
+                top.collection(msgs), PUB_DELAY_MSEC, TimeUnit.MILLISECONDS);
+        
+        // Test publish(TStream<String>, topic, qos)
+        // Test TStream<String> subscribe(topic, qos)
+        
+        // System.setProperty("javax.net.debug", "ssl"); // or "all"; "help" for full list
+        
+        setSslAuthInfo("sslClientAuth");
+        MqttConfig config = newConfig(getSslClientAuthServerURI(), clientId);
+        MqttStreams mqtt = new MqttStreams(top, () -> config);
+
+        TSink<String> sink = mqtt.publish(s, topic, qos, retain);
+        TStream<String> rcvd = mqtt.subscribe(topic, qos);
+
+        completeAndValidate(clientId, top, rcvd, mgen, SEC_TIMEOUT, msgs.toArray(new String[0]));
+        
+        assertNotNull(sink);
     }
 
 }

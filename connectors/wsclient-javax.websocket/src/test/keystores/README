@@ -9,7 +9,7 @@
 set -x
 
 # ############################################
-echo ==============  server key&cert setup
+echo ==============  server key and cert setup
 
 # create server key&certificate and serverKeyStore.jks
 keytool -genkey -validity 7300 -alias default -keyalg RSA \
@@ -33,7 +33,7 @@ yes
 xxEOFxx
 
 # ############################################
-echo ==============  client "default" key&cert setup
+echo ==============  client "default" key and cert setup
 
 # create client certificate and clientKeyStore.jks
 keytool -genkey -validity 7300 -alias default -keyalg RSA \
@@ -60,7 +60,7 @@ xxEOFxx
 # --------------------------------------------
 # create 2nd client certificate with different alias (for cert selection testing)
 # don't add to server's trust store
-echo ==============  client "my2ndcert" key&cert setup
+echo ==============  client "my2ndcert" key and cert setup
 keytool -genkey -validity 7300 -alias my2ndcert -keyalg RSA \
      -keypass passw0rd -storepass passw0rd -keystore clientKeyStore.jks <<xxEOFxx
 Test Client my2ndcert
@@ -75,7 +75,7 @@ xxEOFxx
 
 # --------------------------------------------
 # create 3rd client certificate with different alias (for cert selection testing)
-echo ==============  client "my3rdcert" key&cert setup
+echo ==============  client "my3rdcert" key and cert setup
 keytool -genkey -validity 7300 -alias my3rdcert -keyalg RSA \
      -keypass passw0rd -storepass passw0rd -keystore clientKeyStore.jks <<xxEOFxx
 Test Client my3rdcert
