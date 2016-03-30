@@ -15,6 +15,6 @@ REM WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 REM See the License for the specific language governing permissions and
 REM limitations under the License.
 
-REM Runs HelloWorld
+REM Runs HelloQuarks
 set CLASSPATH=..\samples\lib\quarks.samples.topology.jar
-java quarks.samples.topology.HelloWorld
+java quarks.samples.topology.HelloQuarks

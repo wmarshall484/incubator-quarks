@@ -17,7 +17,7 @@
 #
 quarks=..
 
-# Runs HelloWorld
+# Runs HelloQuarks
 #
 export CLASSPATH="${quarks}/samples/lib/quarks.samples.topology.jar"
-java quarks.samples.topology.HelloWorld
+java quarks.samples.topology.HelloQuarks
