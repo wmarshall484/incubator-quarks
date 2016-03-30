@@ -18,6 +18,12 @@ under the License.
 */
 package quarks.topology.spi.graph;
 
+import static quarks.window.Policies.alwaysInsert;
+import static quarks.window.Policies.evictOlderWithProcess;
+import static quarks.window.Policies.insertionTimeList;
+import static quarks.window.Policies.processOnInsert;
+import static quarks.window.Policies.scheduleEvictIfEmpty;
+
 import quarks.function.BiFunction;
 import quarks.function.Function;
 import quarks.function.Functions;
@@ -31,12 +37,6 @@ import quarks.window.Windows;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
-import static quarks.window.Policies.alwaysInsert;
-import static quarks.window.Policies.evictOlderWithProcess;
-import static quarks.window.Policies.insertionTimeList;
-import static quarks.window.Policies.processOnInsert;
-import static quarks.window.Policies.scheduleEvictIfEmpty;
 
 public class TWindowTimeImpl<T, K> extends AbstractTWindow<T, K> {
     private long time;

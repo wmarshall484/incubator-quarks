@@ -18,6 +18,9 @@ under the License.
 */
 package quarks.test.providers.dev;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 import quarks.graph.Graph;
 import quarks.graph.Vertex;
@@ -29,9 +32,6 @@ import quarks.topology.Topology;
 import quarks.topology.tester.Condition;
 
 import java.util.Collection;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class DevelopmentProviderTest extends TopologyAbstractTest implements DevelopmentTestSetup {
 
