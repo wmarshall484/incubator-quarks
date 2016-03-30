@@ -53,7 +53,7 @@ import quarks.function.BiFunction;
 import quarks.function.Function;
 import quarks.function.Supplier;
 import quarks.test.connectors.common.ConnectorTestBase;
-import quarks.test.connectors.common.KeystorePath;
+import quarks.test.connectors.common.TestRepoPath;
 import quarks.topology.TSink;
 import quarks.topology.TStream;
 import quarks.topology.Topology;
@@ -102,7 +102,7 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
     }
     
     protected String getKeystorePath(String storeLeaf) {
-        return KeystorePath.getPath("connectors", "mqtt", "src", "test", "keystores", storeLeaf);
+        return TestRepoPath.getPath("connectors", "mqtt", "src", "test", "keystores", storeLeaf);
     }
     
     private MqttConfig newConfig(String serverURL, String clientId) {

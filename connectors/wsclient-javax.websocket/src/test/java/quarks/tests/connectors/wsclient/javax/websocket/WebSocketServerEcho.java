@@ -46,7 +46,7 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
 
-import quarks.test.connectors.common.KeystorePath;
+import quarks.test.connectors.common.TestRepoPath;
 
 /**
  * Simple WebSocket server program to echo received messages.
@@ -145,7 +145,7 @@ public class WebSocketServerEcho {
     }
     
     private String getStorePath(String storeLeaf) {
-        return KeystorePath.getPath("connectors", "wsclient-javax.websocket", "src", "test", "keystores", storeLeaf);
+        return TestRepoPath.getPath("connectors", "wsclient-javax.websocket", "src", "test", "keystores", storeLeaf);
     }
     
     public int getPort() {

@@ -40,7 +40,7 @@ import com.google.gson.JsonObject;
 import quarks.connectors.wsclient.WebSocketClient;
 import quarks.connectors.wsclient.javax.websocket.Jsr356WebSocketClient;
 import quarks.test.connectors.common.ConnectorTestBase;
-import quarks.test.connectors.common.KeystorePath;
+import quarks.test.connectors.common.TestRepoPath;
 import quarks.topology.TSink;
 import quarks.topology.TStream;
 import quarks.topology.Topology;
@@ -122,7 +122,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
     }
     
     private String getStorePath(String storeLeaf) {
-        return KeystorePath.getPath("connectors", "wsclient-javax.websocket", "src", "test", "keystores", storeLeaf);
+        return TestRepoPath.getPath("connectors", "wsclient-javax.websocket", "src", "test", "keystores", storeLeaf);
     }
     
     @Test
