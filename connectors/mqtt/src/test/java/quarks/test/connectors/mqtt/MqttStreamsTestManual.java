@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -994,6 +995,9 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
     
     @Test
     public void testConnectRetrySub() throws Exception {
+        // Timing variances on shared machines can cause this test to fail
+        assumeTrue(!Boolean.getBoolean("quarks.build.ci"));
+
         Topology top = newTopology("testConnectRetrySub");
         MsgGenerator mgen = new MsgGenerator(top.getName());
         int qos = 0;
