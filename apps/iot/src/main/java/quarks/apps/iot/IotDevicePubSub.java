@@ -54,6 +54,11 @@ import quarks.topology.TopologyElement;
 public class IotDevicePubSub {
     
     /**
+     * IotDevicePubSub application name.
+     */
+    public static final String APP_NAME = "QuarksIotDevicePubSub";
+    
+    /**
      * Events published to topic {@value} are sent as device events using the
      * actual message hub {@link IotDevice}. <BR>
      * it is recommended applications use the {@code IotDevice} returned by

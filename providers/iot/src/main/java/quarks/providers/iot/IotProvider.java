@@ -84,6 +84,11 @@ import quarks.topology.services.ApplicationService;
 public class IotProvider implements TopologyProvider,
  DirectSubmitter<Topology, Job> {
     
+    /**
+     * IoT control using device commands application name.
+     */
+    public static final String CONTROL_APP_NAME = "QuarksIotCommandsToControl";
+    
     private final TopologyProvider provider;
     private final Function<Topology, IotDevice> iotDeviceCreator;
     private final DirectSubmitter<Topology, Job> submitter;
@@ -207,7 +212,7 @@ public class IotProvider implements TopologyProvider,
      * @see #createMessageHubDevice(Topology)
      */
     protected void createIotDeviceApp() {
-        Topology topology = newTopology("QuarksIotDevice");
+        Topology topology = newTopology(IotDevicePubSub.APP_NAME);
              
         IotDevice msgHub = createMessageHubDevice(topology);
         IotDevicePubSub.createApplication(msgHub);
@@ -224,7 +229,7 @@ public class IotProvider implements TopologyProvider,
      * to invoke the control operation.
      */
     protected void createIotCommandToControlApp() {
-        Topology topology = newTopology("QuarksIotCommandsToControl");
+        Topology topology = newTopology(CONTROL_APP_NAME);
         
         IotDevice publishedDevice = IotDevicePubSub.addIotDevice(topology);
 
