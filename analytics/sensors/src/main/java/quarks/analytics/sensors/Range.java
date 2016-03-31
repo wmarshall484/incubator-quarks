@@ -135,16 +135,15 @@ public final class Range<T extends Comparable<?>> implements Predicate<T>, Seria
     public static enum BoundType {/** exclusive */ OPEN, /** inclusive */ CLOSED};
     
     /**
-     * Create a new Range<T>
+     * Create a new Range<T>.  Private like Guava Range.
      * <p>
      * See {@link Ranges} for a collection of convenience constructors.
-     * 
-     * @param lbt {@link BoundType} for the lowerEndpoint
      * @param lowerEndpoint null for an infinite value (and lbt must be OPEN)
+     * @param lbt {@link BoundType} for the lowerEndpoint
      * @param upperEndpoint null for an infinite value (and ubt must be OPEN)
      * @param ubt {@link BoundType} for the upperEndpoint
      */
-    public Range(BoundType lbt, T lowerEndpoint, T upperEndpoint, BoundType ubt) {
+    private Range(T lowerEndpoint, BoundType lbt, T upperEndpoint, BoundType ubt) {
         this.lowerEndpoint = lowerEndpoint;
         this.upperEndpoint = upperEndpoint;
         this.lbt = lbt;
@@ -157,6 +156,21 @@ public final class Range<T extends Comparable<?>> implements Predicate<T>, Seria
             throw new IllegalArgumentException("endpoint is null and BoundType != OPEN");
         if (upperEndpoint == null && ubt != BoundType.OPEN)
             throw new IllegalArgumentException("endpoint is null and BoundType != OPEN");
+    }
+
+    /**
+     * Create a new Range<T>
+     * <p>
+     * See {@link Ranges} for a collection of convenience constructors.
+     * 
+     * @param lowerEndpoint null for an infinite value (and lbt must be OPEN)
+     * @param lbt {@link BoundType} for the lowerEndpoint
+     * @param upperEndpoint null for an infinite value (and ubt must be OPEN)
+     * @param ubt {@link BoundType} for the upperEndpoint
+     */
+    public static <T extends Comparable<?>> Range<T> range(T lowerEndpoint, BoundType lbt, T upperEndpoint, BoundType ubt) {
+        // matchs Guava Range.range param order
+        return new Range<T>(lowerEndpoint, lbt, upperEndpoint, ubt);
     }
 
     /**
@@ -379,7 +393,7 @@ public final class Range<T extends Comparable<?>> implements Predicate<T>, Seria
         T lowerEndpoint = les.equals("*") ? null : fromString.apply(les);
         T upperEndpoint = ues.equals("*") ? null : fromString.apply(ues);
         
-        return new Range<T>(lbt, lowerEndpoint, upperEndpoint, ubt);
+        return new Range<T>(lowerEndpoint, lbt, upperEndpoint, ubt);
     }
     
     /**

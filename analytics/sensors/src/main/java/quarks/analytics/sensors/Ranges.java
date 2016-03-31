@@ -31,68 +31,68 @@ public final class Ranges {
     /** 
      * Create a Range (lowerEndpoint..upperEndpoint) (both exclusive/OPEN)
      * <p>
-     * Same as {@code new Range<T>(BoundType.OPEN, lowerEndpoint, upperEndpoint, BoundType.OPEN)}
+     * Same as {@code Range.range(BoundType.OPEN, lowerEndpoint, upperEndpoint, BoundType.OPEN)}
      */
     public static <T extends Comparable<?>> Range<T> open(T lowerEndpoint, T upperEndpoint) { 
-        return new Range<T>(BoundType.OPEN, lowerEndpoint, upperEndpoint, BoundType.OPEN);
+        return Range.range(lowerEndpoint, BoundType.OPEN, upperEndpoint, BoundType.OPEN);
     }
 
     /** 
      * Create a Range [lowerEndpoint..upperEndpoint] (both inclusive/CLOSED)
      * <p>
-     * Same as {@code new Range<T>(BoundType.CLOSED, lowerEndpoint, upperEndpoint, BoundType.CLOSED)}
+     * Same as {@code Range.range(BoundType.CLOSED, lowerEndpoint, upperEndpoint, BoundType.CLOSED)}
      */
     public static <T extends Comparable<?>> Range<T> closed(T lowerEndpoint, T upperEndpoint) {
-        return new Range<T>(BoundType.CLOSED, lowerEndpoint, upperEndpoint, BoundType.CLOSED); 
+        return Range.range(lowerEndpoint, BoundType.CLOSED, upperEndpoint, BoundType.CLOSED); 
     }
 
     /** 
      * Create a Range (lowerEndpoint..upperEndpoint] (exclusive/OPEN,inclusive/CLOSED)
      */
     public static <T extends Comparable<?>> Range<T> openClosed(T lowerEndpoint, T upperEndpoint) {
-        return new Range<T>(BoundType.OPEN, lowerEndpoint, upperEndpoint, BoundType.CLOSED);
+        return Range.range(lowerEndpoint, BoundType.OPEN, upperEndpoint, BoundType.CLOSED);
     }
 
     /** 
      * Create a Range [lowerEndpoint..upperEndpoint) (inclusive/CLOSED,exclusive/OPEN)
      */
     public static <T extends Comparable<?>> Range<T> closedOpen(T lowerEndpoint, T upperEndpoint) {
-        return new Range<T>(BoundType.CLOSED, lowerEndpoint, upperEndpoint, BoundType.OPEN);
+        return Range.range(lowerEndpoint, BoundType.CLOSED, upperEndpoint, BoundType.OPEN);
     }
 
     /** 
      * Create a Range (lowerEndpoint..*) (exclusive/OPEN)
      */
     public static <T extends Comparable<?>> Range<T> greaterThan(T lowerEndpoint) {
-        return new Range<T>(BoundType.OPEN, lowerEndpoint, null, BoundType.OPEN);
+        return Range.range(lowerEndpoint, BoundType.OPEN, null, BoundType.OPEN);
     }
 
     /**
      * Create a Range [lowerEndpoint..*) (inclusive/CLOSED)
      */
     public static <T extends Comparable<?>> Range<T> atLeast(T lowerEndpoint) {
-        return new Range<T>(BoundType.CLOSED, lowerEndpoint, null, BoundType.OPEN);
+        return Range.range(lowerEndpoint, BoundType.CLOSED, null, BoundType.OPEN);
     }
 
     /** 
      * Create a Range (*..upperEndpoint) (exclusive/OPEN)
      */
     public static <T extends Comparable<?>> Range<T> lessThan(T upperEndpoint) {
-        return new Range<T>(BoundType.OPEN, null, upperEndpoint, BoundType.OPEN);
+        return Range.range(null, BoundType.OPEN, upperEndpoint, BoundType.OPEN);
     }
 
     /** 
      * Create a Range (*..upperEndpoint] (inclusive/CLOSED)
      */
     public static <T extends Comparable<?>> Range<T> atMost(T upperEndpoint) {
-        return new Range<T>(BoundType.OPEN, null, upperEndpoint, BoundType.CLOSED);
+        return Range.range(null, BoundType.OPEN, upperEndpoint, BoundType.CLOSED);
     }
 
     /** 
      * Create a Range [endpoint..endpoint] (both inclusive/CLOSED)
      */
     public static  <T extends Comparable<?>> Range<T> singleton(T endpoint) {
-        return new Range<T>(BoundType.CLOSED, endpoint, endpoint, BoundType.CLOSED);
+        return Range.range(endpoint, BoundType.CLOSED, endpoint, BoundType.CLOSED);
     }
     
     /**
