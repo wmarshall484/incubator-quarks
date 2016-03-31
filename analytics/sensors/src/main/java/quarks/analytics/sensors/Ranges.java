@@ -61,38 +61,38 @@ public final class Ranges {
     }
 
     /** 
-     * Create a Range (lowerEndpoint..upperEndpoint) (both exclusive/OPEN)
+     * Create a Range (lowerEndpoint..*) (exclusive/OPEN)
      */
-    public static <T extends Comparable<?>> Range<T> greaterThan(T v) {
-        return new Range<T>(BoundType.OPEN, v, null, BoundType.OPEN);
+    public static <T extends Comparable<?>> Range<T> greaterThan(T lowerEndpoint) {
+        return new Range<T>(BoundType.OPEN, lowerEndpoint, null, BoundType.OPEN);
     }
 
     /**
      * Create a Range [lowerEndpoint..*) (inclusive/CLOSED)
      */
-    public static <T extends Comparable<?>> Range<T> atLeast(T v) {
-        return new Range<T>(BoundType.CLOSED, v, null, BoundType.OPEN);
+    public static <T extends Comparable<?>> Range<T> atLeast(T lowerEndpoint) {
+        return new Range<T>(BoundType.CLOSED, lowerEndpoint, null, BoundType.OPEN);
     }
 
     /** 
      * Create a Range (*..upperEndpoint) (exclusive/OPEN)
      */
-    public static <T extends Comparable<?>> Range<T> lessThan(T v) {
-        return new Range<T>(BoundType.OPEN, null, v, BoundType.OPEN);
+    public static <T extends Comparable<?>> Range<T> lessThan(T upperEndpoint) {
+        return new Range<T>(BoundType.OPEN, null, upperEndpoint, BoundType.OPEN);
     }
 
     /** 
      * Create a Range (*..upperEndpoint] (inclusive/CLOSED)
      */
-    public static <T extends Comparable<?>> Range<T> atMost(T v) {
-        return new Range<T>(BoundType.OPEN, null, v, BoundType.CLOSED);
+    public static <T extends Comparable<?>> Range<T> atMost(T upperEndpoint) {
+        return new Range<T>(BoundType.OPEN, null, upperEndpoint, BoundType.CLOSED);
     }
 
     /** 
-     * Create a Range [v..v] (both inclusive/CLOSED)
+     * Create a Range [endpoint..endpoint] (both inclusive/CLOSED)
      */
-    public static  <T extends Comparable<?>> Range<T> singleton(T v) {
-        return new Range<T>(BoundType.CLOSED, v, v, BoundType.CLOSED);
+    public static  <T extends Comparable<?>> Range<T> singleton(T endpoint) {
+        return new Range<T>(BoundType.CLOSED, endpoint, endpoint, BoundType.CLOSED);
     }
     
     /**
