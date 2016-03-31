@@ -363,7 +363,6 @@ public final class Range<T extends Comparable<?>> implements Predicate<T>, Seria
      * @param fromString function to create a T from its String value from
      *        the parsed toStringValue.  Should throw an IllegalArgumentException
      *        if unable to perform the conversion.
-     * @param clazz the class of the values in {@code s}
      * @throws IllegalArgumentException if unable to parse or convert to 
      *         endpoint in toStringValue to a T.
      */
