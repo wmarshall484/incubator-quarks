@@ -19,179 +19,160 @@ under the License.
 package quarks.analytics.sensors;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.Comparator;
 import java.util.Objects;
 
+import quarks.function.Function;
+import quarks.function.Predicate;
+
 /**
- * A range of values and a way to check a value for containment in the range.
+ * A generic immutable range of values and a way to 
+ * check a value for containment in the range.
  * <p>
- * Useful in filtering in predicates.  This is a lightweight implementation
- * of a subset of the Guava Range API.
+ * Useful in filtering in predicates.
  * <p> 
+ * A Range consists of a lower and upper endpoint and a {@link BoundType}
+ * for each endpoint.
+ * <p>
+ * {@link BoundType#CLOSED} includes the endpoint's value in the range and
+ * is represented as "[" or "]" in the string form for a lower and upper bound
+ * type respectively.
+ * {@link BoundType#OPEN} excludes the endpoint's value in the range and 
+ * is represented as "(" or ")" in the string form for a lower and upper bound
+ * type respectively.  e.g. {@code "[2..5)"}
+ * <p>
+ * Typically, the convenience methods in {@link Ranges} are used to
+ * construct a Range.
+ * <p>
+ * {@link #contains(Comparable) contains()} is used to check for containment:
  * e.g.
  * <pre>{@code
- * Range.open(2,4).contains(2);      // returns false
- * Range.closed(2,4).contains(2);    // returns true
- * Range.atLeast(2).contains(2);     // returns true
- * Range.greaterThan(2).contains(2); // returns false
- * Range.atMost(2).contains(2);      // returns true
- * Range.lessThan(2).contains(2);    // returns false
- * 
- * String s = Range.closed(2,4).toString();
- * Range<Integer> range = Range.valueOf(s, Integer.class);
- * 
- * TStream<Integer> intStream = ...;
- * TStream<Integer> filtered = intStream.filter(tuple -> !range.contains(tuple));
- * 
- * TStream<JsonObject> jStream = ...;
- * TStream<JsonObject> filtered = jStream.filter(json -> !range.contains(json.getProperty("reading").asInteger());
+ * Ranges.closed(2,4).contains(2);    // returns true
+ * Ranges.open(2,4).contains(2);      // returns false
+ * Ranges.atLeast(2).contains(2);     // returns true
+ * Ranges.greaterThan(2).contains(2); // returns false
+ * Ranges.atMost(2).contains(2);      // returns true
+ * Ranges.lessThan(2).contains(2);    // returns false
  * }</pre>
  * 
+ * {@link #toString()} yields a convenient string representation and a
+ * Range may be created from the string representation.
+ * <pre>{@code
+ * String s = Ranges.closed(2,4).toString(); // yields "[2..4]"
+ * Range<Integer> range = Ranges.valueOfInteger(s); // yields a Range<Integer>(2,4)
+ * }</pre>
  * <p>
- * Compared to Guava Range:
- * <ul>
- * <li>Guava Range doesn't mention any constraints with respect to types for {@code <T>}.
- *     This Range currently supports: Integer,Long,Short,Byte,Float,Double,BigInteger,BigDecimal.
- *     <br>String and Character, of questionable value to Quarks apps,
- *     are avoided at this time due to the Guava toString()/from-string
- *     items noted below.</li>
- * <li>Guava Range doesn't support unsigned type ranges.
- *     <br>This Range adds {@link #contains(Comparable, Comparator)}.
- * <li>Guava Range lacks a "Range from Range.toString()" function: https://github.com/google/guava/issues/1911.
- *     <br>This Range adds {@link #valueOf(String, Class) valueOf}.
- *     Possibly consider: (a) migrating this to a new Ranges class,
- *     (b) introducing convenience forms - e.g., {@code valueOfInteger(String)}.</li>
- * <li>Guava Range has issues with to/from Json with Gson: 
- *     https://github.com/google/guava/issues/1911.
- *     <br>This Range works but as doc'd by Gson, use {@code Gson#fromJson(String, java.lang.reflect.Type)} Don't know about this Range :-)</li>
- * <li>Guava Range's {@code apply(T value)} is documented as deprecated 
- *     so this Range does not "implement Predicate". 
- * <li>Guava Range.toString()
- *     <ul>
- *     <li> Guava uses some unprintable characters.
- *          Up to the latest Guava release - 19.0, Range.toString() uses \u2025 for
- *          the ".." separator and uses +/-\u221E for infinity.  That's caused problems:
- *          https://github.com/google/guava/issues/2376.
- *          Guava Range.toString() has been change to use ".." instead of \u2025.
- *          It still uses the unicode char for infinity.
- *          <br>This Range uses ".." for the separator like the not-yet-released Guava change.
- *          For convenience to users, this Range uses "*" and no leading +/- for infinity.</li>
- *      <li>Guava does not decorate String or Character values with \" or \' respectively.
- *          It does not generate an escaped encoding of the
- *          range separator if it is present in a value.
- *          Hard to guess whether this may change if/when Guava adds a
- *          "Range from Range.toString()" capability.
- *          <br>To avoid arbitrary deviations for Range types that may not be
- *          particularly interesting to Quarks users, at this time 
- *          this Range does not support String or Character.
- *          </li>
- *      </ul>
- *      </li>
- * </ul>
- *
- * @param <T> value type  N.B. at this time {@code T} must be one of:
- *        Integer,Long,Short,Byte,Float,Double,BigInteger,BigDecimal
+ * Range works with Gson ({@code new Gson().toJson(Range<T>)}.
+ * As as documented by Gson, for generic types you must use
+ * {@code Gson.fromJson(String, java.lang.reflect.Type)} to
+ * create a Range from its json.
  * <p>
- *        An IllegalArgumentException is thrown if an unsupported type
- *        is specified when constructing the Range.
+ * Sample use in a TStream context:
+ * <pre>{@code
+ * TStream<JsonObject> jStream = ...;
+ * TStream<JsonObject> filtered = Filters.deadband(jStream,
+ *                     json -> json.getProperty("pressureReading").asInteger(),
+ *                     Ranges.closed(10, 30));
+ * }</pre>
+ * 
+ * @param <T> a {@link Comparable} value type
  */
-public class Range<T extends Comparable<?>> implements Serializable {
+public final class Range<T extends Comparable<?>> implements Predicate<T>, Serializable {
+    /*
+     * Useful in understanding some of the motivations/issues:
+     * 
+     * This is a lightweight implementation of a subset of the Guava Range.
+     * Guava Range is great, but...
+     * 
+     * Compared to Guava Range:
+     * - Guava Range isn't easily separable from the "bulky" Guave package.
+     *   Guava Range itself isn't particularly lightweight (depends on numerous
+     *   other Guava classes).
+     *   This Range is very lightweight.
+     * - Guava Range has a large set of static convenience constructors,
+     *   whereas we've chosen to make them members of our Ranges class
+     *   (along with "Range from Range.toString()" methods)
+     * - Guava Range doesn't support unsigned byte/short/int/long type ranges.
+     *     This Range adds {@link #contains(Comparable, Comparator)}
+     *     and {@link #toStringUnsigned()}.
+     * - Guava Range lacks a "Range from Range.toString()" function: https://github.com/google/guava/issues/1911.
+     *     Ranges has valueOf*() for convenience with commonly used numeric types,
+     *     and Range has valueOf() for general use. 
+     * - Guava Range has issues with to/from Json with Gson: 
+     *     https://github.com/google/guava/issues/1911.
+     *     This Range works but as doc'd by Gson, you must use
+     *     {@code Gson#fromJson(String, java.lang.reflect.Type)}</li>
+     * - Guava Range's {@code apply(T value)} is documented as deprecated. 
+     *     None the less there was a desire that our Range "implement Predicate"
+     *     so we do.
+     * - Guava Range.toString()
+     *   - Guava uses some unprintable characters.
+     *     Up to the latest Guava release - 19.0, Range.toString() uses \u2025 for
+     *     the ".." separator and uses +/-\u221E for infinity.  That's caused problems:
+     *     https://github.com/google/guava/issues/2376.
+     *     Guava Range.toString() has been change to use ".." instead of \u2025.
+     *     It still uses the unicode char for infinity.
+     *     This Range uses ".." for the separator like the not-yet-released Guava change.
+     *     For convenience to users, this Range uses "*" and no leading +/- for infinity.</li>
+     *   - Guava does not decorate String or Character values with \" or \' respectively.
+     *     It does not generate an escaped encoding of the
+     *     range separator if it is present in a value.
+     *     Hard to guess whether this may change if/when Guava adds a
+     *     "Range from Range.toString()" capability.
+     */
+    
     private static final long serialVersionUID = 1L;
     
-    private final T lowerBound;  // null for infinity
-    private final T upperBound;  // null for infinity
+    private final T lowerEndpoint;  // null for infinity
+    private final T upperEndpoint;  // null for infinity
     private final BoundType lbt;
     private final BoundType ubt;
     private transient int hashCode;
-    private static final Class<?> supportedTypes[] = {
-            Integer.class, Short.class, Byte.class, Long.class,
-            Float.class, Double.class, BigInteger.class, BigDecimal.class
-    };
-    
-    private enum BoundType {/** exclusive */ OPEN, /** inclusive */ CLOSED};
-    
-    private Range(T lowerBound, BoundType lbt, T upperBound, BoundType ubt) {
-        this.lowerBound = lowerBound;
-        this.upperBound = upperBound;
-        this.lbt = lbt;
-        this.ubt = ubt;
-        checkSupportedType(lowerBound);
-        checkSupportedType(upperBound);
-        if (lowerBound != null && upperBound != null) {
-            if (lowerBound.getClass() != upperBound.getClass())
-                throw new IllegalArgumentException("lowerBound and upperBound are not the same type");
-        }
-    }
-    
-    private void checkSupportedType(Object obj) {
-        if (obj==null) return;
-        Class<?> objClass = obj.getClass();
-        for (Class<?> c : supportedTypes) {
-            if (c == objClass)
-                return;
-        }
-        throw new IllegalArgumentException("unsupported type: "+objClass);
-    }
-    
-    // TODO defer making these public due to BoundType
-    private static <T extends Comparable<?>> Range<T> range(T lowerBound, BoundType b1, T upperBound, BoundType b2) {  return new Range<T>(lowerBound, b1, upperBound, b2); }
-//    public static <T> Range<T> downTo(T v, BoundType b) { return range(v, b, null, null); }
-//    public static <T> Range<T> upTo(T v, BoundType b) { return range(null, null, v, b); }
-
-    /** (a..b) (both exclusive) */
-    public static <T extends Comparable<?>> Range<T> open(T lowerBound, T upperBound) { 
-        return range(lowerBound, BoundType.OPEN, upperBound, BoundType.OPEN);
-    }
-    /** [a..b] (both inclusive) */
-    public static <T extends Comparable<?>> Range<T> closed(T lowerBound, T upperBound) {
-        return range(lowerBound, BoundType.CLOSED, upperBound, BoundType.CLOSED); 
-    }
-    /** (a..b] (exclusive,inclusive) */
-    public static <T extends Comparable<?>> Range<T> openClosed(T lowerBound, T upperBound) {
-        return range(lowerBound, BoundType.OPEN, upperBound, BoundType.CLOSED);
-    }
-    /** [a..b) (inclusive,exclusive)*/
-    public static <T extends Comparable<?>> Range<T> closedOpen(T lowerBound, T upperBound) {
-        return range(lowerBound, BoundType.CLOSED, upperBound, BoundType.OPEN);
-    }
-    /** (a..*) (exclusive) */
-    public static <T extends Comparable<?>> Range<T> greaterThan(T v) {
-        return range(v, BoundType.OPEN, null, BoundType.OPEN);
-    }
-    /** [a..*) (inclusive) */
-    public static <T extends Comparable<?>> Range<T> atLeast(T v) {
-        return range(v, BoundType.CLOSED, null, BoundType.OPEN);
-    }
-    /** (*..b) (exclusive) */
-    public static <T extends Comparable<?>> Range<T> lessThan(T v) {
-        return range(null, BoundType.OPEN, v, BoundType.OPEN);
-    }
-    /** (*..b] (inclusive) */
-    public static <T extends Comparable<?>> Range<T> atMost(T v) {
-        return range(null, BoundType.OPEN, v, BoundType.CLOSED);
-    }
-    /** [v..v] (both inclusive) */
-    public static  <T extends Comparable<?>> Range<T> singleton(T v) {
-        return range(v, BoundType.CLOSED, v, BoundType.CLOSED);
-    }
     
     /**
-     * Returns true if o is a range having the same endpoints and bound types as this range.
+     * Exclude or include an endpoint value in the range.
+     */
+    public static enum BoundType {/** exclusive */ OPEN, /** inclusive */ CLOSED};
+    
+    /**
+     * Create a new Range<T>
+     * <p>
+     * See {@link Ranges} for a collection of convenience constructors.
+     * 
+     * @param lbt {@link BoundType} for the lowerEndpoint
+     * @param lowerEndpoint null for an infinite value (and lbt must be OPEN)
+     * @param upperEndpoint null for an infinite value (and ubt must be OPEN)
+     * @param ubt {@link BoundType} for the upperEndpoint
+     */
+    public Range(BoundType lbt, T lowerEndpoint, T upperEndpoint, BoundType ubt) {
+        this.lowerEndpoint = lowerEndpoint;
+        this.upperEndpoint = upperEndpoint;
+        this.lbt = lbt;
+        this.ubt = ubt;
+        if (lowerEndpoint != null && upperEndpoint != null) {
+            if (lowerEndpoint.getClass() != upperEndpoint.getClass())
+                throw new IllegalArgumentException("lowerEndpoint and upperEndpoint are not the same type");
+        }
+        if (lowerEndpoint == null && lbt != BoundType.OPEN)
+            throw new IllegalArgumentException("endpoint is null and BoundType != OPEN");
+        if (upperEndpoint == null && ubt != BoundType.OPEN)
+            throw new IllegalArgumentException("endpoint is null and BoundType != OPEN");
+    }
+
+    /**
+     * Returns true if o is a Range having equal endpoints and bound types to this Range.
      */
     @Override
     public boolean equals(Object o) {
         if (o == this) return true;
-        if (o == null) return false;
         if (o instanceof Range) {
             Range<?> r = (Range<?>) o;
             return r.lbt.equals(lbt)
                    && r.ubt.equals(ubt)
-                   && (r.lowerBound==null ? r.lowerBound == lowerBound
-                                          : r.lowerBound.equals(lowerBound))
-                   && (r.upperBound==null ? r.upperBound == upperBound
-                                          : r.upperBound.equals(upperBound));
+                   && (r.lowerEndpoint==null ? r.lowerEndpoint == lowerEndpoint
+                                          : r.lowerEndpoint.equals(lowerEndpoint))
+                   && (r.upperEndpoint==null ? r.upperEndpoint == upperEndpoint
+                                          : r.upperEndpoint.equals(upperEndpoint));
         }
         return false;
     }
@@ -199,220 +180,274 @@ public class Range<T extends Comparable<?>> implements Serializable {
     @Override
     public int hashCode() {
         if (hashCode == 0)
-            hashCode = Objects.hash(lbt, lowerBound, ubt, upperBound);
+            hashCode = Objects.hash(lbt, lowerEndpoint, ubt, upperEndpoint);
         return hashCode;
     }
 
-    // Avoid making the Guava {lower,upper}Endpoint() methods public for now.
-    // It's not clear they have value in the absence of {lower,upper}BoundType()
-    // and at this time we're avoiding exposing our BoundType
+    /**
+     * @return true iff the Range's lower endpoint isn't unbounded/infinite
+     */
+    public boolean hasLowerEndpoint() {
+        return lowerEndpoint != null;
+    }
     
-//    /**
-//     * @return true iff the Range's lower endpoint isn't unbounded.
-//     */
-//    public boolean hasLowerEndpoint() {
-//        return lowerBound != null;
-//    }
-//    
-//    /**
-//     * Get the range's lower endpoint / bound.
-//     * @return the endpoint.
-//     * @throws IllegalStateException if hasLowerEndpoint()==false
-//     */
-//    public T lowerEndpoint() {
-//        if (hasLowerEndpoint())
-//            return lowerBound;
-//        throw new IllegalStateException("unbounded");
-//    }
-//    
-//    /**
-//     * @return true iff the Range's upper endpoint isn't unbounded.
-//     */
-//    public boolean hasUpperEndpoint() {
-//        return upperBound != null;
-//    }
-//    
-//    /**
-//     * Get the range's upper endpoint / bound.
-//     * @return the endpoint.
-//     * @throws IllegalStateException if hasUpperEndpoint()==false
-//     */
-//    public T upperEndpoint() {
-//        if (hasUpperEndpoint())
-//            return upperBound;
-//        throw new IllegalStateException("unbounded");
-//    }
+    /**
+     * Get the range's lower endpoint.
+     * @return the endpoint
+     * @throws IllegalStateException if hasLowerEndpoint()==false
+     */
+    public T lowerEndpoint() {
+        if (hasLowerEndpoint())
+            return lowerEndpoint;
+        throw new IllegalStateException("unbounded");
+    }
+    
+    /**
+     * @return true iff the Range's upper endpoint isn't unbounded/infinite
+     */
+    public boolean hasUpperEndpoint() {
+        return upperEndpoint != null;
+    }
+    
+    /**
+     * Get the range's upper endpoint.
+     * @return the endpoint
+     * @throws IllegalStateException if hasUpperEndpoint()==false
+     */
+    public T upperEndpoint() {
+        if (hasUpperEndpoint())
+            return upperEndpoint;
+        throw new IllegalStateException("unbounded");
+    }
+    
+    /**
+     * Get the BoundType for the lowerEndpoint.
+     * @return the BoundType
+     */
+    public BoundType lowerBoundType() {
+        return lbt;
+    }
+    
+    /**
+     * Get the BoundType for the upperEndpoint.
+     * @return the BoundType
+     */
+    public BoundType upperBoundType() {
+        return ubt;
+    }
     
     /**
      * Determine if the Region contains the value.
      * <p>
      * {@code contains(v)} typically suffices.  This
-     * is useful in the case where the Comparable's default
-     * {@code Comparable.compareTo()} isn't sufficient.
-     * e.g., for unsigned byte comparisons
+     * can be used in cases where it isn't sufficient.
+     * E.g., for unsigned byte comparisons
      * <pre>
      * Comparator<Byte> unsignedByteComparator = new Comparator<Byte>() {
      *     public int compare(Byte b1, Byte b2) {
-     *         return Integer.compareUnsigned(b1.toUnsignedInt(), b2.toUnsignedInt());
+     *         return Integer.compareUnsigned(Byte.toUnsignedInt(b1), Byte.toUnsignedInt(b2));
      *     }
      *     public boolean equals(Object o2) { return o2==this; }
      *     };
-     * Range<Byte> unsignedByteRange = ...;
-     * unsignedByteRange.contains(value, unsignedByteComparator);
+     * Range<Byte> unsignedByteRange = Ranges.valueOfByte("[0..255]");
+     * unsignedByteRange.contains(byteValue, unsignedByteComparator);
      * </pre>
-     * <p>
-     * N.B. Guava Range lacks such a method.
-     * <p>
+     * 
      * @param v the value to check for containment
      * @param cmp the Comparator to use
      * @return true if the Region contains the value
      */
     public boolean contains(T v, Comparator<T> cmp) {
-        if (lowerBound==null) {
-            int r = cmp.compare(v, upperBound);
+        // N.B. Guava Range lacks such a method.
+        if (lowerEndpoint==null) {
+            int r = cmp.compare(v, upperEndpoint);
             return ubt == BoundType.OPEN ? r < 0 : r <= 0; 
         }
-        if (upperBound==null) {
-            int r = cmp.compare(v, lowerBound);
+        if (upperEndpoint==null) {
+            int r = cmp.compare(v, lowerEndpoint);
             return lbt == BoundType.OPEN ? r > 0 : r >= 0; 
         }
-        int r = cmp.compare(v, upperBound);
+        int r = cmp.compare(v, upperEndpoint);
         boolean ok1 = ubt == BoundType.OPEN ? r < 0 : r <= 0;
-        if (!ok1) return false;
-        r = cmp.compare(v, lowerBound);
+        if (!ok1) 
+            return false;
+        r = cmp.compare(v, lowerEndpoint);
         return lbt == BoundType.OPEN ? r > 0 : r >= 0; 
     }
     
     /**
      * Determine if the Region contains the value.
      * <p>
-     * The Comparator used is the default one for the type
-     * (e.g., {@code Integer#compareTo(Integer)}.
+     * The Comparable's compareTo() is used for the comparisons.
      * <p>
      * @param v the value to check for containment
      * @return true if the Region contains the value
      * @see #contains(Comparable, Comparator)
      */
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public boolean contains(T v) {
-        Comparator<T> cmp = getComparator(v);
-        return contains(v, cmp);
+        if (lowerEndpoint==null) {
+            int r = ((Comparable)v).compareTo(upperEndpoint);
+            return ubt == BoundType.OPEN ? r < 0 : r <= 0; 
+        }
+        if (upperEndpoint==null) {
+            int r = ((Comparable)v).compareTo(lowerEndpoint);
+            return lbt == BoundType.OPEN ? r > 0 : r >= 0; 
+        }
+        int r = ((Comparable)v).compareTo(upperEndpoint);
+        boolean ok1 = ubt == BoundType.OPEN ? r < 0 : r <= 0;
+        if (!ok1) 
+            return false;
+        r = ((Comparable)v).compareTo(lowerEndpoint);
+        return lbt == BoundType.OPEN ? r > 0 : r >= 0; 
     }
-    
-    private Comparator<T> getComparator(T v) {
-        if (v instanceof Double) 
-            return (lowerBound,upperBound) -> ((Double)lowerBound).compareTo((Double)upperBound);
-        if (v instanceof Float) 
-            return (lowerBound,upperBound) -> ((Float)lowerBound).compareTo((Float)upperBound);
-        if (v instanceof Long) 
-            return (lowerBound,upperBound) -> ((Long)lowerBound).compareTo((Long)upperBound);
-        if (v instanceof Integer) 
-            return (lowerBound,upperBound) -> ((Integer)lowerBound).compareTo((Integer)upperBound);
-        if (v instanceof Short) 
-            return (lowerBound,upperBound) -> ((Short)lowerBound).compareTo((Short)upperBound);
-        if (v instanceof Byte) 
-            return (lowerBound,upperBound) -> ((Byte)lowerBound).compareTo((Byte)upperBound);
-//        if (v instanceof String) 
-//            return (lowerBound,upperBound) -> ((String)lowerBound).compareTo((String)upperBound);
-//        if (v instanceof Character) 
-//            return (lowerBound,upperBound) -> ((Character)lowerBound).compareTo((Character)upperBound);
-        if (v instanceof BigDecimal) 
-            return (lowerBound,upperBound) -> ((BigDecimal)lowerBound).compareTo((BigDecimal)upperBound);
-        if (v instanceof BigInteger) 
-            return (lowerBound,upperBound) -> ((BigInteger)lowerBound).compareTo((BigInteger)upperBound);
-        throw new IllegalArgumentException("Unsupported type: "+v.getClass());
+
+    /**
+     * Predicate.test() implementation. Identical to contains(value).
+     */
+    @Override
+    public boolean test(T value) {
+        return contains(value);
     }
     
     /**
-     * Create a Range from a string produced by toString()
-     * <p>
-     * N.B. See note in classdoc wrt Guava Range behavior. i.e., it
-     * currently lacks a "Range from Range.toString() analog".
-     * <p>
-     * @param s value from toString()
-     * @param clazz the class of the values in {@code s}
+     * Parse a String from {@link #toString()}
+     * 
+     * @param str the String
+     * @return Four element array with the range's component Strings
+     * @throws IllegalArgumentException
      */
-    public static <T extends Comparable<?>> Range<T> valueOf(String s, Class<T> clazz) {
-        char lbm = s.charAt(0);
-        if (lbm != '[' && lbm != '(')
+    private static String[] parse(String s) {
+        char lbc = s.charAt(0);
+        if (lbc != '[' && lbc != '(')
             throw new IllegalArgumentException(s);
-        char ubm = s.charAt(s.length()-1);
-        if (ubm != ']' && ubm != ')')
+        String lbs = lbc=='[' ? "[" : "(";
+        char ubc = s.charAt(s.length()-1);
+        if (ubc != ']' && ubc != ')')
             throw new IllegalArgumentException(s);
-        
-        BoundType lbt = lbm == '[' ? BoundType.CLOSED : BoundType.OPEN;
-        BoundType ubt = ubm == ']' ? BoundType.CLOSED : BoundType.OPEN;
+        String ubs = ubc==']' ? "]" : ")";
         
         s = s.substring(1,s.length()-1);
-        // this parsing is weak - broken for String bounds with embedded ".."
-        // not an issue right now since we don't support String
-        String[] parts = s.split("\\.\\.");
-        if (parts.length != 2)
-            throw new IllegalArgumentException("The range string bound values contains the separator sequence \"..\": " + s);
+        // problematic case: String endpoint with embedded ".."
+        // special case Character endpoint with value "."
+        String[] parts = new String[2];
+        if (s.length() == "....".length()) {
+            parts[0] = String.valueOf(s.charAt(0));
+            parts[1] = String.valueOf(s.charAt(3));
+        }
+        else {
+            parts = s.split("\\.\\.");
+            if (parts.length != 2)
+                throw new IllegalArgumentException("A range string endpoint value contains the separator sequence \"..\": " + s);
+            if (parts[0].isEmpty() && parts[1].length() > 1) {
+                // handles the case Range<String>(".", "anythingElse")
+                // Range<String>("anything", ".") falls out OK from split
+                parts[0] = parts[1].substring(0, 1);
+                parts[1] = parts[1].substring(1);
+            }
+        }
         
-        String lbs = parts[0];
-        String ubs = parts[1];
+        String les = parts[0];
+        String ues = parts[1];
 
-        T lowerBound = lbs.equals("*") ? null : boundValue(lbs, clazz);
-        T upperBound = ubs.equals("*") ? null : boundValue(ubs, clazz);
-        
-        return range(lowerBound, lbt, upperBound, ubt);
-    }
-    
-    @SuppressWarnings("unchecked")
-    private static <T extends Comparable<?>> T boundValue(String strVal, Class<T> clazz) {
-        if (strVal.equals("*"))
-            return null;
-        if (clazz.equals(Integer.class))
-            return (T) Integer.valueOf(strVal);
-        if (clazz.equals(Long.class))
-            return (T) Long.valueOf(strVal);
-        if (clazz.equals(Short.class))
-            return (T) Short.valueOf(strVal);
-        if (clazz.equals(Byte.class))
-            return (T) Byte.valueOf(strVal);
-        if (clazz.equals(Float.class))
-            return (T) Float.valueOf(strVal);
-        if (clazz.equals(Double.class))
-            return (T) Double.valueOf(strVal);
-//        if (clazz.equals(String.class))
-//            return (T) String.valueOf(strVal);
-//        if (clazz.equals(Character.class))
-//            return (T) Character.valueOf(strVal.charAt(0));
-        if (clazz.equals(BigInteger.class))
-            return (T) new BigInteger(strVal);
-        if (clazz.equals(BigDecimal.class))
-            return (T) new BigDecimal(strVal);
-        throw new IllegalArgumentException("Unhandled type "+clazz);
+        return new String[]{ lbs, les, ues, ubs };
     }
     
     /**
-     * Yields {@code <lowerBoundMarker><lowerBound>..<upperBound><upperBoundMarker>}.
+     * Create a Range from a String produced by toString().
      * <p>
-     * Where the lowerBoundMarker is either "[" (inclusive/closed) or "(" (exclusive/open)
-     * and the upperBoundMarker is  either "]" (inclusive/closed) or ")" (exclusive/open)
+     * See {@link Ranges} for a collection of valueOf methods
+     * for several types of {@code T}.
+     * 
+     * @param toStringValue value from toString() or has the same syntax.
+     * @param fromString function to create a T from its String value from
+     *        the parsed toStringValue.  Should throw an IllegalArgumentException
+     *        if unable to perform the conversion.
+     * @param clazz the class of the values in {@code s}
+     * @throws IllegalArgumentException if unable to parse or convert to 
+     *         endpoint in toStringValue to a T.
+     */
+    public static <T extends Comparable<?>> Range<T> valueOf(String toStringValue, Function<String,T> fromString) {
+        // N.B. See note in classdoc wrt Guava Range behavior. i.e., it
+        // currently lacks a "Range from Range.toString() analog".
+        
+        String[] parts = parse(toStringValue);
+        BoundType lbt = parts[0] == "[" ? BoundType.CLOSED : BoundType.OPEN;
+        String les = parts[1];
+        String ues = parts[2];
+        BoundType ubt = parts[3] == "]" ? BoundType.CLOSED : BoundType.OPEN;
+
+        T lowerEndpoint = les.equals("*") ? null : fromString.apply(les);
+        T upperEndpoint = ues.equals("*") ? null : fromString.apply(ues);
+        
+        return new Range<T>(lbt, lowerEndpoint, upperEndpoint, ubt);
+    }
+    
+    /**
+     * Yields {@code "<lowerBoundType><lowerEndpoint>..<upperEndpoint><upperBoundType>"}.
      * <p>
-     * The bound value "*" is used to indicate an infinite value.
+     * lowerBoundType is either "[" or "(" for BoundType.CLOSED or OPEN respectively.
+     * upperBoundType is either "]" or ")" for BoundType.CLOSED or OPEN respectively.
      * <p>
-     * N.B. See note in classdoc wrt Guava Range behavior.
+     * The endpoint value "*" is used to indicate an infinite value.
+     * Otherwise, endpoint.toString() is used to get the endpoint's value.
      * <p>
+     * Likely yields an undesirable result when wanting to treat
+     * a Byte, Short, Integer, or Long T in an unsigned fashion.
+     * See toStringUnsigned().
+     * <p>
+     * No special processing is performed to escape/encode a "." present
+     * in an endpoint.toString() value.  Hence Range<T>.toString() for
+     * a {@code T} of {@code String} (of value "." or with embedded ".."),
+     * or some other non-numeric type may yield values that are not amenable
+     * to parsing by {@link #valueOf(String, Function)}.
+     * <br>
      * .e.g.,
      * <pre>
-     * "[120..156)"  // lowerBound=120 inclusive, upperBound=156 exclusive
+     * "[120..156)"  // lowerEndpoint=120 inclusive, upperEndpoint=156 exclusive
      * "[120..*)"    // an "atLeast" 120 range
      * </pre> 
      */
+    @Override
     public String toString() {
+        return toString(endpoint -> endpoint.toString());
+    }
+
+    /**
+     * Return a String treating the endpoints as an unsigned value.
+     * @return String with same form as {@link #toString()}
+     * @throws IllegalArgumentException if the Range is not one of
+     *         Byte, Short, Integer, Long
+     */
+    public String toStringUnsigned() {
+        return toString(endpoint -> toUnsignedString(endpoint));
+    }
+    
+    private String toString(Function<T,String> toStringFn) {
+        // N.B. See note in classdoc wrt Guava Range behavior.
         String[] parts = { "(", "*", "*", ")" };
-        if (lowerBound!=null) {
+        if (lowerEndpoint!=null) {
             parts[0] = lbt==BoundType.CLOSED ? "[" : "(";
-            parts[1] = lowerBound.toString();
+            parts[1] = toStringFn.apply(lowerEndpoint);
         }
-        if (upperBound!=null) {
-            parts[2] = upperBound.toString();
+        if (upperEndpoint!=null) {
+            parts[2] = toStringFn.apply(upperEndpoint);
             parts[3] = ubt==BoundType.CLOSED ? "]" : ")";
         }
             
         return parts[0]+parts[1]+".."+parts[2]+parts[3];
+    }
+    
+    private static <T> String toUnsignedString(T v) {
+        if (v instanceof Byte)
+            return Integer.toUnsignedString(Byte.toUnsignedInt((Byte)v));
+        else if (v instanceof Short)
+            return Integer.toUnsignedString(Short.toUnsignedInt((Short)v));
+        else if (v instanceof Integer)
+            return Integer.toUnsignedString((Integer)v);
+        else if (v instanceof Long)
+            return Long.toUnsignedString((Long)v);
+        throw new IllegalArgumentException("Not Range of Byte,Short,Integer, or Long"+v.getClass());
     }
     
 }
