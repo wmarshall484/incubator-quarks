@@ -53,35 +53,6 @@ public class SimulatedGpsSensor {
 			{37.195647, -121.748087},                 // IBM Silicon Valley Lab 555 Bailey Ave
 	};
 
-	/**
-	 * Create a stream of simulated GPS sensor readings.
-	 * 
-	 * Simulation of reading a sensor every 1sec 
-	 * 
-	 * Each tuple is a JSON object containing:
-	 * <UL>
-	 * <LI>{@code name} - Name of the sensor from {@code name}.</LI>
-	 * <LI>{@code GPS reading} - GPS value - 
-	 *	 <UL> 
-	 *   	<LI>{@code latitude}.</LI>
-	 *   	<LI> {@code longitude}.</LI>
-	 *      <LI> {@code altitude}.</LI>
-	 *      <LI> {@code speed}.</LI>
-	 *      <LI> {@code time}.</LI>
-	 *      <LI> {@code course}.</LI>
-	 *   </UL>
-	 * </UL>
-	 * 
-	 * @param topology Topology to be added to.
-	 * @param name Name of the sensor in the JSON output.
-	 * @return Stream containing GPS data
-	 */
-	public TStream<GpsSensor> gpsSensor(Topology topology, String name) {
-
-		TStream<GpsSensor> sensor = topology.poll(() -> nextGps(), 1, TimeUnit.SECONDS);
-		return sensor;
-	}
-
 	//TODO Re-write kluge code to read from a file
 	// Returns a GpsSensor using the hard-coded list, then repeats through the list
 	// forever when requestedIterations = -1, or until iterations is reached.
