@@ -18,6 +18,7 @@ under the License.
 */
 package quarks.topology;
 
+import quarks.function.BiFunction;
 import quarks.function.Consumer;
 import quarks.function.Function;
 import quarks.function.Predicate;
@@ -439,4 +440,11 @@ public interface TStream<T> extends TopologyElement {
      * @return set of tags
      */
     Set<String> getTags(); 
+    
+    <J, U, K> TStream<J> join(Function<T, K> keyer, TWindow<U, K> window, BiFunction<T, List<U>, J> joiner);
+    
+    <J, U, K> TStream<J> joinLast(Function<T, K> keyer, TStream<U> lastStream, Function<U, K> lastStreamKeyer, BiFunction<T, U, J> joiner);
+
+    <J, U> TStream<J> joinLast(TStream<U> lastStream, BiFunction<T, U, J> joiner);
+    
 }

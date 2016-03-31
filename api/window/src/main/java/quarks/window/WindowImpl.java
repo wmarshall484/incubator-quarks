@@ -42,7 +42,7 @@ class WindowImpl<T, K, L extends List<T>> implements Window<T, K, L> {
     protected Supplier<L> listSupplier;
     protected Function<T, K> keyFunction;
     
-    protected Map<K, Partition<T, K, L> > partitions = new HashMap<K, Partition<T, K, L> >();
+    private Map<K, Partition<T, K, L> > partitions = new HashMap<K, Partition<T, K, L> >();
     
     
     WindowImpl(BiFunction<Partition<T, K, L>, T, Boolean> insertionPolicy, BiConsumer<Partition<T, K, L>, T> contentsPolicy,
@@ -117,6 +117,11 @@ class WindowImpl<T, K, L extends List<T>> implements Window<T, K, L> {
     @Override
     public synchronized ScheduledExecutorService getScheduledExecutorService() {
         return this.ses;
+    }
+
+    @Override
+    public Map<K, Partition<T, K, L>> getPartitions() {
+        return partitions;
     }
 
 }

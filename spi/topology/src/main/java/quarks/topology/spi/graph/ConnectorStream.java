@@ -19,14 +19,21 @@ under the License.
 package quarks.topology.spi.graph;
 
 import static quarks.function.Functions.synchronizedFunction;
+import static quarks.window.Policies.alwaysInsert;
+import static quarks.window.Policies.evictOlderWithProcess;
+import static quarks.window.Policies.insertionTimeList;
+import static quarks.window.Policies.processOnInsert;
+import static quarks.window.Policies.scheduleEvictIfEmpty;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import quarks.function.BiFunction;
 import quarks.function.Consumer;
 import quarks.function.Function;
 import quarks.function.Functions;
@@ -43,11 +50,16 @@ import quarks.oplet.functional.Filter;
 import quarks.oplet.functional.FlatMap;
 import quarks.oplet.functional.Map;
 import quarks.oplet.functional.Peek;
+import quarks.oplet.window.Aggregate;
 import quarks.topology.TSink;
 import quarks.topology.TStream;
 import quarks.topology.TWindow;
 import quarks.topology.Topology;
 import quarks.topology.spi.AbstractTStream;
+import quarks.window.InsertionTimeList;
+import quarks.window.Partition;
+import quarks.window.Window;
+import quarks.window.Windows;
 
 /**
  * A stream that directly adds oplets to the graph.
@@ -163,6 +175,100 @@ public class ConnectorStream<G extends Topology, T> extends AbstractTStream<G, T
     }
     
     @Override
+    public <J, U, K> TStream<J> join(Function<T, K> keyer,
+            TWindow<U, K> twindow, BiFunction<T, List<U>, J> joiner) {
+        
+        if(twindow instanceof TWindowImpl){
+            TStream<U> lastStream = twindow.feeder();
+            BiFunction<List<U>,K, Object> processor = Functions.synchronizedBiFunction((list, key) -> null);
+            Window<U, K, LinkedList<U>> window = Windows.lastNProcessOnInsert(((TWindowImpl<U, K>)twindow).getSize(), twindow.getKeyFunction());
+            Aggregate<U,Object,K> op = new Aggregate<U,Object,K>(window, processor);
+            lastStream.pipe(op);
+            return this.map((tuple) -> {
+                Partition<U, K, ? extends List<U>> part = window.getPartitions().get(keyer.apply(tuple));
+                if(part == null)
+                    return null;
+                J ret;
+                synchronized (part) {
+                    List<U> last = part.getContents();
+                    ret = joiner.apply(tuple, last);
+                }
+                return ret;
+            });
+        }
+        
+        else if (twindow instanceof TWindowTimeImpl){
+            TStream<U> lastStream = twindow.feeder();
+            BiFunction<List<U>,K, Object> processor = Functions.synchronizedBiFunction((list, key) -> null);
+            long time = ((TWindowTimeImpl<U, K>)(twindow)).getTime();
+            TimeUnit unit = ((TWindowTimeImpl<U, K>)(twindow)).getUnit();
+            Window<U, K, InsertionTimeList<U>> window =
+                    Windows.window(
+                            alwaysInsert(),
+                            scheduleEvictIfEmpty(time, unit),
+                            evictOlderWithProcess(time, unit),
+                            processOnInsert(),
+                            twindow.getKeyFunction(),
+                            insertionTimeList());
+            Aggregate<U,Object,K> op = new Aggregate<U,Object,K>(window, processor);
+            lastStream.pipe(op);
+            return this.map((tuple) -> {
+                Partition<U, K, ? extends List<U>> part = window.getPartitions().get(keyer.apply(tuple));
+                if(part == null)
+                    return null;
+                J ret;
+                synchronized (part) {
+                    List<U> last = part.getContents();
+                    ret = joiner.apply(tuple, last);
+                }
+                return ret;
+            });
+        }
+        else{
+            throw new IllegalStateException("Unsupported window format");
+        }
+    }
+
+    @Override
+    public <J, U, K> TStream<J> joinLast(Function<T, K> keyer,
+            TStream<U> lastStream, Function<U, K> lastStreamKeyer, BiFunction<T, U, J> joiner) {
+        BiFunction<List<U>,K, Object> processor = Functions.synchronizedBiFunction((list, key) -> null);
+        Window<U, K, LinkedList<U>> window = Windows.lastNProcessOnInsert(1, lastStreamKeyer);
+        Aggregate<U,Object,K> op = new Aggregate<U,Object,K>(window, processor);
+        lastStream.pipe(op);
+        return this.map((tuple) -> {
+            Partition<U, K, ? extends List<U>> part = window.getPartitions().get(keyer.apply(tuple));
+            if(part == null)
+                return null;
+            J ret;
+            synchronized (part) {
+                U last = part.getContents().get(0);
+                ret = joiner.apply(tuple, last);
+            }
+            return ret;
+        });
+    }
+    
+    @Override
+    public <J, U> TStream<J> joinLast(TStream<U> lastStream, BiFunction<T, U, J> joiner) {
+        BiFunction<List<U>,Integer, Object> processor = Functions.synchronizedBiFunction((list, key) -> null);
+        Window<U, Integer, LinkedList<U>> window = Windows.lastNProcessOnInsert(1, tuple -> 0);
+        Aggregate<U,Object,Integer> op = new Aggregate<U,Object,Integer>(window, processor);
+        lastStream.pipe(op);
+        return this.map((tuple) -> {
+            Partition<U, Integer, ? extends List<U>> part = window.getPartitions().get(0);
+            if(part == null)
+                return null;
+            J ret;
+            synchronized (part) {
+                U last = part.getContents().get(0);
+                ret = joiner.apply(tuple, last);
+            }
+            return ret;
+        });
+    }
+    
+    @Override
     public TStream<T> union(Set<TStream<T>> others) {
         if (others.isEmpty())
             return this;
@@ -199,5 +305,7 @@ public class ConnectorStream<G extends Topology, T> extends AbstractTStream<G, T
     public Set<String> getTags() {
         return connector.getTags();
     }
+
+
 
 }

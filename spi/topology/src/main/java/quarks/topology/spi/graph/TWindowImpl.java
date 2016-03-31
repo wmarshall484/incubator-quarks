@@ -64,4 +64,11 @@ public class TWindowImpl<T, K> extends AbstractTWindow<T, K> {
         Aggregate<T,U,K> op = new Aggregate<T,U,K>(window, batcher);
         return feeder().pipe(op); 
     }
+
+    /**
+     * @return the size
+     */
+    public int getSize() {
+        return size;
+    }
 }
