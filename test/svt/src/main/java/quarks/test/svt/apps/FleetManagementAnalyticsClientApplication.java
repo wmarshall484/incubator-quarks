@@ -23,7 +23,7 @@ import quarks.test.svt.utils.sensor.gps.GpsSensor;
 import quarks.topology.Topology;
 
 /**
- * A Global Positional System and On-Board Dashboard application to perform analytics 
+ * A Global Positional System and On-Board Diagnostics application to perform analytics 
  * defined in {@link GpsAnalyticsApplication} and {@link ObdAnalyticsApplication}.  
  * <p>
  * The Quarks console URL is written to the console and to file consoleUrl.txt.
