@@ -18,7 +18,6 @@ under the License.
 */
 package quarks.test.svt.apps;
 
-
 import java.util.concurrent.TimeUnit;
 import com.google.gson.JsonObject;
 import quarks.connectors.iot.QoS;
@@ -30,187 +29,186 @@ import quarks.topology.TWindow;
 import quarks.topology.Topology;
 
 /**
- * GPS analytics 
+ * GPS analytics
  * <p>
- * Source is a stream of GPS sensor data {@link GpsSensor} 
+ * Source is a stream of GPS sensor data {@link GpsSensor}
  * <p>
  * Here's an outline of the topology
  * <ul>
- * <li>Log GPS coordinates by publishing to IotF. The data may be used by a server application to display the vehicle on a map.
- *     </li>
- * <li>Filter to detect speeds above a threshold and publish alert IotF
- *     </li>
- * <li>Filter for GPS coordinates that are outside of a defined Geofence boundary
- *     </li>
- * <li>Windowing to detect hard driving: hard braking or hard acceleration and publish alert to IotF
- *     </li>    
+ * <li>Log GPS coordinates by publishing to IotF. The data may be used by a
+ * server application to display the vehicle on a map.</li>
+ * <li>Filter to detect speeds above a threshold and publish alert IotF</li>
+ * <li>Filter for GPS coordinates that are outside of a defined Geofence
+ * boundary</li>
+ * <li>Windowing to detect hard driving: hard braking or hard acceleration and
+ * publish alert to IotF</li>
  * </ul>
  * <p>
  */
-public class GpsAnalyticsApplication{
+public class GpsAnalyticsApplication {
 
-	private final FleetManagementAnalyticsClientApplication app;
-	private final Topology topology;
+    private final FleetManagementAnalyticsClientApplication app;
+    private final Topology topology;
 
-	//TODO: make these configurable properties
-	boolean trackGpsLocation = true;
-	boolean trackSpeeding = true;
-	boolean trackGeofence = true;
-	boolean trackHardDriving = true;	
-	// Hard braking and acceleration thresholds may depend on the vehicle model
-	double hardBrakingThreshold_MphPerSec = -8.25;  
-	double hardAccelerationThreshold_MphPerSec = 7.37;  
-	String driverId = "driver1";
-	String VIN = "123456"; 
-	double maxSpeed_Mph = 70;
+    // TODO: make these configurable properties
+    boolean trackGpsLocation = true;
+    boolean trackSpeeding = true;
+    boolean trackGeofence = true;
+    boolean trackHardDriving = true;
+    // Hard braking and acceleration thresholds may depend on the vehicle model
+    double hardBrakingThreshold_MphPerSec = -8.25;
+    double hardAccelerationThreshold_MphPerSec = 7.37;
+    String driverId = "driver1";
+    String VIN = "123456";
+    double maxSpeed_Mph = 70;
 
+    static double MILES_PER_HOUR_TO_METERS_PER_SEC = 0.44704;
+    double METERS_PER_HOUR_TO_MILES_PER_SEC = 1 / MILES_PER_HOUR_TO_METERS_PER_SEC;
+    // Convert 70 miles per hour to meters to sec
+    double MAX_SPEED_METERS_PER_SEC = maxSpeed_Mph * MILES_PER_HOUR_TO_METERS_PER_SEC;
+    static double MPS_TO_MPH = 3.6;
 
-	static double MILES_PER_HOUR_TO_METERS_PER_SEC =  0.44704;
-	double METERS_PER_HOUR_TO_MILES_PER_SEC = 1 / MILES_PER_HOUR_TO_METERS_PER_SEC;
-	// Convert 70 miles per hour to meters to sec
-	double MAX_SPEED_METERS_PER_SEC = maxSpeed_Mph * MILES_PER_HOUR_TO_METERS_PER_SEC ;
-	static double MPS_TO_MPH = 3.6;
+    public GpsAnalyticsApplication(Topology t, FleetManagementAnalyticsClientApplication app) {
+        this.topology = t;
+        this.app = app;
+    }
 
+    /**
+     * Add the GPS sensor analytics to the topology.
+     */
+    public void addAnalytics() {
 
-	public GpsAnalyticsApplication(Topology t, FleetManagementAnalyticsClientApplication app) {
-		this.topology = t;
-		this.app = app;
-	}
+        // Generate source GPS data
+        SimulatedGpsSensor g = new SimulatedGpsSensor();
+        TStream<GpsSensor> gpsSensor = topology.poll(() -> g.nextGps(), 500, TimeUnit.MILLISECONDS);
 
-	/**
-	 * Add the GPS sensor analytics to the topology.
-	 */
-	public void addAnalytics() {
+        // Publish GPS data to IotF every 1 second
+        if (trackGpsLocation) {
+            TStream<GpsSensor> logGps = gpsSensor.peek(t -> System.out.println("log GPS: " + t.toString()));
+            logGps.tag("logGps");
+            // Publish GPS location to IotF
+            app.iotDevice().events(JsonGps(logGps), "GPS: " + driverId, QoS.FIRE_AND_FORGET);
+        }
 
-		// Generate source GPS data
-		SimulatedGpsSensor g = new SimulatedGpsSensor();
-		TStream<GpsSensor> gpsSensor = topology.poll(() -> g.nextGps(), 500, TimeUnit.MILLISECONDS);
+        // Filter for actual speeding and publish to IoTF and local file
+        if (trackSpeeding) {
+            TStream<GpsSensor> speeding = gpsSensor.filter(t -> t.getSpeedMetersPerSec() > MAX_SPEED_METERS_PER_SEC);
 
-		// Publish GPS data to IotF every 1 second
-		if (trackGpsLocation) {
-			TStream<GpsSensor> logGps = gpsSensor.peek(t -> System.out.println("log GPS: " + t.toString()));
-			logGps.tag("logGps");
-			// Publish GPS location to IotF
-			app.iotDevice().events(JsonGps(logGps), "GPS: " + driverId, QoS.FIRE_AND_FORGET);
-		}
+            speeding.tag("speeding");
+            // Count speeding tuples
+            // TODO investigate why publish doesn't appear to work when a
+            // counter is set
+            // Metrics.counter(speeding);
 
-		// Filter for actual speeding and publish to IoTF and local file
-		if (trackSpeeding) {
-			TStream<GpsSensor> speeding = gpsSensor.filter(t -> t.getSpeedMetersPerSec() > MAX_SPEED_METERS_PER_SEC);
+            speeding.peek(t -> System.out.println("Alert: speeding - " + t.toString()));
+            // Write speeding event to IotF
+            app.iotDevice().events(JsonSpeed(speeding), "Speeding: " + driverId, QoS.FIRE_AND_FORGET);
+        }
 
-			speeding.tag("speeding");
-			// Count speeding tuples
-			// TODO investigate why publish doesn't appear to work when a counter is set
-			//			Metrics.counter(speeding);
+        // Filter for Geofence boundary exceptions and publish to IoTF
+        if (trackGeofence) {
+            TStream<GpsSensor> geofence = gpsSensor
+                    .filter(t -> SimulatedGeofence.outsideGeofence(t.getLatitude(), t.getLongitude()));
 
-			speeding.peek(t -> System.out.println("Alert: speeding - " + t.toString()));
-			// Write speeding event to IotF
-			app.iotDevice().events(JsonSpeed(speeding), "Speeding: " + driverId, QoS.FIRE_AND_FORGET);
-		}
+            geofence.tag("geofence");
+            // Count Geofence exceptions
+            // TODO investigate why publish doesn't appear to work when a
+            // counter is set
+            // Metrics.counter(geofence);
 
-		// Filter for Geofence boundary exceptions and publish to IoTF 
-		if (trackGeofence) {
-			TStream<GpsSensor> geofence = gpsSensor.filter(t -> 
-			SimulatedGeofence.outsideGeofence(t.getLatitude(), t.getLongitude()));
+            geofence.peek(t -> System.out.println("Alert: geofence - " + t.toString()));
+            // Write Geofence exceptions to IotF
+            app.iotDevice().events(JsonGeofence(geofence), "Geofence: " + driverId, QoS.FIRE_AND_FORGET);
+        }
 
-			geofence.tag("geofence");
-			//Count Geofence exceptions
-			// TODO investigate why publish doesn't appear to work when a counter is set
-			//			Metrics.counter(geofence);
+        /*
+         * Hard braking: (speed1 - speed0)/(time1 - time0) <
+         * hardBrakingThreshold_KphPerSec Hard acceleration: (speed1 -
+         * speed0)/(time1 - time0) > hardAccelerationThreshold_KphPerSec 1 mps =
+         * 3.6 kph
+         */
+        if (trackHardDriving) {
+            TStream<GpsSensor> hardDriving = gpsSensor;
+            // TODO replace hardcoded "2" in "last(2," to force seeing
+            // hardDriving alter
+            TWindow<GpsSensor, Object> window = hardDriving.last(2, tuple -> 0);
+            TStream<GpsSensor[]> logHardDriving = window.batch((tuples, key) -> {
+                GpsSensor[] results = null;
+                Object[] tuplesArray = tuples.toArray();
 
-			geofence.peek(t -> System.out.println("Alert: geofence - " + t.toString()));
-			// Write Geofence exceptions to IotF
-			app.iotDevice().events(JsonGeofence(geofence), "Geofence: " + driverId, QoS.FIRE_AND_FORGET);
-		}
+                GpsSensor gps1 = (GpsSensor) tuplesArray[1];
+                GpsSensor gps0 = (GpsSensor) tuplesArray[0];
+                double speed1 = gps1.getSpeedMetersPerSec();
+                double speed0 = gps0.getSpeedMetersPerSec();
+                long time1 = gps1.getTime();
+                long time0 = gps0.getTime();
 
-		/*
-		 * Hard braking:  (speed1 - speed0)/(time1 - time0) < hardBrakingThreshold_KphPerSec
-		 * Hard acceleration: (speed1 - speed0)/(time1 - time0) >  hardAccelerationThreshold_KphPerSec
-		 * 1 mps = 3.6 kph
-		 */
-		if (trackHardDriving) {
-			TStream<GpsSensor> hardDriving  = gpsSensor;
-			// TODO replace hardcoded "2" in "last(2," to force seeing hardDriving alter 
-			TWindow<GpsSensor, Object> window = hardDriving.last(2, tuple -> 0);
-			TStream<GpsSensor[]> logHardDriving = window.batch((tuples, key) -> {
-				GpsSensor[] results = null;
-				Object[] tuplesArray = tuples.toArray();
+                // Check for hard braking or hard acceleration
+                // Avoid division by 0
+                if (time1 - time0 != 0) {
+                    double mphPerSec = (speed1 - speed0) / (time1 - time0) * MPS_TO_MPH;
+                    if (mphPerSec < hardBrakingThreshold_MphPerSec || mphPerSec > hardAccelerationThreshold_MphPerSec) {
+                        results = new GpsSensor[2];
+                        results[0] = gps0;
+                        results[1] = gps1;
+                    }
+                }
+                return results;
+            }).peek(t -> System.out.println("hardDriving: t0=" + t[0].toString() + " t[1]=" + t[1].toString()))
+                    .tag("hardDriving");
 
-				GpsSensor gps1 = (GpsSensor)tuplesArray[1];
-				GpsSensor gps0 = (GpsSensor)tuplesArray[0];
-				double speed1 = gps1.getSpeedMetersPerSec();
-				double speed0 = gps0.getSpeedMetersPerSec();
-				long time1 = gps1.getTime();
-				long time0 = gps0.getTime();
+            app.iotDevice().events(JsonHardDriving(logHardDriving), "hardDriving: " + driverId, QoS.FIRE_AND_FORGET);
+        }
+    }
 
-				// Check for hard braking or hard acceleration
-				// Avoid division by 0
-				if (time1 - time0 != 0) {
-					double mphPerSec = (speed1-speed0) / (time1-time0) * MPS_TO_MPH;
-					if (mphPerSec < hardBrakingThreshold_MphPerSec  ||
-							mphPerSec > hardAccelerationThreshold_MphPerSec) {
-						results = new GpsSensor[2];
-						results[0] = gps0;
-						results[1] = gps1;
-					}					
-				}
-				return results;
-			}).peek(t-> System.out.println("hardDriving: t0=" + t[0].toString() + " t[1]="+ t[1].toString()))
-					.tag("hardDriving");
-			
+    private TStream<JsonObject> JsonGps(TStream<GpsSensor> gpsSensor) {
+        return gpsSensor.map(t -> {
+            JsonObject j = new JsonObject();
+            j.addProperty("lat", t.getLatitude());
+            j.addProperty("long", t.getLongitude());
+            j.addProperty("alt", t.geAltitude());
+            j.addProperty("mph", t.getSpeedMetersPerSec() * METERS_PER_HOUR_TO_MILES_PER_SEC);
+            j.addProperty("course", t.getCourse());
+            j.addProperty("time", t.getTime());
+            return j;
+        });
+    }
 
-			app.iotDevice().events(JsonHardDriving(logHardDriving), "hardDriving: " + driverId, QoS.FIRE_AND_FORGET);
-		}
-	}
+    private TStream<JsonObject> JsonSpeed(TStream<GpsSensor> gpsSensor) {
+        return gpsSensor.map(t -> {
+            JsonObject j = new JsonObject();
+            j.addProperty("lat", t.getLatitude());
+            j.addProperty("long", t.getLongitude());
+            j.addProperty("mph", t.getSpeedMetersPerSec() * METERS_PER_HOUR_TO_MILES_PER_SEC);
+            j.addProperty("time", t.getTime());
+            return j;
+        });
+    }
 
-	private TStream<JsonObject> JsonGps(TStream<GpsSensor> gpsSensor) {	
-		return gpsSensor.map(t -> {
-			JsonObject j = new JsonObject();
-			j.addProperty("lat", t.getLatitude());
-			j.addProperty("long", t.getLongitude());
-			j.addProperty("alt", t.geAltitude());
-			j.addProperty("mph", t.getSpeedMetersPerSec() * METERS_PER_HOUR_TO_MILES_PER_SEC);
-			j.addProperty("course", t.getCourse());
-			j.addProperty("time", t.getTime());
-			return j;
-		});
-	}
+    private TStream<JsonObject> JsonGeofence(TStream<GpsSensor> gpsSensor) {
+        return gpsSensor.map(t -> {
+            JsonObject j = new JsonObject();
+            j.addProperty("lat", t.getLatitude());
+            j.addProperty("long", t.getLongitude());
+            j.addProperty("time", t.getTime());
+            return j;
+        });
+    }
 
-	private TStream<JsonObject> JsonSpeed(TStream<GpsSensor> gpsSensor) {	
-		return gpsSensor.map(t -> {
-			JsonObject j = new JsonObject();
-			j.addProperty("lat", t.getLatitude());
-			j.addProperty("long", t.getLongitude());
-			j.addProperty("mph", t.getSpeedMetersPerSec() * METERS_PER_HOUR_TO_MILES_PER_SEC);
-			j.addProperty("time", t.getTime());
-			return j;
-		});
-	}	
-
-	private TStream<JsonObject> JsonGeofence(TStream<GpsSensor> gpsSensor) {	
-		return gpsSensor.map(t -> {
-			JsonObject j = new JsonObject();
-			j.addProperty("lat", t.getLatitude());
-			j.addProperty("long", t.getLongitude());
-			j.addProperty("time", t.getTime());
-			return j;
-		});
-	}
-
-	private TStream<JsonObject> JsonHardDriving(TStream<GpsSensor[]> gpsSensors) {	
-		return gpsSensors.map(t -> {
-			JsonObject j = new JsonObject();
-			j.addProperty("lat1", t[0].getLatitude());
-			j.addProperty("long1", t[0].getLongitude());
-			j.addProperty("time1", t[0].getTime());
-			j.addProperty("speed1", t[0].getSpeedMetersPerSec());            
-			j.addProperty("lat2", t[1].getLatitude());
-			j.addProperty("long2", t[1].getLongitude());
-			j.addProperty("time2", t[1].getTime());
-			j.addProperty("speed2", t[1].getSpeedMetersPerSec());
-			j.addProperty("mphPerSec", (t[1].getSpeedMetersPerSec()-t[0].getSpeedMetersPerSec()) * MPS_TO_MPH
-					/ (t[1].getTime() - t[0].getTime()));
-			return j;
-		});
-	}
+    private TStream<JsonObject> JsonHardDriving(TStream<GpsSensor[]> gpsSensors) {
+        return gpsSensors.map(t -> {
+            JsonObject j = new JsonObject();
+            j.addProperty("lat1", t[0].getLatitude());
+            j.addProperty("long1", t[0].getLongitude());
+            j.addProperty("time1", t[0].getTime());
+            j.addProperty("speed1", t[0].getSpeedMetersPerSec());
+            j.addProperty("lat2", t[1].getLatitude());
+            j.addProperty("long2", t[1].getLongitude());
+            j.addProperty("time2", t[1].getTime());
+            j.addProperty("speed2", t[1].getSpeedMetersPerSec());
+            j.addProperty("mphPerSec", (t[1].getSpeedMetersPerSec() - t[0].getSpeedMetersPerSec()) * MPS_TO_MPH
+                    / (t[1].getTime() - t[0].getTime()));
+            return j;
+        });
+    }
 }

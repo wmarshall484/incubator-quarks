@@ -23,44 +23,47 @@ import quarks.test.svt.utils.sensor.gps.GpsSensor;
 import quarks.topology.Topology;
 
 /**
- * A Global Positional System and On-Board Diagnostics application to perform analytics 
- * defined in {@link GpsAnalyticsApplication} and {@link ObdAnalyticsApplication}.  
+ * A Global Positional System and On-Board Diagnostics application to perform
+ * analytics defined in {@link GpsAnalyticsApplication} and
+ * {@link ObdAnalyticsApplication}.
  * <p>
  * The Quarks console URL is written to the console and to file consoleUrl.txt.
- * <p> 
+ * <p>
  * The Watson IotF URL is written to the console and to file iotfUrl.txt
  * 
  * <p>
- * Argument: specify pathname to application properties file. If running in Eclipse, you can  
- *  	specify GpsObdAnalyticsApplication.properties.
+ * Argument: specify pathname to application properties file. If running in
+ * Eclipse, you can specify GpsObdAnalyticsApplication.properties.
  */
 public class FleetManagementAnalyticsClientApplication extends AbstractIotfApplication {
 
-	public static void main(String[] args) throws Exception {
-		if (args.length < 1)
-			throw new Exception("missing pathname to application properties file");
+    public static void main(String[] args) throws Exception {
+        if (args.length < 1)
+            throw new Exception("missing pathname to application properties file");
 
-		FleetManagementAnalyticsClientApplication application = new FleetManagementAnalyticsClientApplication(args[0]);
+        FleetManagementAnalyticsClientApplication application = new FleetManagementAnalyticsClientApplication(args[0]);
 
-		application.run();
-	}
+        application.run();
+    }
 
-	/**
-	 * Create an application instance.
-	 * @param propsPath pathname to an application configuration file
-	 * @throws Exception
-	 */
-	FleetManagementAnalyticsClientApplication(String propsPath) throws Exception {
-		super(propsPath);
-	}
+    /**
+     * Create an application instance.
+     * 
+     * @param propsPath
+     *            pathname to an application configuration file
+     * @throws Exception
+     */
+    FleetManagementAnalyticsClientApplication(String propsPath) throws Exception {
+        super(propsPath);
+    }
 
-	@Override
-	protected void buildTopology(Topology t) {
+    @Override
+    protected void buildTopology(Topology t) {
 
-		// Add the GPS analytics to the topology
-		new GpsAnalyticsApplication(t, this).addAnalytics();
+        // Add the GPS analytics to the topology
+        new GpsAnalyticsApplication(t, this).addAnalytics();
 
-		// TODO Add the OBD analytics to the topology
-		//       new ObdAnalyticsApplication(t, this).addAnalytics();    
-	}
+        // TODO Add the OBD analytics to the topology
+        // new ObdAnalyticsApplication(t, this).addAnalytics();
+    }
 }

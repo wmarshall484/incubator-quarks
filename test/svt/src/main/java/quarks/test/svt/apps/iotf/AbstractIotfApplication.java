@@ -46,65 +46,70 @@ import quarks.topology.Topology;
  */
 public abstract class AbstractIotfApplication extends AbstractApplication {
 
-	private IotDevice device;
+    private IotDevice device;
 
-	public AbstractIotfApplication(String propsPath) throws Exception {
-		super(propsPath);
-	}
+    public AbstractIotfApplication(String propsPath) throws Exception {
+        super(propsPath);
+    }
 
-	@Override
-	protected void preBuildTopology(Topology topology) {
-		// Add an Iotf device communication manager to the topology
-		// Declare a connection to IoTF Quickstart service		
-		String deviceId = "qs" + Long.toHexString(new Random().nextLong());
-		device = IotfDevice.quickstart(topology, deviceId);
+    @Override
+    protected void preBuildTopology(Topology topology) {
+        // Add an Iotf device communication manager to the topology
+        // Declare a connection to IoTF Quickstart service
+        String deviceId = "qs" + Long.toHexString(new Random().nextLong());
+        device = IotfDevice.quickstart(topology, deviceId);
 
-		// TODO replace quickstart 
-		//     iotfDevice = new IotfDevice(topology, new File("device.cfg"));
+        // TODO replace quickstart
+        // iotfDevice = new IotfDevice(topology, new File("device.cfg"));
 
-		System.out.println("Quickstart device type:" + IotfDevice.QUICKSTART_DEVICE_TYPE);
-		System.out.println("Quickstart device id  :" + deviceId);
-		System.out.println("https://quickstart.internetofthings.ibmcloud.com/#/device/"
-				+ deviceId);
-		// Also write this information to file quickstartUrl.txt in case the console scrolls too fast
-		try {
-			PrintWriter writer = new PrintWriter("iotfUrl.txt", "UTF-8");
-			writer.println("Quickstart device type:" + IotfDevice.QUICKSTART_DEVICE_TYPE);
-			writer.println("Quickstart device id  :" + deviceId);
-			writer.println("https://quickstart.internetofthings.ibmcloud.com/#/device/"
-					+ deviceId);
-			writer.close();
-		} catch ( Exception e) {
-			e.printStackTrace();
-		}
-	}
+        System.out.println("Quickstart device type:" + IotfDevice.QUICKSTART_DEVICE_TYPE);
+        System.out.println("Quickstart device id  :" + deviceId);
+        System.out.println("https://quickstart.internetofthings.ibmcloud.com/#/device/" + deviceId);
+        // Also write this information to file quickstartUrl.txt in case the
+        // console scrolls too fast
+        try {
+            PrintWriter writer = new PrintWriter("iotfUrl.txt", "UTF-8");
+            writer.println("Quickstart device type:" + IotfDevice.QUICKSTART_DEVICE_TYPE);
+            writer.println("Quickstart device id  :" + deviceId);
+            writer.println("https://quickstart.internetofthings.ibmcloud.com/#/device/" + deviceId);
+            writer.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
-	/**
-	 * Get the application's IotfDevice
-	 * @return the IotfDevice
-	 */
-	public IotDevice iotDevice() {
-		return device;
-	}
+    /**
+     * Get the application's IotfDevice
+     * 
+     * @return the IotfDevice
+     */
+    public IotDevice iotDevice() {
+        return device;
+    }
 
-	/**
-	 * Compose a IotfDevice eventId for the sensor.
-	 * @param sensorId the sensor id
-	 * @param eventId the sensor's eventId
-	 * @return the device eventId
-	 */
-	public String sensorEventId(String sensorId, String eventId) {
-		return sensorId + "." + eventId;
-	}
+    /**
+     * Compose a IotfDevice eventId for the sensor.
+     * 
+     * @param sensorId
+     *            the sensor id
+     * @param eventId
+     *            the sensor's eventId
+     * @return the device eventId
+     */
+    public String sensorEventId(String sensorId, String eventId) {
+        return sensorId + "." + eventId;
+    }
 
-	/**
-	 * Compose a IotfDevice commandId for the sensor
-	 * @param sensorId the sensor id
-	 * @param commandId the sensor's commandId
-	 * @return the device commandId
-	 */
-	public String commandId(String sensorId, String commandId) {
-		return sensorId + "." + commandId;
-	}
+    /**
+     * Compose a IotfDevice commandId for the sensor
+     * 
+     * @param sensorId
+     *            the sensor id
+     * @param commandId
+     *            the sensor's commandId
+     * @return the device commandId
+     */
+    public String commandId(String sensorId, String commandId) {
+        return sensorId + "." + commandId;
+    }
 }
-
