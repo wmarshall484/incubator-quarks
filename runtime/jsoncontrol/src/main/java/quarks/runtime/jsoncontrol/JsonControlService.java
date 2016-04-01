@@ -24,8 +24,6 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
-
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -224,8 +222,16 @@ public class JsonControlService implements ControlService {
     }
 
     @Override
-    public <T> Set<T> getControls(Class<T> controlInterface) {
-        // TODO add implementation
-        throw new UnsupportedOperationException();
+    public synchronized <T> T getControl(String type, String alias, Class<T> controlInterface) {
+        String controlId = getControlId(type, null, alias);
+        
+        ControlMBean<?> bean = mbeans.get(controlId);
+        if (bean == null)
+            return null;
+        
+        if (bean.getControlInterface() != controlInterface)
+            return null;
+        
+        return controlInterface.cast(bean);
     }
 }
