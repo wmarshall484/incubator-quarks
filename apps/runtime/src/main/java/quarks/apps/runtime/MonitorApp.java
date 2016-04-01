@@ -39,7 +39,6 @@ import quarks.topology.TStream;
 import quarks.topology.Topology;
 import quarks.topology.TopologyProvider;
 import quarks.topology.mbeans.ApplicationServiceMXBean;
-import quarks.topology.plumbing.PlumbingStreams;
 import quarks.topology.services.ApplicationService;
 
 /**
@@ -142,7 +141,6 @@ public class MonitorApp {
                 t, 
                 (evType, job) -> { return MonitorAppEvent.toJsonObject(evType, job); }
                 );
-        jobEvents = PlumbingStreams.isolate(jobEvents, true);
 
         jobEvents = jobEvents.filter(
                 value -> {
@@ -181,7 +179,7 @@ public class MonitorApp {
             String applicationName = MonitorAppEvent.getJobName(job);
 
             logger.info("Will restart monitored application {}, cause: {}", applicationName, value);
-            submitApplication(MonitorAppEvent.getJobName(job), controlService);
+            submitApplication(applicationName, controlService);
         }
     }
 
