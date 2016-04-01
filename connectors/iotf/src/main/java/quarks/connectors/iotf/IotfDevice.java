@@ -150,8 +150,10 @@ public class IotfDevice implements IotDevice {
     
     /**
      * Create an {@code IotfDevice} connector to the Quickstart service.
-     * Quickstart service requires no-sign up to use, but only supports
-     * device commands for a single 
+     * Quickstart service requires no-sign up to use to allow evaluation
+     * but has limitations on functionality, such as only supporting
+     * device events and only one message per second.
+     * 
      * @param topology the connector's associated {@code Topology}.
      * @param deviceId Device identifier to use for the connection.
      * @return Connector to the Quickstart service.
