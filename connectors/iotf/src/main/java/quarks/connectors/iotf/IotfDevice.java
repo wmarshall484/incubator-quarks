@@ -44,10 +44,25 @@ import quarks.topology.Topology;
 /**
  * Connector for IBM Watson IoT Platform.
  * <BR>
- * <em>Note IBM Watson IoT Platform was previously known as Internet of Things Foundation.</em>
+ * IBM Watson IoT Platform is a cloud based internet of things
+ * scale message hub that provides a device model on top of MQTT.
+ * {@code IotfDevice} implements the generic device model {@link IotDevice}
+ * and thus can be used as a connector for
+ * {@link quarks.providers.iot.IotProvider}.
+ * <BR>
+ * <em>Note IBM Watson IoT Platform was previously known as
+ * IBM Internet of Things Foundation.</em>
+ * 
+ * @see quarks.connectors.iot Quarks generic device model
+ * @see <a href="http://www.ibm.com/internet-of-things/iot-platform.html">IBM Watson IoT Platform</a>
+ * @see quarks.samples.connectors.iotf.IotfSensors Sample application
  */
 public class IotfDevice implements IotDevice {
     
+    /**
+     * Device type identifier ({@value}) used when using the Quickstart service.
+     * @see #quickstart(Topology, String)
+     */
     public static final String QUICKSTART_DEVICE_TYPE = "iotsamples-quarks";
 
     private final IotfConnector connector;
@@ -57,9 +72,34 @@ public class IotfDevice implements IotDevice {
     /**
      * Create a connector to the IBM Watson IoT Platform Bluemix service with the device
      * specified by {@code options}.
+     * <BR>
+     * These properties must be set in {@code options}.
+     * 
+     * <UL>
+     * <LI>{@code org=}<em>organization identifier</em></LI>
+     * <LI>{@code type=}<em>device type</em></LI>
+     * <LI>{@code id=}<em>device identifier</em></LI>
+     * <LI>{@code auth-method=token}</LI>
+     * <LI>{@code auth-token=}<em>authorization token</em></LI>
+     * </UL>
+     * For example:
+     * <pre>
+     * <code>
+     * Properties options = new Properties();
+     * options.setProperty("org", "uguhsp");
+     * options.setProperty("type", "iotsample-arduino");
+     * options.setProperty("id", "00aabbccde03");
+     * options.setProperty("auth-method", "token");
+     * options.setProperty("auth-token", "AJfKQV@&bBo@VX6Dcg");
+     * 
+     * IotDevice iotDevice = new IotfDevice(options);
+     * </code>
+     * </pre>
+
      * <p>
      * Connecting to the server occurs when the topology is submitted for
      * execution.
+     * </p>
      * 
      * @param topology
      *            the connector's associated {@code Topology}.
@@ -69,11 +109,58 @@ public class IotfDevice implements IotDevice {
         this.connector = new IotfConnector(options);
     }
 
+    /**
+     * Create a connector to the IBM Watson IoT Platform Bluemix service.
+     * Device identifier and authorization are specified
+     * by a configuration file.
+     * <BR>
+     * The format of the file is:
+     * <pre>
+     * <code>
+     * [device]
+     * org = <em>organization identifier</em>
+     * type = <em>device type</em>
+     * id = <em>device identifier</em>
+     * auth-method = token
+     * auth-token = <em>authorization token</em>
+     * </code>
+     * </pre>
+     * For example:
+     * <pre>
+     * <code>
+     * [device]
+     * org = uguhsp
+     * type = iotsample-arduino
+     * id = 00aabbccde03
+     * auth-method = token
+     * auth-token = AJfKQV@&bBo@VX6Dcg
+     * </code>
+     * </pre>
+     * <p>
+     * Connecting to the server occurs when the topology is submitted for
+     * execution.
+     * </p>
+     * @param topology the connector's associated {@code Topology}.
+     * @param optionsFile File containing connection information.
+     */
     public IotfDevice(Topology topology, File optionsFile) {
         this.topology = topology;
         this.connector = new IotfConnector(optionsFile);
     }
     
+    /**
+     * Create an {@code IotfDevice} connector to the Quickstart service.
+     * Quickstart service requires no-sign up to use to allow evaluation
+     * but has limitations on functionality, such as only supporting
+     * device events and only one message per second.
+     * 
+     * @param topology the connector's associated {@code Topology}.
+     * @param deviceId Device identifier to use for the connection.
+     * @return Connector to the Quickstart service.
+     * 
+     * @see <a href="https://quickstart.internetofthings.ibmcloud.com">Quickstart</a>
+     * @see quarks.samples.connectors.iotf.IotfQuickstart Quickstart sample application
+     */
     public static IotfDevice quickstart(Topology topology, String deviceId) {
         Properties options = new Properties();
         options.setProperty("org", "quickstart");
