@@ -142,6 +142,7 @@
         <ant dir="samples/topology" target="@{target}" useNativeBasedir="true"/>
         <ant dir="samples/connectors" target="@{target}" useNativeBasedir="true"/>
         <ant dir="samples/console" target="@{target}" useNativeBasedir="true" />
+        <ant dir="samples/scenarios" target="@{target}" useNativeBasedir="true" />
         <ant dir="android/topology" target="@{target}" useNativeBasedir="true" />
         <ant dir="android/hardware" target="@{target}" useNativeBasedir="true" />
         <ant dir="test/fvtiot" target="@{target}" useNativeBasedir="true" />
