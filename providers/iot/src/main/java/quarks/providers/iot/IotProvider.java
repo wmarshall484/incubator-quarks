@@ -35,6 +35,7 @@ import quarks.execution.DirectSubmitter;
 import quarks.execution.Job;
 import quarks.execution.services.ControlService;
 import quarks.execution.services.ServiceContainer;
+import quarks.function.BiConsumer;
 import quarks.function.Function;
 import quarks.providers.direct.DirectProvider;
 import quarks.runtime.appservice.AppService;
@@ -282,5 +283,29 @@ public class IotProvider implements TopologyProvider,
      */
     protected IotDevice createMessageHubDevice(Topology topology) {
         return iotDeviceCreator.apply(topology);
+    }
+    
+    /**
+     * Register an application that uses an {@code IotDevice}.
+     * <BR>
+     * Wrapper around {@link ApplicationService#registerTopology(String, BiConsumer)}
+     * that passes in an {@link IotDevice} and configuration to the supplied
+     * function {@code builder} that builds the application. The passed
+     * in {@code IotDevice} is created using {@link IotDevicePubSub#addIotDevice(quarks.topology.TopologyElement)}.
+     * <BR>
+     * Note that {@code builder} obtains a reference to its topology using
+     * {@link IotDevice#topology()}.
+     * <P>
+     * When the application is
+     * {@link quarks.topology.mbeans.ApplicationServiceMXBean#submit(String, String) submitted} {@code builder.accept(iotDevice, config)}
+     * is called to build the application's graph.
+     * </P>
+     * 
+     * @param applicationName Application name
+     * @param builder Function that builds the topology.
+     */
+    public void registerTopology(String applicationName, BiConsumer<IotDevice, JsonObject> builder) {
+        getApplicationService().registerTopology(applicationName,
+                (topology,config) -> builder.accept(IotDevicePubSub.addIotDevice(topology), config));
     }
 }
