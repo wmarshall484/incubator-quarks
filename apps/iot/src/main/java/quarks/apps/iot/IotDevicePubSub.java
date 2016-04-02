@@ -21,7 +21,9 @@ package quarks.apps.iot;
 
 import com.google.gson.JsonObject;
 
+import quarks.connectors.iot.Events;
 import quarks.connectors.iot.IotDevice;
+import quarks.connectors.iot.QoS;
 import quarks.connectors.pubsub.PublishSubscribe;
 import quarks.topology.TStream;
 import quarks.topology.TopologyElement;
@@ -47,6 +49,15 @@ import quarks.topology.TopologyElement;
  * {@link #addIotDevice(TopologyElement)}. This proxy {@code IotDevice} is then
  * used to send device events and receive device commands in that topology. <BR>
  * Once all the topologies have been declared they can be submitted.
+ * </P>
+ * <P>
+ * At startup this application sends a single device event with
+ * identifier {@link Events#IOT_START}. This performs two functions:
+ * <UL>
+ * <LI>Initiates a connection to the message hub.</LI>
+ * <LI>Allows external applications to be notified (by subscribing to device events)
+ * when a Quarks provider starts.</LI>
+ * </UL>
  * </P>
  * 
  * @see PublishSubscribe
@@ -88,6 +99,10 @@ public class IotDevicePubSub {
                 ew -> ew.getAsJsonPrimitive("qos").getAsInt());
         
         PublishSubscribe.publish(device.commands(), COMMANDS_TOPIC, JsonObject.class);
+        
+        // Publish a single event at startup
+        TStream<JsonObject> start = device.topology().of(new JsonObject());
+        device.events(start, Events.IOT_START, QoS.AT_MOST_ONCE);
     }
 
     /**
