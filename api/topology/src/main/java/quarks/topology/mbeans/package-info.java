@@ -56,7 +56,7 @@ under the License.
  *    <td>{@link quarks.runtime.jsoncontrol.JsonControlService#ALIAS_KEY alias}</td>
  *    <td>String</td>
  *    <td>Alias of control MBean.</td>
- *    <td>Default is {@link quarks.topology.services.ApplicationService#ALIAS quarksApplicationService}.</td>
+ *    <td>Default is {@link quarks.topology.services.ApplicationService#ALIAS quarks}.</td>
  *  </tr>
  *  <tr>
  *    <td rowspan="2">{@link quarks.runtime.jsoncontrol.JsonControlService#ARGS_KEY args}</td>
@@ -76,7 +76,7 @@ under the License.
  * Example submitting the application {@code EngineTemp} with no configuration, will result in a running
  * job named {@code EngineTemp}.
  * <BR>
- * {@code {"type":"appService","alias":"quarksApplicationService","op":"submit","args":["EngineTemp",{}]}}
+ * {@code {"type":"appService","alias":"quarks","op":"submit","args":["EngineTemp",{}]}}
  * </P>
  */
 package quarks.topology.mbeans;
