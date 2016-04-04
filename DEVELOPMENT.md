@@ -51,6 +51,12 @@ To build on Windows probably needs some changes, please get involved and contrib
 
 When a pull request is opened on the GitHub mirror site, the Travis CI service runs a full build.
 
+The build setup is contained in `.travis.yml` in the project root directory.
+It includes:
+* Building the project
+* Testing on Java 8 and Java 7
+Not all tests may be run, some tests are skipped due to timing issues or if excessive setup is required.
+
 If your test may randomly fail because for example it depends on publicly available test services, 
 or is timing dependent, and if timing variances on the Travis CI servers may make it more likely
 for your tests to fail, you may disable the test from being executed on Travis CI using the 
@@ -63,6 +69,8 @@ following statement:
         ...
     }
 ```
+
+Closing ant reopening a pull request will kick off a new build against the pull request.
 
 ### Test reports
 

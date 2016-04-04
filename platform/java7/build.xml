@@ -89,6 +89,13 @@
 		<antcall target="retro7.quarks.android"/>
 	</target>
 
+        <!--
+        This contains the set of jars that are converted
+        to work on Java 7.
+
+        Matching tests must also be added to test7.setup
+        and test7.run
+        -->
 	<target name="retro7.quarks" >
 		<retro7 qjar="quarks.api.function.jar" />
 		<retro7 qjar="quarks.api.execution.jar" />
@@ -99,7 +106,10 @@
 		<retro7 qjar="quarks.spi.graph.jar" />
 		<retro7 qjar="quarks.spi.topology.jar" />
 		<retro7 qjar="quarks.runtime.etiao.jar" />
+		<retro7 qjar="quarks.runtime.appservice.jar" />
 		<retro7 qjar="quarks.runtime.jmxcontrol.jar" />
+		<retro7 qjar="quarks.runtime.jsoncontrol.jar" />
+
 		<retro7 qjar="quarks.utils.metrics.jar" qdir="utils/metrics/lib" />
 		<retro7 qjar="quarks.providers.direct.jar" />
 		<retro7 qjar="quarks.connectors.common.jar"  qdir="connectors/common/lib" />
@@ -184,6 +194,10 @@
            </fail>
         </target>
 
+        <!--
+            This is the set of tests that are converted
+            to be used with Java 7
+        -->
         <!-- Ensure previous separate build steps built the Java 7 jars -->
 	<target name="test7.setup" depends="verify.java7.built"
     description="Setup  Quarks tests for the Java 7.Must be run with Java 8 to run retrolambda."
@@ -213,6 +227,7 @@
 		<retro7.test.setup tdir="spi/topology" />
 		<retro7.test.setup tdir="runtime/etiao" />
 		<retro7.test.setup tdir="runtime/jmxcontrol" />
+		<retro7.test.setup tdir="runtime/jsoncontrol" />
 		<retro7.test.setup tdir="utils/metrics"  ldir="utils/metrics/lib"/>
 		<retro7.test.setup tdir="providers/direct" />
 		<retro7.test.setup tdir="connectors/common" ldir="connectors/common/lib"/>
@@ -220,6 +235,10 @@
 		<retro7.test.setup tdir="connectors/http"  ldir="connectors/http/lib"/>
 	</target>
 
+        <!--
+            This is the set of tests that are converted
+            to be used with Java 7
+        -->
 	<!-- this must be preceeded by test7.setup (run with a Java 8 vm) -->
 	<target name="test7.run" depends="verify.java7.built"
 	    description="Run Quarks tests for the Java 7. Should be run with JAVA_HOME pointing to a Java 7 virtual machine, though can also be run with Java 8"
@@ -234,6 +253,7 @@
 		<retro7.test.run tdir="spi/topology" />
 		<retro7.test.run tdir="runtime/etiao" />
 		<retro7.test.run tdir="runtime/jmxcontrol" />
+		<retro7.test.run tdir="runtime/jsoncontrol" />
 		<retro7.test.run tdir="utils/metrics"  ldir="utils/metrics/lib"/>
 		<retro7.test.run tdir="providers/direct" />
 		<retro7.test.run tdir="connectors/common" ldir="connectors/common/lib"/>
