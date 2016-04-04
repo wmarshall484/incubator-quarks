@@ -18,7 +18,6 @@ under the License.
 */
 package quarks.apps.runtime;
 
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -110,16 +109,18 @@ public class MonitorApp {
      */
     public static void submitApplication(String applicationName, ControlService controlService) {
         try {
-            Set<ApplicationServiceMXBean> controls = 
-                    controlService.getControls(ApplicationServiceMXBean.class);
-            if (controls.isEmpty()) {
+            ApplicationServiceMXBean control =
+                    controlService.getControl(
+                            ApplicationServiceMXBean.TYPE,
+                            ApplicationService.ALIAS,
+                            ApplicationServiceMXBean.class);
+            if (control == null) {
                 throw new IllegalStateException(
                         "Could not find a registered control with the following interface: " + 
                         ApplicationServiceMXBean.class.getName());                
             }
-            for (ApplicationServiceMXBean control : controls)
 // TODO add ability to submit with the initial application configuration
-                control.submit(applicationName, null);
+            control.submit(applicationName, null);
         }
         catch (Exception e) {
             throw new RuntimeException(e);

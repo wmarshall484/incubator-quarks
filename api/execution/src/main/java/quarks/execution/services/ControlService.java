@@ -18,8 +18,6 @@ under the License.
 */
 package quarks.execution.services;
 
-import java.util.Set;
-
 /**
  * Service that provides a control mechanism.
  * <BR>
@@ -73,19 +71,19 @@ import java.util.Set;
 public interface ControlService {
 
     /**
-     * Register a control server MBean for an oplet.
+     * Register a control MBean.
      * 
-     * @param type Type of the control object.
+     * @param type Type of the control MBean.
      * @param id
-     *            Unique identifier for the control object.
+     *            Unique identifier for the control MBean.
      * @param alias
-     *            Alias for the control object. Expected to be unique within the context
+     *            Alias for the control MBean. Required to be unique within the context
      *            of {@code type}.
      * @param controlInterface
-     *            Public interface for the control object.
+     *            Public interface for the control MBean.
      * @param control
-     *            The control bean
-     * @return unique identifier that can be used to unregister an control mbean.
+     *            The control MBean
+     * @return unique identifier that can be used to unregister an control MBean.
      */
     <T> String registerControl(String type, String id, String alias, Class<T> controlInterface, T control);
     
@@ -95,16 +93,13 @@ public interface ControlService {
     void unregister(String controlId);
     
     /**
-     * Return the controls registered with this service which implement 
-     * the specified interface.  The interface had previously been used to 
-     * {@linkplain ControlService#registerControl(String, String, String, Class, Object) register}
-     * the control.
+     * Return a control Mbean registered with this service.
      * 
+     * @param type Type of the control MBean.
+     * @param alias Alias for the control MBean.
      * @param controlInterface
-     *              Public interface identifying the controls to be retrieved. 
-     * @return a set containing the controls registered with the given 
-     *              interface. If no control satisfies the query, an empty 
-     *              set is returned.
+     *              Public interface of the control MBean. 
+     * @return Control Mbean or null if a matching MBean is not registered.
      */
-    <T> Set<T> getControls(Class<T> controlInterface);
+    <T> T getControl(String type, String alias, Class<T> controlInterface);
 }
