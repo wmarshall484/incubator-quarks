@@ -24,11 +24,11 @@ This page documents which jars are expected to work in each environment.
 |quarks.providers.development.jar | yes | | no | Uses JMX, For development only, not deployment |
 |quarks.providers.direct.jar| yes | yes | yes |
 |quarks.providers.iot.jar| yes | | |
-|quarks.runtime.appservice.jar| yes | | |
+|quarks.runtime.appservice.jar| yes | yes | yes |
 |quarks.runtime.etiao.jar| yes | yes | yes |
 |quarks.runtime.jmxcontrol.jar| yes | yes | no | Uses JMX |
 |quarks.runtime.jobregistry.jar| yes | | |
-|quarks.runtime.jsoncontrol.jar| yes | | |
+|quarks.runtime.jsoncontrol.jar| yes | yes | yes |
 |quarks.spi.graph.jar| yes | yes | yes |
 |quarks.spi.topology.jar| yes | yes | yes |
 
@@ -81,6 +81,14 @@ This page documents which jars are expected to work in each environment.
 |---|---|---|---|---|
 |quarks.android.topology.jar | no | no | yes | |
 |quarks.android.hardware.jar | no | no | yes | |
+
+## Adding Jars to Java 7 & Android
+
+Java 7 jars are created using `platform/java7/build.xml`. Adding a Java just requires:
+* Adding it to target `retro7.quarks` - Copy entry for an existing jar.
+* Adding any tests for it to targets `test7.setup` and `test7.run` - Copy entry for an existing jar.
+
+Any Java 7 jar is automatically included in Android unless it is explictly excluded in `platform/android/build.xml`.
 
 ## Java API Usage
 
