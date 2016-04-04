@@ -40,7 +40,7 @@ public interface ApplicationService {
 	 * Default alias a service registers its control MBean as.
 	 * Value is {@value}.
 	 */
-    String ALIAS = "quarksApplicationService";
+    String ALIAS = "quarks";
     
     /**
      * Add a topology that can be started though a control mbean.

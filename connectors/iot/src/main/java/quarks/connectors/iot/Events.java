@@ -19,24 +19,15 @@ under the License.
 package quarks.connectors.iot;
 
 /**
- * Devic command identifiers used by Quarks.
+ * Device event identifiers used by Quarks.
  * 
  * @see IotDevice#RESERVED_ID_PREFIX
  */
-public interface Commands {
+public interface Events {
     
     /**
-     * Command identifier used for the control service.
-     * <BR>
-     * The command payload is used to invoke operations
-     * against control MBeans using an instance of
-     * {@link quarks.runtime.jsoncontrol.JsonControlService}.
-     * <BR>
-     * Value is {@value}.
-     * 
-     * @see quarks.execution.services.ControlService
-     * @see quarks.providers.iot.IotProvider
+     * An IotProvider has started.
+     * Event data is an empty JSON object
      */
-    String CONTROL_SERVICE = IotDevice.RESERVED_ID_PREFIX + "Control";
-
+    String IOT_START = IotDevice.RESERVED_ID_PREFIX + "IotStart";
 }
