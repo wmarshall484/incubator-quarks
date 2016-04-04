@@ -18,6 +18,8 @@ under the License.
 */
 package quarks.providers.iot;
 
+import static quarks.topology.services.ApplicationService.SYSTEM_APP_PREFIX;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -88,7 +90,7 @@ public class IotProvider implements TopologyProvider,
     /**
      * IoT control using device commands application name.
      */
-    public static final String CONTROL_APP_NAME = "QuarksIotCommandsToControl";
+    public static final String CONTROL_APP_NAME = SYSTEM_APP_PREFIX + "IotCommandsToControl";
     
     private final TopologyProvider provider;
     private final Function<Topology, IotDevice> iotDeviceCreator;

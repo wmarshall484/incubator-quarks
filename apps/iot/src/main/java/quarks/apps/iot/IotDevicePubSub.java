@@ -19,6 +19,8 @@ under the License.
 
 package quarks.apps.iot;
 
+import static quarks.topology.services.ApplicationService.SYSTEM_APP_PREFIX;
+
 import com.google.gson.JsonObject;
 
 import quarks.connectors.iot.Events;
@@ -67,7 +69,7 @@ public class IotDevicePubSub {
     /**
      * IotDevicePubSub application name.
      */
-    public static final String APP_NAME = "QuarksIotDevicePubSub";
+    public static final String APP_NAME = SYSTEM_APP_PREFIX + "IotDevicePubSub";
     
     /**
      * Events published to topic {@value} are sent as device events using the

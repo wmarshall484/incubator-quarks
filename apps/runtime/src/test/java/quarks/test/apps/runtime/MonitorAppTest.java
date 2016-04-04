@@ -53,7 +53,7 @@ public class MonitorAppTest {
         startProvider(provider);
 
         // Start monitor app
-        MonitorApp app = new MonitorApp(provider, provider, "Quarks.MonitorApplication");
+        MonitorApp app = new MonitorApp(provider, provider, "MonitorApplication");
         Job monitor = app.submit();
 
         // Declare and register user apps which need monitoring

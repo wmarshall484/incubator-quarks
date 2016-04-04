@@ -43,6 +43,11 @@ public interface ApplicationService {
     String ALIAS = "quarks";
     
     /**
+     * Prefix ({@value}) reserved for system application names.
+     */
+    String SYSTEM_APP_PREFIX = "quarks";
+    
+    /**
      * Add a topology that can be started though a control mbean.
      * <BR>
      * When a {@link ApplicationServiceMXBean#submit(String, String) submit}
@@ -58,6 +63,10 @@ public interface ApplicationService {
      * </UL>
      * Once {@code builder.accept(topology, config)} returns it is submitted
      * to the {@link Submitter} associated with the implementation of this service.
+     * <P>
+     * Application names starting with {@link #SYSTEM_APP_PREFIX quarks} are reserved
+     * for system applications.
+     * </P>
      * 
      * @param applicationName Application name to register.
      * @param builder How to build the topology for this application.
