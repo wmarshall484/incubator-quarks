@@ -1,6 +1,6 @@
 # Quarks Java support
 
-As documented in [DEVELOPMENT.md] Quarks development is performed
+As documented in (DEVELOPMENT.md) Quarks development is performed
 using Java 8 but Java 7 and Android is supported through use of
 retrolambda to build specific jars.
 
