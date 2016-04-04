@@ -179,37 +179,37 @@ public class JsonControlService implements ControlService {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private Object[] getArguments(Method method, JsonArray args) {
-        final Parameter[] params = method.getParameters();
+        final Class<?>[] paramTypes = method.getParameterTypes();
         
-        if (params.length == 0 || args == null || args.size() == 0)
+        if (paramTypes.length == 0 || args == null || args.size() == 0)
             return null;
         
-        assert params.length == args.size();
+        assert paramTypes.length == args.size();
         
-        Object[] oargs = new Object[params.length];
+        Object[] oargs = new Object[paramTypes.length];
         for (int i = 0; i < oargs.length; i++) {
-            final Parameter pt = params[i];
+            final Class<?> pt = paramTypes[i];
             final JsonElement arg = args.get(i);
             Object jarg;
             
-            if (String.class == pt.getType()) {
+            if (String.class == pt) {
                 if (arg instanceof JsonObject)
                     jarg = gson.toJson(arg);
                 else
                     jarg = arg.getAsString();
             }
-            else if (Integer.TYPE == pt.getType())
+            else if (Integer.TYPE == pt)
                 jarg = arg.getAsInt();
-            else if (Long.TYPE == pt.getType())
+            else if (Long.TYPE == pt)
                 jarg = arg.getAsLong();
-            else if (Double.TYPE == pt.getType())
+            else if (Double.TYPE == pt)
                 jarg = arg.getAsDouble();
-            else if (Boolean.TYPE == pt.getType())
+            else if (Boolean.TYPE == pt)
                 jarg = arg.getAsBoolean();
-            else if (pt.getType().isEnum())
-                jarg = Enum.valueOf((Class<Enum>) pt.getType(), arg.getAsString());
+            else if (pt.isEnum())
+                jarg = Enum.valueOf((Class<Enum>) pt, arg.getAsString());
             else
-                throw new UnsupportedOperationException(pt.getType().getTypeName());
+                throw new UnsupportedOperationException(pt.getName());
             
             oargs[i] = jarg;
         }
