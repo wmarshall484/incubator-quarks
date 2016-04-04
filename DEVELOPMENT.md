@@ -51,6 +51,8 @@ To build on Windows probably needs some changes, please get involved and contrib
 
 When a pull request is opened on the GitHub mirror site, the Travis CI service runs a full build.
 
+The latest build status for the project's branches can be seen at: https://travis-ci.org/apache/incubator-quarks/branches
+
 The build setup is contained in `.travis.yml` in the project root directory.
 It includes:
 * Building the project
