@@ -45,7 +45,7 @@ public class AppServiceControl implements ApplicationServiceMXBean {
         
         JsonObject config;
         
-        if (jsonConfig != null)
+        if (jsonConfig != null && !jsonConfig.isEmpty())
             config = (JsonObject) new JsonParser().parse(jsonConfig);
         else
             config = new JsonObject();

@@ -32,7 +32,6 @@ import quarks.connectors.iot.Commands;
 import quarks.connectors.iot.IotDevice;
 import quarks.connectors.pubsub.service.ProviderPubSub;
 import quarks.connectors.pubsub.service.PublishSubscribeService;
-import quarks.execution.Configs;
 import quarks.execution.DirectSubmitter;
 import quarks.execution.Job;
 import quarks.execution.services.ControlService;
@@ -45,6 +44,7 @@ import quarks.runtime.jsoncontrol.JsonControlService;
 import quarks.topology.TStream;
 import quarks.topology.Topology;
 import quarks.topology.TopologyProvider;
+import quarks.topology.mbeans.ApplicationServiceMXBean;
 import quarks.topology.services.ApplicationService;
 
 /**
@@ -96,7 +96,10 @@ public class IotProvider implements TopologyProvider,
     private final Function<Topology, IotDevice> iotDeviceCreator;
     private final DirectSubmitter<Topology, Job> submitter;
     
-    private final List<Topology> systemApps = new ArrayList<>();
+    /**
+     * System applications by name.
+     */
+    private final List<String> systemApps = new ArrayList<>();
 
     private JsonControlService controlService = new JsonControlService();
     
@@ -215,11 +218,11 @@ public class IotProvider implements TopologyProvider,
      * @see #createMessageHubDevice(Topology)
      */
     protected void createIotDeviceApp() {
-        Topology topology = newTopology(IotDevicePubSub.APP_NAME);
-             
-        IotDevice msgHub = createMessageHubDevice(topology);
-        IotDevicePubSub.createApplication(msgHub);
-        systemApps.add(topology);
+        
+        getApplicationService().registerTopology(IotDevicePubSub.APP_NAME,
+                (topology, config) -> IotDevicePubSub.createApplication(createMessageHubDevice(topology)));
+
+        systemApps.add(IotDevicePubSub.APP_NAME);
     }
     
     /**
@@ -232,33 +235,32 @@ public class IotProvider implements TopologyProvider,
      * to invoke the control operation.
      */
     protected void createIotCommandToControlApp() {
-        Topology topology = newTopology(CONTROL_APP_NAME);
-        
-        IotDevice publishedDevice = IotDevicePubSub.addIotDevice(topology);
-
-        TStream<JsonObject> controlCommands = publishedDevice.commands(Commands.CONTROL_SERVICE);
-        controlCommands.sink(cmd -> {
-            try {
-                getControlService().controlRequest(cmd.getAsJsonObject(IotDevice.CMD_PAYLOAD));
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+         
+        this.registerTopology(CONTROL_APP_NAME, (iotDevice, config) -> {
+            TStream<JsonObject> controlCommands = iotDevice.commands(Commands.CONTROL_SERVICE);
+            controlCommands.sink(cmd -> {
+                try {
+                    getControlService().controlRequest(cmd.getAsJsonObject(IotDevice.CMD_PAYLOAD));
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
         });
-        
-        systemApps.add(topology);
+
+        systemApps.add(CONTROL_APP_NAME);
     }
     
     /**
      * Start this provider by starting its system applications.
      * 
-     * @throws InterruptedException Interrupted exception starting applications.
      * @throws ExecutionException Exception starting applications.
      */
-    public void start() throws InterruptedException, ExecutionException {
-        for (Topology topology : systemApps) {
-            JsonObject config = new JsonObject();
-            config.addProperty(Configs.JOB_NAME, topology.getName());
-            submit(topology, config).get();
+    public void start() throws Exception {
+        ApplicationServiceMXBean bean = getControlService().getControl(ApplicationServiceMXBean.TYPE,
+                ApplicationService.ALIAS, ApplicationServiceMXBean.class);
+        
+        for (String systemAppName : systemApps) {
+            bean.submit(systemAppName, null /* no config */);
         }
     }
 

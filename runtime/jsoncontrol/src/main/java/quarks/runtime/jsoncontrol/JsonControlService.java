@@ -21,9 +21,9 @@ package quarks.runtime.jsoncontrol;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Parameter;
 import java.util.HashMap;
 import java.util.Map;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -232,6 +232,6 @@ public class JsonControlService implements ControlService {
         if (bean.getControlInterface() != controlInterface)
             return null;
         
-        return controlInterface.cast(bean);
+        return controlInterface.cast(bean.getControl());
     }
 }
