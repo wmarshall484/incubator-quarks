@@ -53,28 +53,40 @@ This page documents which jars are expected to work in each environment.
 ## Applications
 | Jar | Java 8 SE | Java 7 SE | Android | Notes |
 |---|---|---|---|---|
-apps/iot/lib/quarks.apps.iot.jar | yes | | | | 
-apps/runtime/lib/quarks.apps.runtime.jar | yes | | | | 
+|quarks.apps.iot.jar | yes | | | | 
+|quarks.apps.runtime.jar | yes | | | | 
 
-## Utilities
-
-| Jar | Java 8 SE | Java 7 SE | Android | Notes |
-|---|---|---|---|---|
-|utils/metrics/lib/quarks.utils.metrics.jar | | | | |
+### Analytics
 
 | Jar | Java 8 SE | Java 7 SE | Android | Notes |
 |---|---|---|---|---|
-console/servlets/lib/quarks.console.servlets.jar | yes | | no | Uses JMX, Servlet|
-console/server/lib/quarks.console.server.jar | yes | | no | Uses JMX, Servlet |
+|quarks.analytics.math3.jar | yes | | | |
+|quarks.analytics.sensors.jar | yes | | | |
+
+### Utilities
 
 | Jar | Java 8 SE | Java 7 SE | Android | Notes |
 |---|---|---|---|---|
-analytics/math3/lib/quarks.analytics.math3.jar | | | | |
-analytics/sensors/lib/quarks.analytics.sensors.jar | | | | |
+|quarks.utils.metrics.jar | yes | | | |
 
-## Android
+### Development Console
+
 | Jar | Java 8 SE | Java 7 SE | Android | Notes |
 |---|---|---|---|---|
-android/topology/lib/quarks.android.topology.jar | no | no | yes | |
-android/hardware/lib/quarks.android.hardware.jar | no | no | yes | |
+|quarks.console.servlets.jar | yes | | no | Uses JMX, Servlet|
+|quarks.console.server.jar | yes | | no | Uses JMX, Servlet |
+
+### Android
+| Jar | Java 8 SE | Java 7 SE | Android | Notes |
+|---|---|---|---|---|
+|quarks.android.topology.jar | no | no | yes | |
+|quarks.android.hardware.jar | no | no | yes | |
+
+## Java API Usage
+
+| Feature | Packages | Quarks Usage | Notes |
+|---|---|---|---|
+|JMX | java.lang.management, javax.managment* | | JMX not supported on Android |
+|JMX | | utils/metrics | Optional utility methods |
+|JMX | | console/servlets, runtime/jmxcontrol | 
 
