@@ -18,6 +18,8 @@ under the License.
 */
 package quarks.apps.runtime;
 
+import static quarks.topology.services.ApplicationService.SYSTEM_APP_PREFIX;
+
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -62,6 +64,12 @@ import quarks.topology.services.ApplicationService;
  * </p>
  */
 public class MonitorApp {
+    /**
+     * Job monitoring application name.
+     */
+    public static final String APP_NAME = SYSTEM_APP_PREFIX + "JobMonitor";
+
+    
     private final TopologyProvider provider;
     private final DirectSubmitter<Topology, Job> submitter;
     private final Topology topology;

@@ -53,7 +53,7 @@ public class MonitorAppTest {
         startProvider(provider);
 
         // Start monitor app
-        MonitorApp app = new MonitorApp(provider, provider, "MonitorApplication");
+        MonitorApp app = new MonitorApp(provider, provider, MonitorApp.APP_NAME);
         Job monitor = app.submit();
 
         // Declare and register user apps which need monitoring
