@@ -84,9 +84,16 @@ This page documents which jars are expected to work in each environment.
 
 ## Java API Usage
 
+Documented use of Java packages outside of the Java core packages.
+Java core has a number of definitions, but at least those outside
+of the Java 8 compact1 definition.
+
 | Feature | Packages | Quarks Usage | Notes |
 |---|---|---|---|
-|JMX | java.lang.management, javax.managment* | | JMX not supported on Android |
+|JMX | `java.lang.management, javax.managment*` | | JMX not supported on Android |
 |JMX | | utils/metrics | Optional utility methods |
 |JMX | | console/servlets, runtime/jmxcontrol | 
+|Servlet| `javax.servlet*` | console/servlets |
+|Websocket| `javax.websocket` | connectors/quarks.javax.websocket, connectors/wsclient-javax-websocket, connectors/javax.websocket-client |
+|JDBC| `java.sql, javax.sql` | connectors/jdbc |
 
