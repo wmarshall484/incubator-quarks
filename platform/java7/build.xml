@@ -116,6 +116,7 @@
 		<retro7 qjar="quarks.connectors.iot.jar" qdir="connectors/iot/lib" />
 		<retro7 qjar="quarks.connectors.iotf.jar" qdir="connectors/iotf/lib" />
 		<retro7 qjar="quarks.connectors.http.jar" qdir="connectors/http/lib" />
+		<retro7 qjar="quarks.connectors.pubsub.jar"  qdir="connectors/pubsub/lib" />
 
 		<mkdir dir="${quarks7.target}/ext"/>
 		<copy todir="${quarks7.target}/ext">
@@ -233,6 +234,7 @@
 		<retro7.test.setup tdir="connectors/common" ldir="connectors/common/lib"/>
 		<retro7.test.setup tdir="connectors/iotf"  ldir="connectors/iotf/lib"/>
 		<retro7.test.setup tdir="connectors/http"  ldir="connectors/http/lib"/>
+		<retro7.test.setup tdir="connectors/pubsub"  ldir="connectors/pubsub/lib"/>
 	</target>
 
         <!--
@@ -259,6 +261,7 @@
 		<retro7.test.run tdir="connectors/common" ldir="connectors/common/lib"/>
 		<retro7.test.run tdir="connectors/iotf"  ldir="connectors/iotf/lib"/>
 		<retro7.test.run tdir="connectors/http"  ldir="connectors/http/lib"/>
+		<retro7.test.run tdir="connectors/pubsub"  ldir="connectors/pubsub/lib"/>
 	</target>
 
 	<target name="clean">
