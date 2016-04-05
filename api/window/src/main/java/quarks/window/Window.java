@@ -159,7 +159,17 @@ public interface Window<T, K, L extends List<T>>{
     Function<T, K> getKeyFunction();
 
     /**
-     * Retrieves the partitions in the window.
+     * Retrieves the partitions in the window. The map of partitions
+     * is stable when synchronizing on the intrinsic lock of the map,
+     * for example:
+     * <br>
+     * <pre><code>
+     * Map&ltK, Partitions<U, K, ?>> partitions = window.getPartitions();
+     * synchronized(partitions){
+     *  // operations with partition
+     * }
+     * </code></pre>
+     * 
      * @return A map of the window's keys and partitions.
      */
     Map<K, Partition<T, K, L>> getPartitions();
