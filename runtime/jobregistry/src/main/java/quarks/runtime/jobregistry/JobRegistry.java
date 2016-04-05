@@ -78,10 +78,11 @@ public class JobRegistry implements JobRegistryService {
     @Override
     public void addListener(BiConsumer<JobRegistryService.EventType, Job> listener) {
         listeners.add(listener);
-
-        jobs.forEach((k, v) -> {
-            listener.accept(JobRegistryService.EventType.ADD, v);
-        });
+        
+        synchronized (jobs) {
+            for (Job job : jobs.values())
+                listener.accept(JobRegistryService.EventType.ADD, job);
+        }
     }
 
     @Override
