@@ -33,7 +33,6 @@ import quarks.execution.DirectSubmitter;
 import quarks.execution.Job;
 import quarks.execution.services.ControlService;
 import quarks.execution.services.ServiceContainer;
-import quarks.providers.development.DevelopmentProvider;
 import quarks.providers.direct.DirectProvider;
 import quarks.runtime.appservice.AppService;
 import quarks.runtime.jmxcontrol.JMXControlService;
@@ -75,7 +74,7 @@ public class MonitorAppTest {
             throws InterruptedException, ExecutionException {
         
         provider.getServices().addService(ControlService.class,
-                new JMXControlService(DevelopmentProvider.JMX_DOMAIN, new Hashtable<>()));
+                new JMXControlService("quarks.test.apps.runtime", new Hashtable<>()));
         AppService.createAndRegister(provider, provider);
         JobRegistry.createAndRegister(provider.getServices());        
     }
