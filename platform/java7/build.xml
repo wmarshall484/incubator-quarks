@@ -118,6 +118,14 @@
 		<retro7 qjar="quarks.connectors.http.jar" qdir="connectors/http/lib" />
 		<retro7 qjar="quarks.connectors.pubsub.jar"  qdir="connectors/pubsub/lib" />
 		<retro7 qjar="quarks.apps.iot.jar"  qdir="apps/iot/lib" />
+		<retro7 qjar="quarks.providers.iot.jar" />
+
+                <retro7 qjar="quarks.samples.apps.jar" qdir="samples/lib" />
+                <retro7 qjar="quarks.samples.connectors.jar" qdir="samples/lib" />
+                <retro7 qjar="quarks.samples.console.jar" qdir="samples/lib" />
+                <retro7 qjar="quarks.samples.scenarios.jar" qdir="samples/lib" />
+                <retro7 qjar="quarks.samples.topology.jar" qdir="samples/lib" />
+                <retro7 qjar="quarks.samples.utils.jar" qdir="samples/lib" />
 
 		<mkdir dir="${quarks7.target}/ext"/>
 		<copy todir="${quarks7.target}/ext">
