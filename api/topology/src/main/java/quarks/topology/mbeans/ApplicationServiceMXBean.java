@@ -29,6 +29,7 @@ public interface ApplicationServiceMXBean {
      * 
      * @param applicationName Name of the application.
      * @param jsonConfig JSON configuration serialized as a String.
+     * Null or an empty String is equivalent to an empty JSON object.
      * 
      * @throws Exception Error submitting application.
      * @see ApplicationService
