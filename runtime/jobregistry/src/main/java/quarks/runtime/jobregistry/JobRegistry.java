@@ -38,17 +38,6 @@ import quarks.function.BiConsumer;
  * Notifies listeners on job additions, deletions and updates.
  */
 public class JobRegistry implements JobRegistryService {
-    /**
-     * Job event types.
-     */
-    public enum EventType {
-        /** A Job has been added to the registry. */
-        ADD,
-        /** A Job has been removed from the registry. */
-        REMOVE,
-        /** A registered Job has been updated. */
-        UPDATE
-    }
 
     /**
      * Creates and registers a {@link JobRegistry} with the given service 
