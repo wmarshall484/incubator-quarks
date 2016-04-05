@@ -23,7 +23,7 @@ This page documents which jars are expected to work in each environment.
 |quarks.api.window.jar| yes | yes | yes |
 |quarks.providers.development.jar | yes | | no | Uses JMX, For development only, not deployment |
 |quarks.providers.direct.jar| yes | yes | yes |
-|quarks.providers.iot.jar| yes | | |
+|quarks.providers.iot.jar| yes | yes | yes |
 |quarks.runtime.appservice.jar| yes | yes | yes |
 |quarks.runtime.etiao.jar| yes | yes | yes |
 |quarks.runtime.jmxcontrol.jar| yes | yes | no | Uses JMX |
@@ -44,7 +44,7 @@ This page documents which jars are expected to work in each environment.
 |quarks.connectors.jdbc.jar | yes | | | |
 |quarks.connectors.kafka.jar | yes | | | |
 |quarks.connectors.mqtt.jar | yes | | | |
-|quarks.connectors.pubsub.jar | yes | | | |
+|quarks.connectors.pubsub.jar | yes | yes | yes | |
 |quarks.connectors.serial.jar | yes | | | |
 |quarks.connectors.wsclient.jar | yes | | | |
 |quarks.connectors.wsclient-javax.websocket.jar | yes | | | |
@@ -53,8 +53,8 @@ This page documents which jars are expected to work in each environment.
 ## Applications
 | Jar | Java 8 SE | Java 7 SE | Android | Notes |
 |---|---|---|---|---|
-|quarks.apps.iot.jar | yes | | | | 
-|quarks.apps.runtime.jar | yes | | | | 
+|quarks.apps.iot.jar | yes | yes | yes | | 
+|quarks.apps.runtime.jar | yes | yes | yes | | 
 
 ### Analytics
 
