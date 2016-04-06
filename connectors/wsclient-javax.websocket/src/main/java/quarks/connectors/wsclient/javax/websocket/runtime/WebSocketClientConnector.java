@@ -211,10 +211,11 @@ public class WebSocketClientConnector extends Connector<Session> implements Seri
             catch (IOException e) {
                 if (!session.isOpen()) {
                     connectionLost(e);  // logs error
+                    getLogger().error("{} sendBinary {} bytes failed. Retrying following connection lost", id(), bytes.length);
                     // retry
                 }
                 else {
-                    getLogger().error("{} sendBinary failed", id(), e);
+                    getLogger().error("{} sendBinary {} bytes failed", id(), bytes.length, e);
                     throw new RuntimeException(e);
                 }
             }
@@ -232,10 +233,11 @@ public class WebSocketClientConnector extends Connector<Session> implements Seri
             catch (IOException e) {
                 if (!session.isOpen()) {
                     connectionLost(e);  // logs error
+                    getLogger().error("{} sendText {} chars failed. Retrying following connection lost", id(), msg.length());
                     // retry
                 }
                 else {
-                    getLogger().error("{} sendText failed", id(), e);
+                    getLogger().error("{} sendText {} chars failed", id(), msg.length(), e);
                     throw new RuntimeException(e);
                 }
             }
