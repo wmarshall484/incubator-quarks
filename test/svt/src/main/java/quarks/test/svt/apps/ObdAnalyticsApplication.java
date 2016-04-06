@@ -1,20 +1,21 @@
-/**
- * GPS analytics
- * <p>
- * Source is a stream of GPS sensor data {@link GpsSensor}
- * <p>
- * Here's an outline of the topology
- * <ul>
- * <li>Log GPS coordinates by publishing to IotF. The data may be used by a
- * server application to display the vehicle on a map.</li>
- * <li>Filter to detect speeds above a threshold and publish alert IotF</li>
- * <li>Filter for GPS coordinates that are outside of a defined Geofence
- * boundary</li>
- * <li>Windowing to detect hard driving: hard braking or hard acceleration and
- * publish alert to IotF</li>
- * </ul>
- * <p>
- */
+/*
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+*/
 package quarks.test.svt.apps;
 
 import quarks.test.svt.utils.sensor.gps.GpsSensor;
