@@ -99,7 +99,7 @@ public class Filters {
      * <LI>The first tuple.</LI>
      * </UL>
      * <BR>
-     * <img src="doc-files/deadband.png" alt="Deadband example"/>
+     * <img src="doc-files/deadband.png" alt="Deadband example">
      * </P>
      * 
      * @param <T> Tuple type.

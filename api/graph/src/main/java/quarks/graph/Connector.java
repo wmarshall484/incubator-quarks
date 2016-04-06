@@ -46,9 +46,9 @@ import quarks.oplet.core.Peek;
  * 
  * <pre>
  * <code>
- *                      -->C1
- * port-->P1-->P2-->P3--|
- *                      -->C2
+ *                      --&gt;C1
+ * port--&gt;P1--&gt;P2--&gt;P3--|
+ *                      --&gt;C2
  * </code>
  * </pre>
  * 

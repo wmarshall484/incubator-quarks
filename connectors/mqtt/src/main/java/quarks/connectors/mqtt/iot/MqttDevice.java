@@ -49,8 +49,9 @@ import quarks.topology.json.JsonFunctions;
  * Connector configuration Properties fall into two categories:
  * <ul>
  * <li>MQTT Device abstraction properties</li>
- * <li>Base MQTT connector properties - see {@link MqttConfig#fromProperties(Properties)}</li>
- * 
+ * <li>Base MQTT connector properties - see {@link MqttConfig#fromProperties(Properties)}
+ * </ul>
+ *
  * <h3>Device properties</h3>
  * <ul>
  * <li>mqttDevice.id - Required. An identifier that uniquely identifies
@@ -73,7 +74,7 @@ import quarks.topology.json.JsonFunctions;
  * <li>mqttDevice.events.retain - Optional MQTT "retain" behavior for published events.  Defaults to false.</li>
  * <li>mqttDevice.mqtt.clientId - Optional value to use for the MQTT clientId.
  *     Defaults to {mqttDevice.topic.prefix}id/{mqttDevice.id}.</li>
- * </ul> 
+ * </ul>
  * Sample use:
  * <pre>{@code
  *  // assuming a properties file containing at least:

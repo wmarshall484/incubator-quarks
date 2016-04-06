@@ -90,7 +90,7 @@ public class IotfDevice implements IotDevice {
      * options.setProperty("type", "iotsample-arduino");
      * options.setProperty("id", "00aabbccde03");
      * options.setProperty("auth-method", "token");
-     * options.setProperty("auth-token", "AJfKQV@&bBo@VX6Dcg");
+     * options.setProperty("auth-token", "AJfKQV@&amp;bBo@VX6Dcg");
      * 
      * IotDevice iotDevice = new IotfDevice(options);
      * </code>
@@ -133,7 +133,7 @@ public class IotfDevice implements IotDevice {
      * type = iotsample-arduino
      * id = 00aabbccde03
      * auth-method = token
-     * auth-token = AJfKQV@&bBo@VX6Dcg
+     * auth-token = AJfKQV@&amp;bBo@VX6Dcg
      * </code>
      * </pre>
      * <p>
@@ -223,11 +223,12 @@ public class IotfDevice implements IotDevice {
      * <LI>{@code command} - Command identifier as a String</LI>
      * <LI>{@code tsms} - IoTF Timestamp of the command in milliseconds since the 1970/1/1 epoch.</LI>
      * <LI>{@code format} - Format of the command as a String</LI>
-     * <LI>{@code payload} - Payload of the command</LI>
+     * <LI>{@code payload} - Payload of the command
      * <UL>
      * <LI>If {@code format} is {@code json} then {@code payload} is JSON</LI>
      * <LI>Otherwise {@code payload} is String
      * </UL>
+     * </LI>
      * </UL>
      * 
      * 

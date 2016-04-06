@@ -82,11 +82,12 @@ public class HttpResponders {
      * For each HTTP response a JSON object is produced that contains:
      * <UL>
      * <LI> {@code request} - the original input tuple that lead to the request  </LI>
-     * <LI> {@code response} - JSON object containing information about the response</LI>
+     * <LI> {@code response} - JSON object containing information about the response
      * <UL>
      *    <LI> {@code status} - Status code for the response as an integer</LI>
      *    <LI> {@code entity} - JSON response entity if one exists </LI>
      * </UL>
+     * </LI>
      * </UL>
      * 
      * @return Function that will process the {@code application/json} responses.

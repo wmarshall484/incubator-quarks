@@ -54,7 +54,8 @@ import org.slf4j.Logger;
  * <ul>
  * <li>[abstract] ConnectorControl { getState(), connect(), disconnect(), ...}.</li>
  * <li>MqttConnectorControl extends ConnectorControl.  Adds subscribe(), unsubscribe().</li>
- * <li>Add Consumer<MqttConnectorControl> to MqttConfig. Runtime calls it supplying a connector control object.  By doing a disconnect()/connect(), the Supplier<MqttConfig> will be called to as part of reconnect -- hence using updated values if any.</li>
+ * <li>Add Consumer&lt;MqttConnectorControl&gt; to MqttConfig. Runtime calls it supplying a connector control object.
+ * By doing a disconnect()/connect(), the Supplier&lt;MqttConfig&gt; will be called to as part of reconnect -- hence using updated values if any.</li>
  * </ul>
  * <p>
  * Sub-classes are responsible for implementing a small number
