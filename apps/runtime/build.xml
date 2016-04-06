@@ -32,8 +32,9 @@
 
   <path id="test.compile.classpath">
     <pathelement location="${jar}" />
-    <pathelement location="${quarks.lib}/quarks.providers.development.jar" />
     <path refid="compile.classpath"/>
+    <pathelement location="${quarks.lib}/quarks.providers.direct.jar" />
+    <pathelement location="${quarks.lib}/quarks.runtime.jmxcontrol.jar" />
   </path>
 
   <path id="test.classpath">
