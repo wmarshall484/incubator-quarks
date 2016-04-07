@@ -41,13 +41,13 @@ import quarks.topology.TStream;
 import quarks.topology.Topology;
 import quarks.topology.services.ApplicationService;
 
-public class MonitorAppTest {
+public class JobMonitorAppTest {
 
     public final static String MONITORED_APP_NAME_1 = "MonitoredApp_1";
     public final static String MONITORED_APP_NAME_2 = "MonitoredApp_2";
 
     @Test
-    public void testMonitorApp() throws Exception {
+    public void testJobMonitorApp() throws Exception {
         DirectProvider provider = new DirectProvider();
         startProvider(provider);
 
