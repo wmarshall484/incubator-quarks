@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
 
-import quarks.apps.runtime.MonitorApp;
+import quarks.apps.runtime.JobMonitorApp;
 import quarks.execution.DirectSubmitter;
 import quarks.execution.Job;
 import quarks.execution.services.ControlService;
@@ -52,7 +52,7 @@ public class MonitorAppTest {
         startProvider(provider);
 
         // Start monitor app
-        MonitorApp app = new MonitorApp(provider, provider, MonitorApp.APP_NAME);
+        JobMonitorApp app = new JobMonitorApp(provider, provider, JobMonitorApp.APP_NAME);
         Job monitor = app.submit();
 
         // Declare and register user apps which need monitoring
@@ -132,7 +132,7 @@ public class MonitorAppTest {
 
         // Submit all applications registered with the ApplicationService
         for (String name: appService.getApplicationNames()) {
-            MonitorApp.submitApplication(name, controlService);
+            JobMonitorApp.submitApplication(name, controlService);
         }
     }
 }

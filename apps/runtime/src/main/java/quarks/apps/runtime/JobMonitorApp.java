@@ -63,20 +63,20 @@ import quarks.topology.services.ApplicationService;
  * </ul>
  * </p>
  */
-public class MonitorApp {
+public class JobMonitorApp {
     /**
      * Job monitoring application name.
      */
-    public static final String APP_NAME = SYSTEM_APP_PREFIX + "JobMonitor";
+    public static final String APP_NAME = SYSTEM_APP_PREFIX + "JobMonitorApp";
 
     
     private final TopologyProvider provider;
     private final DirectSubmitter<Topology, Job> submitter;
     private final Topology topology;
-    private static final Logger logger = LoggerFactory.getLogger(MonitorApp.class);
+    private static final Logger logger = LoggerFactory.getLogger(JobMonitorApp.class);
 
     /**
-     * Constructs a {@code MonitorApp} with the specified name in the 
+     * Constructs a {@code JobMonitorApp} with the specified name in the 
      * context of the specified provider.
      * 
      * @param provider the topology provider
@@ -87,7 +87,7 @@ public class MonitorApp {
      * @throws IllegalArgumentException if the submitter does not provide 
      *      access to the required services
      */
-    public MonitorApp(TopologyProvider provider, 
+    public JobMonitorApp(TopologyProvider provider, 
             DirectSubmitter<Topology, Job> submitter, String name) {
 
         this.provider = provider;
