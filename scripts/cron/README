@@ -1,0 +1,38 @@
+Script for restarting Quarks if the JVM crashes
+
+The startapp.sh script is setup to run as a cron job every minute in order
+to monitor a JVM running a Quarks application and restart Quarks if the 
+JVM crashes. The script checks whether the pid of the JVM indicates
+a process which is still running.  If the pid is not there, it executes the 
+command to start the application in the first place.
+
+The JVM's standard output and standard error are written to the directory 
+passed as a command line argument for the script. The script also saves the
+process id (pid) of the JVM in a file.  If the pid file already exists and 
+contains the id of a running process, then the script will not start Quarks.
+
+The script is currently setup to execute the quarks.samples.topology.Terminated
+sample, which throws an exception after processing a preset number of 
+tuples.
+
+The crontab entry file startapp.cron contains information which cron uses to
+schedule the job. 
+
+To setup the script to run as a cron job:
+
+1. Edit the startapp.cron file:
+ - Set the QUARKS environment variable to point to your quarks installation,
+   for example: QUARKS=/home/your_userid/quarks-release/quarks/java8
+ - Make sure java is in the path; cron provides a default PATH environment 
+   variable which is probably different from the one you use for development.
+
+2. Install startapp.cron: 
+
+$ crontab ./startapp.cron
+
+   Note: if you wish to have your ~/.profile executed you must explicitly
+   do so in the crontab entry or in a script called by the entry.
+
+3. To remove the current crontab entries:
+
+$ crontab -r
