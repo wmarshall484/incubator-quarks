@@ -148,7 +148,7 @@ public class JobMonitorApp {
         Topology t = provider.newTopology(name);
         TStream<JsonObject> jobEvents = JobEvents.source(
                 t, 
-                (evType, job) -> { return MonitorAppEvent.toJsonObject(evType, job); }
+                (evType, job) -> { return JobMonitorAppEvent.toJsonObject(evType, job); }
                 );
 
         jobEvents = jobEvents.filter(
@@ -156,9 +156,9 @@ public class JobMonitorApp {
                     logger.trace("Filter: {}", value);
 
                     try {
-                        JsonObject job = MonitorAppEvent.getJob(value);
+                        JsonObject job = JobMonitorAppEvent.getJob(value);
                         return (Job.Health.UNHEALTHY.name().equals(
-                                MonitorAppEvent.getJobHealth(job)));
+                                JobMonitorAppEvent.getJobHealth(job)));
                     } catch (IllegalArgumentException e) {
                         logger.info("Invalid event filtered out, cause: {}", e.getMessage());
                         return false;
@@ -184,8 +184,8 @@ public class JobMonitorApp {
         @Override
         public void accept(JsonObject value) {
             ControlService controlService = rts.get().getService(ControlService.class);
-            JsonObject job = MonitorAppEvent.getJob(value);
-            String applicationName = MonitorAppEvent.getJobName(job);
+            JsonObject job = JobMonitorAppEvent.getJob(value);
+            String applicationName = JobMonitorAppEvent.getJobName(job);
 
             logger.info("Will restart monitored application {}, cause: {}", applicationName, value);
             submitApplication(applicationName, controlService);

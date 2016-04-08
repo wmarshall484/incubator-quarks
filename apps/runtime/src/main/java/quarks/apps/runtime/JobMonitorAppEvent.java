@@ -28,7 +28,7 @@ import quarks.execution.services.job.JobRegistryService;
  * Helpers for parsing generating and parsing a JSON representation of job
  * monitoring events. 
  */
-class MonitorAppEvent {
+class JobMonitorAppEvent {
 
     /**
      * Creates a JsonObject wrapping a {@code JobRegistryService} event type
