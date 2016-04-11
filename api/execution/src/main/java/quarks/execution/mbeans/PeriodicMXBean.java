@@ -16,14 +16,14 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 */
-package quarks.oplet.core.mbeans;
+package quarks.execution.mbeans;
 
 import java.util.concurrent.TimeUnit;
 
 /**
- * Control interface for a periodic oplet.
+ * Control interface for a periodic source stream.
  * 
- * @see quarks.oplet.core.PeriodicSource
+ * @see quarks.topology.Topology#poll(quarks.function.Supplier, long, TimeUnit)
  *
  */
 public interface PeriodicMXBean {
@@ -44,4 +44,9 @@ public interface PeriodicMXBean {
      * Set the period.
      */
     public void setPeriod(long period);
+    
+    /**
+     * Set the period and unit
+     */
+    public void setPeriod(long period, TimeUnit unit);
 }

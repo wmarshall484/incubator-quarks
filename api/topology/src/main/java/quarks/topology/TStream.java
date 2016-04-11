@@ -18,6 +18,12 @@ under the License.
 */
 package quarks.topology;
 
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import quarks.execution.services.ControlService;
 import quarks.function.BiFunction;
 import quarks.function.Consumer;
 import quarks.function.Function;
@@ -26,11 +32,6 @@ import quarks.function.ToIntFunction;
 import quarks.function.UnaryOperator;
 import quarks.oplet.core.Pipe;
 import quarks.oplet.core.Sink;
-
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A {@code TStream} is a declaration of a continuous sequence of tuples. A
@@ -433,6 +434,26 @@ public interface TStream<T> extends TopologyElement {
      * @return The tagged stream.
      */
     TStream<T> tag(String... values);
+    
+    /**
+     * Add control service alias for the stream.
+     * <p>
+     * Runtime control services for the stream will be registered with this alias.
+     * </p>
+     * 
+     * @param alias a control services alias for the stream.
+     * @return this
+     * @throws IllegalStateException if the an alias has already been set.
+     * @see ControlService
+     */
+    TStream<T> controlServiceAlias(String alias);
+    
+    /**
+     * Returns the control services alias for the stream if any.
+     * @return the alias. null if one has not be set.
+     * @see ControlService
+     */
+    String getControlServiceAlias();
 
     /**
      * Returns the set of tags associated with this stream.
