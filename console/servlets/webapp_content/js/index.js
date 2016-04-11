@@ -491,7 +491,8 @@ var renderGraph = function(jobId, counterMetrics, bIsNewJob) {
  
   					if (matchedTags.length > 0) {
   						if (matchedTags.length === 1) {
-  							return d.color = color20(streamsTags[matchedTags[0]]);
+  							var color = color20(streamsTags[matchedTags[0]]);
+  							return d.color =  color === "#c7c7c7" ? "#008080" : color;
   						} else {
   							// more than one tag is on this stream
   							return d.color = MULTIPLE_TAGS_COLOR;	
