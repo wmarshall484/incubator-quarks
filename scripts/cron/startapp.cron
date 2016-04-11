@@ -21,7 +21,7 @@
 # installation:
 # QUARKS=/home/your_userid/quarks/java8
 #
-# Make sure that java is in the PATH environment used by cron:
-# PATH=/opt/my_java/bin:$PATH
+# Make sure that JAVA_HOME is set in the environment used by cron:
+# JAVA_HOME=/usr/lib/jvm/jre
 
-* * * * * $QUARKS/scripts/cron/startapp.sh /tmp >> /tmp/quarks-cron.log
+* * * * * $QUARKS/scripts/cron/startapp.sh $QUARKS/samples/lib/quarks.samples.topology.jar quarks.samples.topology.TerminateAfterNTuples /tmp >> /tmp/quarks-cron.log
