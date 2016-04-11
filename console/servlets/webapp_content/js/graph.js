@@ -70,8 +70,8 @@ getFormattedTagLegend = function(tArray) {
 			obj.fill = MULTIPLE_TAGS_COLOR;
 			obj.stroke = MULTIPLE_TAGS_COLOR;
 		} else {
-			obj.fill = color20(t);
-			obj.stroke = color20(t);
+			obj.fill = color20(t) === "#c7c7c7" ? "#008080" : color20(t);
+			obj.stroke = color20(t) === "#c7c7c7" ? "#008080" : color20(t);
 		}
 		items.push(obj);
 	});
