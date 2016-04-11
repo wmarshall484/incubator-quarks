@@ -295,12 +295,16 @@
       failonwarning="true"
       excludepackagenames="quarks.connectors.runtime,quarks.connectors.*.runtime,quarks.console.*,quarks.topology.spi.*,quarks.graph.spi.*"
       >
-      <sourcepath>
-         <dirset dir="${basedir}">
-           <include name="*/*/src/main/java"/>
+
+         <fileset dir="${basedir}">
+           <include name="*/*/src/main/java/**/*.java"/>
            <exclude name="android/**"/>
-         </dirset>
-      </sourcepath>
+            <exclude name="samples/scenarios/src/main/java/quarks/samples/scenarios/**"/>
+         </fileset>
+  	<packageset dir="${basedir}">
+  		<include name="*/*/src/main/java/**/*.java"/>
+  	</packageset>
+  	
       <classpath>
         <fileset dir="ext">
            <include name="**/*.jar"/>
