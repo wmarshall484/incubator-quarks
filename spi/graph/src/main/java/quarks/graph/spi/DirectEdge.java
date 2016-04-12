@@ -83,4 +83,9 @@ public class DirectEdge implements Edge {
     public Set<String> getTags() {
         return connector.getTags();
     }
+
+    @Override
+    public String getAlias() {
+        return connector.getAlias();
+    }
 }

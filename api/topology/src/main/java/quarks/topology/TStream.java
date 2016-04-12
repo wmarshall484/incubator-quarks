@@ -443,7 +443,7 @@ public interface TStream<T> extends TopologyElement {
     Set<String> getTags(); 
     
     /**
-     * Add an alias for the stream.
+     * Set an alias for the stream.
      * <p>
      * The alias must be unique within the topology.
      * The alias may be used in various contexts:

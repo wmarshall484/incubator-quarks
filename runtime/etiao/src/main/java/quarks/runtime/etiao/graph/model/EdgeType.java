@@ -37,6 +37,8 @@ public class EdgeType {
 	private final int targetInputPort;
     /** Set of tags associated with this edge */
     private final Set<String> tags;
+    /** Edge's alias.  Null if none. */
+    private final String alias;
     
     public EdgeType() {
         this.sourceId = null;
@@ -44,6 +46,7 @@ public class EdgeType {
         this.targetId = null;
         this.targetInputPort = 0;
         this.tags = new HashSet<>();
+        this.alias = null;
     }
 
     public EdgeType(Edge value, IdMapper<String> ids) {
@@ -52,6 +55,7 @@ public class EdgeType {
         this.targetId = ids.getId(value.getTarget()).toString();
         this.targetInputPort = value.getTargetInputPort();
         this.tags = value.getTags();
+        this.alias = value.getAlias();
     }
 
     public String getSourceId() {
@@ -72,5 +76,9 @@ public class EdgeType {
 
     public Set<String> getTags() {
         return tags;
+    }
+
+    public String getAlias() {
+        return alias;
     }
 }

@@ -16,37 +16,15 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 */
-package quarks.execution.mbeans;
-
-import java.util.concurrent.TimeUnit;
+package quarks.oplet;
 
 /**
- * Control interface for a periodic entity.
- * 
- * @see quarks.topology.Topology#poll(quarks.function.Supplier, long, TimeUnit)
- *
+ * Information about an oplet output port. 
  */
-public interface PeriodicMXBean {
-    
+public interface OutputContext {
     /**
-     * Get the period.
-     * @return period
+     * Get the alias of the output port if any.
+     * @return the alias; null if none.
      */
-    public long getPeriod();
-    
-    /**
-     * Get the time unit for {@link #getPeriod()}.
-     * @return time unit
-     */
-    public TimeUnit getUnit();
-    
-    /**
-     * Set the period.
-     */
-    public void setPeriod(long period);
-    
-    /**
-     * Set the period and unit
-     */
-    public void setPeriod(long period, TimeUnit unit);
+    String getAlias();
 }

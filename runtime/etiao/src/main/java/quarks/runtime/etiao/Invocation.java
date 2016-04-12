@@ -27,6 +27,7 @@ import quarks.function.Consumer;
 import quarks.function.Functions;
 import quarks.oplet.JobContext;
 import quarks.oplet.Oplet;
+import quarks.oplet.OutputContext;
 
 /**
  * An {@link Oplet} invocation in the context of the 
@@ -42,6 +43,13 @@ import quarks.oplet.Oplet;
 public class Invocation<T extends Oplet<I, O>, I, O> implements AutoCloseable {
     /** Prefix used by oplet unique identifiers. */
     public static final String ID_PREFIX = "OP_";
+    private static final OutputContext DEFAULT_OUTPUT_CONTEXT = 
+        new OutputContext() {
+            @Override
+            public String getAlias() {
+                return null;
+            }
+        };
 
    /**
     * Runtime unique identifier.
@@ -51,6 +59,7 @@ public class Invocation<T extends Oplet<I, O>, I, O> implements AutoCloseable {
 
     private List<Consumer<O>> outputs;
     private List<SettableForwarder<I>> inputs;
+    private List<OutputContext> outputContext;
 
     protected Invocation(String id, T oplet, int inputCount, int outputCount) {
     	this.id = id;
@@ -61,8 +70,9 @@ public class Invocation<T extends Oplet<I, O>, I, O> implements AutoCloseable {
         }
 
         outputs = outputCount == 0 ? Collections.emptyList() : new ArrayList<>(outputCount);
+        outputContext = outputCount == 0 ? Collections.emptyList() : new ArrayList<>(outputCount);
         for (int i = 0; i < outputCount; i++) {
-            outputs.add(Functions.discard());
+            addOutput();
         }
     }
 
@@ -101,6 +111,7 @@ public class Invocation<T extends Oplet<I, O>, I, O> implements AutoCloseable {
     public int addOutput() {
         int index = outputs.size();
         outputs.add(Functions.discard());
+        outputContext.add(DEFAULT_OUTPUT_CONTEXT);
         return index;
     }
 
@@ -125,6 +136,18 @@ public class Invocation<T extends Oplet<I, O>, I, O> implements AutoCloseable {
     }
 
     /**
+     * Set the specified output port's context.
+     * 
+     * @param port index of the output port
+     * @param context the new {@link OutputContext}
+     */
+    public void setContext(int port, OutputContext context) {
+        if (context == null)
+            throw new NullPointerException();
+        outputContext.set(port, context);
+    }
+
+    /**
      * Returns the list of input stream forwarders for this invocation.
      */
     public List<? extends Consumer<I>> getInputs() {
@@ -142,7 +165,7 @@ public class Invocation<T extends Oplet<I, O>, I, O> implements AutoCloseable {
         InvocationContext<I, O> context = new InvocationContext<I, O>(
         		id, job, services, 
                 inputs.size(),
-                outputs);
+                outputs, outputContext);
 
         try {
             oplet.initialize(context);

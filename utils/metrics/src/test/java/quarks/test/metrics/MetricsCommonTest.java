@@ -37,6 +37,7 @@ import quarks.metrics.oplets.RateMeter;
 import quarks.oplet.JobContext;
 import quarks.oplet.Oplet;
 import quarks.oplet.OpletContext;
+import quarks.oplet.OutputContext;
 import quarks.oplet.core.AbstractOplet;
 import quarks.oplet.core.Peek;
 
@@ -143,6 +144,11 @@ public class MetricsCommonTest {
         @Override
         public String uniquify(String name) {
             return "unique." + name;
+        }
+
+        @Override
+        public List<? extends OutputContext> getOutputContext() {
+            throw new UnsupportedOperationException();
         }
     }
 }

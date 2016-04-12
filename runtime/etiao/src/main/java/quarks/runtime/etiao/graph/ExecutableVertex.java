@@ -27,6 +27,7 @@ import quarks.graph.Edge;
 import quarks.graph.spi.AbstractVertex;
 import quarks.graph.spi.DirectEdge;
 import quarks.oplet.Oplet;
+import quarks.oplet.OutputContext;
 import quarks.runtime.etiao.Invocation;
 
 public class ExecutableVertex<N extends Oplet<C, P>, C, P> extends AbstractVertex<N, C, P> {
@@ -105,6 +106,18 @@ public class ExecutableVertex<N extends Oplet<C, P>, C, P> extends AbstractVerte
         Consumer<P> input = target.vertex.invocation.getInputs().get(target.port);
         invocation.setTarget(sourcePort, input);
         edges.set(sourcePort, edge);
+        invocation.setContext(sourcePort, new MyOutputContext(connectors.get(sourcePort)));
+    }
+    
+    private static class MyOutputContext implements OutputContext {
+        private final String alias;
+        MyOutputContext(EtiaoConnector<?> connector) {
+            alias = connector.getAlias();
+        }
+        @Override
+        public String getAlias() {
+            return alias;
+        }
     }
 
     int addEdge() {
