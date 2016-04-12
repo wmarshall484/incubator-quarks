@@ -434,26 +434,6 @@ public interface TStream<T> extends TopologyElement {
      * @return The tagged stream.
      */
     TStream<T> tag(String... values);
-    
-    /**
-     * Add control service alias for the stream.
-     * <p>
-     * Runtime control services for the stream will be registered with this alias.
-     * </p>
-     * 
-     * @param alias a control services alias for the stream.
-     * @return this
-     * @throws IllegalStateException if the an alias has already been set.
-     * @see ControlService
-     */
-    TStream<T> controlServiceAlias(String alias);
-    
-    /**
-     * Returns the control services alias for the stream if any.
-     * @return the alias. null if one has not be set.
-     * @see ControlService
-     */
-    String getControlServiceAlias();
 
     /**
      * Returns the set of tags associated with this stream.
@@ -461,6 +441,29 @@ public interface TStream<T> extends TopologyElement {
      * @return set of tags
      */
     Set<String> getTags(); 
+    
+    /**
+     * Add an alias for the stream.
+     * <p>
+     * The alias must be unique within the topology.
+     * The alias may be used in various contexts:
+     * <ul>
+     * <li>Runtime control services for the stream are registered with this alias.</li>
+     * </ul>
+     * </p>
+     * 
+     * @param alias an alias for the stream.
+     * @return this
+     * @throws IllegalStateException if the an alias has already been set.
+     * @see ControlService
+     */
+    TStream<T> alias(String alias);
+    
+    /**
+     * Returns the stream's alias if any.
+     * @return the alias. null if one has not be set.
+     */
+    String getAlias();
     
     /**
      * Join this stream with a partitioned window of type {@code U} with key type {@code K}.

@@ -93,18 +93,18 @@ public interface Topology extends TopologyElement {
      * </p><p>
      * The poll rate may be changed when the topology is running via a runtime
      * {@link quarks.execution.mbeans.PeriodicMXBean PeriodicMXBean} 
-     * control service for the source stream.
+     * control service for the returned stream.
      * In order to use this mechanism the caller must provide a 
-     * control service alias for the stream when building the topology.
+     * alias for the stream when building the topology.
      * e.g.,
      * <pre>{@code
      * Topology t = ...
-     * TStream<Integer> stream = t.poll(...).controlServiceAlias("myStreamControlAlias");
+     * TStream<Integer> stream = t.poll(...).alias("myStreamControlAlias");
      * 
      * // change the poll frequency at runtime
      * static <T> void setPollFrequency(TStream<T> pollStream, long period, TimeUnit unit) {
      *     ControlService cs = t.getRuntimeServiceSupplier().getService(ControlService.class);
-     *     String alias = pollStream.getControlServiceAlias();
+     *     String alias = pollStream.getAlias();
      *     PeriodicMXBean control = cs.getControl("periodic", alias, PeriodicMXBean.class);
      *     control.setPoll(period, unit);
      * }
