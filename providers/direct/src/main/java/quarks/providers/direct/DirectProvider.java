@@ -24,7 +24,9 @@ import com.google.gson.JsonObject;
 
 import quarks.execution.DirectSubmitter;
 import quarks.execution.Job;
+import quarks.execution.services.ControlService;
 import quarks.execution.services.ServiceContainer;
+import quarks.runtime.jsoncontrol.JsonControlService;
 import quarks.topology.Topology;
 import quarks.topology.TopologyProvider;
 import quarks.topology.spi.AbstractTopologyProvider;
@@ -54,6 +56,8 @@ public class DirectProvider extends AbstractTopologyProvider<DirectTopology>
     
     public DirectProvider() {
         this.services = new ServiceContainer();
+        
+        getServices().addService(ControlService.class, new JsonControlService());
     }
 
     /**
