@@ -23,13 +23,20 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Ignore;
 import org.junit.Test;
 
+import quarks.execution.Job;
+import quarks.execution.mbeans.PeriodicMXBean;
+import quarks.execution.services.ControlService;
 import quarks.execution.services.RuntimeServices;
 import quarks.function.Supplier;
 import quarks.topology.TStream;
@@ -99,4 +106,55 @@ public abstract class TopologyTest extends TopologyAbstractTest {
         
         assertTrue(tc.valid());
     }
+    
+    @SuppressWarnings("unchecked")
+    @Test
+    public void testAdaptablePoll() throws Exception {
+        // Ensure the API supporting an adaptable poll() is functional.
+        Job job = null;
+        try {
+            Topology t = newTopology();
+            TStream<String> s = t.poll(() -> (new Date()).toString(),
+                    1, TimeUnit.HOURS)
+                    .alias("myAlias");
+            
+            AtomicInteger cnt = new AtomicInteger();
+            s.peek(tuple -> cnt.incrementAndGet()); 
+            
+            Future<Job> jf = (Future<Job>) getSubmitter().submit(t);
+            job = jf.get();
+            assertEquals(Job.State.RUNNING, job.getCurrentState());
+            
+            setPollFrequency(s, 100, TimeUnit.MILLISECONDS);
+            cnt.set(0);
+            Thread.sleep(TimeUnit.SECONDS.toMillis(3));
+            int curCnt = cnt.get();
+            assertTrue("curCnt="+curCnt, curCnt >= 20);
+            
+            setPollFrequency(s, 1, TimeUnit.SECONDS);
+            cnt.set(0);
+            Thread.sleep(TimeUnit.SECONDS.toMillis(3));
+            curCnt = cnt.get();
+            assertTrue("curCnt="+curCnt, curCnt >= 2 && curCnt <= 4);
+            
+            setPollFrequency(s, 100, TimeUnit.MILLISECONDS);
+            cnt.set(0);
+            Thread.sleep(TimeUnit.SECONDS.toMillis(3));
+            curCnt = cnt.get();
+            assertTrue("curCnt="+curCnt, curCnt >= 20);
+        }
+        finally {
+            if (job != null)
+                job.stateChange(Job.Action.CLOSE);
+        }
+        
+    }
+
+    static <T> void setPollFrequency(TStream<T> pollStream, long period, TimeUnit unit) {
+        ControlService cs = pollStream.topology().getRuntimeServiceSupplier()
+                                    .get().getService(ControlService.class);
+        PeriodicMXBean control = cs.getControl("periodic", pollStream.getAlias(), PeriodicMXBean.class);
+        control.setPeriod(period, unit);
+    }
+
 }
