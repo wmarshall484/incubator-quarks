@@ -45,6 +45,7 @@ import org.junit.Test;
 
 import quarks.topology.TSink;
 import quarks.topology.TStream;
+import quarks.topology.TWindow;
 import quarks.topology.Topology;
 import quarks.topology.tester.Condition;
 
@@ -677,6 +678,79 @@ public abstract class TStreamTest extends TopologyAbstractTest {
             });
         }
         waitForCompletion(completer, executions);
+    }
+    
+    @Test
+    public void testJoinWithWindow() throws Exception{
+        Topology t = newTopology();
+        
+        List<Integer> ints = new ArrayList<>();
+        List<Integer> lookupInts = new ArrayList<>();
+        
+        // Ints to populate the window
+        for(int i = 0; i < 100; i++){
+            ints.add(i);
+        }
+        
+        // Ints to lookup partitions in window
+        for(int i = 0; i < 10; i++){
+            lookupInts.add(i);
+        }
+        TStream<Integer> intStream = t.collection(ints);
+        
+        // Wait until the window is populated, and then submit tuples
+        TStream<Integer> lookupIntStream = t.source(() -> {
+            try {
+                Thread.sleep(500);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return lookupInts;
+        });
+        
+        TWindow<Integer, Integer> window = intStream.last(10, tuple -> tuple % 10);
+        TStream<Integer> joinsHappened = lookupIntStream.join(tuple -> tuple % 10, window, (number, partitionContents) -> {
+            assertTrue(partitionContents.size() == 10);
+            for(Integer element : partitionContents)
+                assertTrue(number % 10 == element % 10);
+            
+            // Causes an error if two numbers map to the same partition, which shouldn't happen
+            partitionContents.clear();
+            return 0;
+        });
+    
+        Condition<Long> tc = t.getTester().tupleCount(joinsHappened, 10);
+        complete(t, tc);      
+    }
+    
+    @Test
+    public void testJoinLastWithKeyer() throws Exception{
+        Topology t = newTopology();
+        
+        List<Integer> ints = new ArrayList<>();
+        for(int i = 0; i < 100; i++){
+            ints.add(i);
+        }
+        
+        TStream<Integer> intStream = t.collection(ints);
+        
+        // Wait until the window is populated, and then submit tuples
+        TStream<Integer> lookupIntStream = t.source(() -> {
+            try {
+                Thread.sleep(500);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return ints;
+        });
+        
+        TStream<String> joinsHappened = lookupIntStream.joinLast(tuple -> tuple, intStream, tuple -> tuple, (a, b) -> {
+            assertTrue(a.equals(b));
+            return "0";
+        });
+
+        Condition<Long> tc = t.getTester().tupleCount(joinsHappened, 100);
+        complete(t, tc);      
     }
 
     private void waitForCompletion(ExecutorCompletionService<Boolean> completer, int numtasks) throws ExecutionException {

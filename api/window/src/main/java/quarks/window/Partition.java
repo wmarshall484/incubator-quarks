@@ -22,7 +22,16 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * A partition within a {@code Window}.
+ * A partition within a {@code Window}. The contents of the list
+ * returned by {@code getContents} is stable when synchronizing 
+ * on the partition object. For example:
+ * 
+ * <pre><code>
+ * Partition<Integer, Integer, ArrayList<Integer>> part = ...;
+ * synchronized(part){
+ *  List<Integer> = part.getContents();
+ *  // stable operation on contents of partition
+ * }
  *
  * @param <T> Type of tuples in the partition.
  * @param <K> Type of the partition's key.

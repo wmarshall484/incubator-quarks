@@ -28,12 +28,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
 
-import quarks.apps.runtime.MonitorApp;
+import quarks.apps.runtime.JobMonitorApp;
 import quarks.execution.DirectSubmitter;
 import quarks.execution.Job;
 import quarks.execution.services.ControlService;
 import quarks.execution.services.ServiceContainer;
-import quarks.providers.development.DevelopmentProvider;
 import quarks.providers.direct.DirectProvider;
 import quarks.runtime.appservice.AppService;
 import quarks.runtime.jmxcontrol.JMXControlService;
@@ -42,18 +41,18 @@ import quarks.topology.TStream;
 import quarks.topology.Topology;
 import quarks.topology.services.ApplicationService;
 
-public class MonitorAppTest {
+public class JobMonitorAppTest {
 
     public final static String MONITORED_APP_NAME_1 = "MonitoredApp_1";
     public final static String MONITORED_APP_NAME_2 = "MonitoredApp_2";
 
     @Test
-    public void testMonitorApp() throws Exception {
+    public void testJobMonitorApp() throws Exception {
         DirectProvider provider = new DirectProvider();
         startProvider(provider);
 
         // Start monitor app
-        MonitorApp app = new MonitorApp(provider, provider, MonitorApp.APP_NAME);
+        JobMonitorApp app = new JobMonitorApp(provider, provider, JobMonitorApp.APP_NAME);
         Job monitor = app.submit();
 
         // Declare and register user apps which need monitoring
@@ -75,7 +74,7 @@ public class MonitorAppTest {
             throws InterruptedException, ExecutionException {
         
         provider.getServices().addService(ControlService.class,
-                new JMXControlService(DevelopmentProvider.JMX_DOMAIN, new Hashtable<>()));
+                new JMXControlService("quarks.test.apps.runtime", new Hashtable<>()));
         AppService.createAndRegister(provider, provider);
         JobRegistry.createAndRegister(provider.getServices());        
     }
@@ -133,7 +132,7 @@ public class MonitorAppTest {
 
         // Submit all applications registered with the ApplicationService
         for (String name: appService.getApplicationNames()) {
-            MonitorApp.submitApplication(name, controlService);
+            JobMonitorApp.submitApplication(name, controlService);
         }
     }
 }

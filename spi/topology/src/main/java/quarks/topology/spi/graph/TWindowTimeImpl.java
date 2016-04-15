@@ -94,5 +94,20 @@ public class TWindowTimeImpl<T, K> extends AbstractTWindow<T, K> {
         
         Aggregate<T,U,K> op = new Aggregate<T,U,K>(window, batcher);
         return feeder().pipe(op); 
-    } 
+    }
+
+    /**
+     * @return the time
+     */
+    public long getTime() {
+        return time;
+    }
+
+    /**
+     * @return the unit
+     */
+    public TimeUnit getUnit() {
+        return unit;
+    }
+
 }

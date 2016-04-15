@@ -31,8 +31,8 @@ import com.google.gson.JsonObject;
 import quarks.execution.DirectSubmitter;
 import quarks.execution.Job;
 import quarks.execution.services.ControlService;
+import quarks.execution.services.JobRegistryService;
 import quarks.execution.services.RuntimeServices;
-import quarks.execution.services.job.JobRegistryService;
 import quarks.function.Consumer;
 import quarks.function.Supplier;
 import quarks.runtime.jobregistry.JobEvents;
@@ -64,20 +64,20 @@ import quarks.topology.services.ApplicationService;
  * </ul>
  * </P>
  */
-public class MonitorApp {
+public class JobMonitorApp {
     /**
      * Job monitoring application name.
      */
-    public static final String APP_NAME = SYSTEM_APP_PREFIX + "JobMonitor";
+    public static final String APP_NAME = SYSTEM_APP_PREFIX + "JobMonitorApp";
 
     
     private final TopologyProvider provider;
     private final DirectSubmitter<Topology, Job> submitter;
     private final Topology topology;
-    private static final Logger logger = LoggerFactory.getLogger(MonitorApp.class);
+    private static final Logger logger = LoggerFactory.getLogger(JobMonitorApp.class);
 
     /**
-     * Constructs a {@code MonitorApp} with the specified name in the 
+     * Constructs a {@code JobMonitorApp} with the specified name in the 
      * context of the specified provider.
      * 
      * @param provider the topology provider
@@ -88,7 +88,7 @@ public class MonitorApp {
      * @throws IllegalArgumentException if the submitter does not provide 
      *      access to the required services
      */
-    public MonitorApp(TopologyProvider provider, 
+    public JobMonitorApp(TopologyProvider provider, 
             DirectSubmitter<Topology, Job> submitter, String name) {
 
         this.provider = provider;
@@ -149,7 +149,7 @@ public class MonitorApp {
         Topology t = provider.newTopology(name);
         TStream<JsonObject> jobEvents = JobEvents.source(
                 t, 
-                (evType, job) -> { return MonitorAppEvent.toJsonObject(evType, job); }
+                (evType, job) -> { return JobMonitorAppEvent.toJsonObject(evType, job); }
                 );
 
         jobEvents = jobEvents.filter(
@@ -157,9 +157,9 @@ public class MonitorApp {
                     logger.trace("Filter: {}", value);
 
                     try {
-                        JsonObject job = MonitorAppEvent.getJob(value);
+                        JsonObject job = JobMonitorAppEvent.getJob(value);
                         return (Job.Health.UNHEALTHY.name().equals(
-                                MonitorAppEvent.getJobHealth(job)));
+                                JobMonitorAppEvent.getJobHealth(job)));
                     } catch (IllegalArgumentException e) {
                         logger.info("Invalid event filtered out, cause: {}", e.getMessage());
                         return false;
@@ -185,8 +185,8 @@ public class MonitorApp {
         @Override
         public void accept(JsonObject value) {
             ControlService controlService = rts.get().getService(ControlService.class);
-            JsonObject job = MonitorAppEvent.getJob(value);
-            String applicationName = MonitorAppEvent.getJobName(job);
+            JsonObject job = JobMonitorAppEvent.getJob(value);
+            String applicationName = JobMonitorAppEvent.getJobName(job);
 
             logger.info("Will restart monitored application {}, cause: {}", applicationName, value);
             submitApplication(applicationName, controlService);

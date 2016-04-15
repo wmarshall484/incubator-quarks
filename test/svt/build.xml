@@ -31,6 +31,8 @@
 
   <path id="compile.classpath">
     <pathelement location="${quarks.lib}/quarks.providers.development.jar"/>
+  	 <pathelement location="${target.java8.dir}/samples/lib/quarks.samples.apps.jar"/>
+  	 <pathelement location="${quarks.connectors}/iotf/lib/quarks.connectors.iotf.jar"/>
   </path>
 
   <path id="test.compile.classpath">

@@ -29,8 +29,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import quarks.execution.Job;
+import quarks.execution.services.JobRegistryService;
 import quarks.execution.services.ServiceContainer;
-import quarks.execution.services.job.JobRegistryService;
 import quarks.function.BiConsumer;
 
 /**
@@ -38,17 +38,6 @@ import quarks.function.BiConsumer;
  * Notifies listeners on job additions, deletions and updates.
  */
 public class JobRegistry implements JobRegistryService {
-    /**
-     * Job event types.
-     */
-    public enum EventType {
-        /** A Job has been added to the registry. */
-        ADD,
-        /** A Job has been removed from the registry. */
-        REMOVE,
-        /** A registered Job has been updated. */
-        UPDATE
-    }
 
     /**
      * Creates and registers a {@link JobRegistry} with the given service 
@@ -78,10 +67,11 @@ public class JobRegistry implements JobRegistryService {
     @Override
     public void addListener(BiConsumer<JobRegistryService.EventType, Job> listener) {
         listeners.add(listener);
-
-        jobs.forEach((k, v) -> {
-            listener.accept(JobRegistryService.EventType.ADD, v);
-        });
+        
+        synchronized (jobs) {
+            for (Job job : jobs.values())
+                listener.accept(JobRegistryService.EventType.ADD, job);
+        }
     }
 
     @Override
