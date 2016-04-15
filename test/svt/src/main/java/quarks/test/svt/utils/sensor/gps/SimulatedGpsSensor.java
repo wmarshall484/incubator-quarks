@@ -18,10 +18,6 @@ under the License.
  */
 package quarks.test.svt.utils.sensor.gps;
 
-import quarks.topology.TStream;
-import quarks.topology.Topology;
-import java.util.concurrent.TimeUnit;
-
 public class SimulatedGpsSensor {
     private int currentIndex;
     private int simulatedSec;
