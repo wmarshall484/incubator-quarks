@@ -89,7 +89,7 @@ d3.legend = function(g, chartSvg, pItems, legendTitle) {
         .attr("width", 10)                          
         .attr("height", 8)
         .style("fill",function(d) {
-        	return d.value.color
+        	return d.value.color === "#c7c7c7" ? "#008080" : d.value.color;
         	})
         .style("stroke", "none")
         .style("fill-opacity", legendOpacity);
