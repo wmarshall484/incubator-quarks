@@ -126,7 +126,7 @@
         <ant dir="connectors/pubsub" target="@{target}" useNativeBasedir="true"/>
         <ant dir="connectors/quarks.javax.websocket" target="@{target}" useNativeBasedir="true"/>
         <ant dir="connectors/javax.websocket-client" target="@{target}" useNativeBasedir="true"/>
-        <ant dir="connectors/javax.websocket-server" target="@{target}" useNativeBasedir="true"/>
+        <ant dir="connectors/javax.websocket_server" target="@{target}" useNativeBasedir="true"/>
         <ant dir="connectors/wsclient" target="@{target}" useNativeBasedir="true"/>
         <ant dir="connectors/wsclient-javax.websocket" target="@{target}" useNativeBasedir="true"/>
         <ant dir="console/server" target="@{target}" useNativeBasedir="true" />
@@ -297,12 +297,12 @@
       >
 
          <fileset dir="${basedir}">
-           <include name="*/*/src/main/java/**/*.java"/>
+           <include name="*/*/src/main/java/*"/>
            <exclude name="android/**"/>
-            <exclude name="samples/scenarios/src/main/java/quarks/samples/scenarios/**"/>
+           <exclude name="samples/scenarios/src/main/java/quarks/samples/scenarios/**"/>
          </fileset>
   	<packageset dir="${basedir}">
-  		<include name="*/*/src/main/java/**/*.java"/>
+  		<include name="*/*/src/main/java/**"/>
   	</packageset>
   	
       <classpath>
