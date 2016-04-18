@@ -126,7 +126,7 @@
         <ant dir="connectors/pubsub" target="@{target}" useNativeBasedir="true"/>
         <ant dir="connectors/quarks.javax.websocket" target="@{target}" useNativeBasedir="true"/>
         <ant dir="connectors/javax.websocket-client" target="@{target}" useNativeBasedir="true"/>
-        <ant dir="connectors/javax.websocket_server" target="@{target}" useNativeBasedir="true"/>
+        <ant dir="connectors/javax.websocket-server" target="@{target}" useNativeBasedir="true"/>
         <ant dir="connectors/wsclient" target="@{target}" useNativeBasedir="true"/>
         <ant dir="connectors/wsclient-javax.websocket" target="@{target}" useNativeBasedir="true"/>
         <ant dir="console/server" target="@{target}" useNativeBasedir="true" />
