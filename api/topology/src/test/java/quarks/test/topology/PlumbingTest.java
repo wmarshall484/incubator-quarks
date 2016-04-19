@@ -19,6 +19,7 @@ under the License.
 package quarks.test.topology;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
@@ -35,6 +36,8 @@ import quarks.function.Functions;
 import quarks.topology.TStream;
 import quarks.topology.Topology;
 import quarks.topology.plumbing.PlumbingStreams;
+import quarks.topology.plumbing.Valve;
+import quarks.topology.plumbing.Valve.State;
 import quarks.topology.tester.Condition;
 
 @Ignore
@@ -218,4 +221,75 @@ public abstract class PlumbingTest extends TopologyAbstractTest {
         assertTrue(tcCount.valid());
         assertTrue(contents.valid());
     }
+    
+    @Test
+    public void testValveState() throws Exception {
+        Valve<Integer> valve = new Valve<>();
+        assertSame(State.OPEN, valve.getState());
+        
+        valve.setState(State.CLOSED);
+        assertSame(State.CLOSED, valve.getState());
+        
+        valve.setState(State.OPEN);
+        assertSame(State.OPEN, valve.getState());
+        
+        valve = new Valve<>(State.OPEN);
+        assertSame(State.OPEN, valve.getState());
+        
+        valve = new Valve<>(State.CLOSED);
+        assertSame(State.CLOSED, valve.getState());
+        
+    }
+    
+    @Test
+    public void testValveInitiallyOpen() throws Exception {
+        Topology top = newTopology("testValve");
+
+        TStream<Integer> values = top.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+        
+        Valve<Integer> valve = new Valve<>();
+        AtomicInteger cnt = new AtomicInteger();
+        TStream<Integer> filtered = values
+                                    .peek(tuple -> {
+                                        // reject 4,5,6
+                                        int curCnt = cnt.incrementAndGet();
+                                        if (curCnt > 6)
+                                            valve.setState(State.OPEN);
+                                        else if (curCnt > 3)
+                                            valve.setState(State.CLOSED);
+                                        })
+                                    .filter(valve);
+
+        Condition<Long> count = top.getTester().tupleCount(filtered, 7);
+        Condition<List<Integer>> contents = top.getTester().streamContents(filtered, 1,2,3,7,8,9,10 );
+        complete(top, count);
+        assertTrue(contents.getResult().toString(), contents.valid());
+    }
+    
+    @Test
+    public void testValveInitiallyClosed() throws Exception {
+        Topology top = newTopology("testValve");
+        
+        TStream<Integer> values = top.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+        
+        Valve<Integer> valve = new Valve<>(State.CLOSED);
+        
+        AtomicInteger cnt = new AtomicInteger();
+        TStream<Integer> filtered = values
+                                    .peek(tuple -> {
+                                        // reject all but 4,5,6
+                                        int curCnt = cnt.incrementAndGet();
+                                        if (curCnt > 6)
+                                            valve.setState(State.CLOSED);
+                                        else if (curCnt > 3)
+                                            valve.setState(State.OPEN);
+                                        })
+                                    .filter(valve);
+
+        Condition<Long> count = top.getTester().tupleCount(filtered, 3);
+        Condition<List<Integer>> contents = top.getTester().streamContents(filtered, 4,5,6 );
+        complete(top, count);
+        assertTrue(contents.getResult().toString(), contents.valid());
+    }
+
 }

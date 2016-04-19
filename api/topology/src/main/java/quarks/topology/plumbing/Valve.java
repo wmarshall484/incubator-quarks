@@ -1,4 +1,4 @@
-package quarks.analytics.sensors;
+package quarks.topology.plumbing;
 
 import java.util.Objects;
 
