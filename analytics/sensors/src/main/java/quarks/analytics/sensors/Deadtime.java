@@ -15,7 +15,7 @@ import quarks.function.Predicate;
  * Then the next tuple is accepted and a new deadtime period begun.
  * </p><p>
  * The deadtime period may be changed while the topology is running
- * via {@link #setDeadtimePeriod(long, TimeUnit)}.
+ * via {@link #setPeriod(long, TimeUnit)}.
  * </p>
  *
  * @param <T> tuple type
@@ -34,18 +34,18 @@ public class Deadtime<T> implements Predicate<T> {
      * Same as {@code Deadtime(0, TimeUnit.SECONDS)}
      */
     public Deadtime() {
-        setDeadtimePeriod(0, TimeUnit.SECONDS);
+        setPeriod(0, TimeUnit.SECONDS);
     }
     
     /**
      * Create a new deadtime Predicate
      * <p>
      * The first received tuple is always "accepted".
-     * @param deadtimePeriod see {@link #setDeadtimePeriod(long, TimeUnit) setDeadtimePeriod()}
+     * @param deadtimePeriod see {@link #setPeriod(long, TimeUnit) setDeadtimePeriod()}
      * @param unit {@link TimeUnit} of {@code deadtimePeriod}
      */
     public Deadtime(long deadtimePeriod, TimeUnit unit) {
-        setDeadtimePeriod(deadtimePeriod, unit);
+        setPeriod(deadtimePeriod, unit);
     }
     
     /**
@@ -56,7 +56,7 @@ public class Deadtime<T> implements Predicate<T> {
      * </p><p>
      * The deadtime period behavior is subject to the accuracy
      * of the system's {@link System#currentTimeMillis()}.
-     * </p
+     * </p>
      * @param deadtimePeriod the amount of to time to reject
      *        tuples received after the last passed tuple.
      *        Specify a value of 0 to pass all received tuples.
@@ -64,7 +64,7 @@ public class Deadtime<T> implements Predicate<T> {
      *        A period of 0 is used if the specified period is less than 1ms.
      * @param unit {@link TimeUnit} of {@code deadtimePeriod}
      */
-    public synchronized void setDeadtimePeriod(long deadtimePeriod, TimeUnit unit) {
+    public synchronized void setPeriod(long deadtimePeriod, TimeUnit unit) {
         if (deadtimePeriod < 0)
             throw new IllegalArgumentException("deadtimePeriod");
         Objects.requireNonNull(unit, "unit");
