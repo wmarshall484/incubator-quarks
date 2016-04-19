@@ -29,7 +29,6 @@ import quarks.function.Predicate;
  * </p>
  *
  * @param <T> tuple type
- * @see Filters#valve(quarks.topology.TStream, State)
  */
 public class Valve<T> implements Predicate<T> {
     private static final long serialVersionUID = 1L;
