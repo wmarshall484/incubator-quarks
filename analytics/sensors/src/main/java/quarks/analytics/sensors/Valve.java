@@ -63,9 +63,17 @@ public class Valve<T> implements Predicate<T> {
      * Set the valve state
      * @param state the state of the valve
      */
-    public synchronized void setState(State state) {
+    public void setState(State state) {
         Objects.requireNonNull(state, "state");
         this.state = state;
+    }
+    
+    /**
+     * Get the valve state
+     * @return the state
+     */
+    public State getState() {
+        return state;
     }
 
     @Override
