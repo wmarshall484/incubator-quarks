@@ -114,4 +114,29 @@ public class Filters {
 
         return stream.filter(new Deadband<>(value, inBand));
     }
+    
+    /**
+     * Deadtime filter.
+     * 
+     * A filter that discards tuples for a period of time after passing
+     * a tuple.
+     * <p>
+     * E.g., for a deadtime period of 30 minutes, after letting a tuple
+     * pass through, any tuples received during the next 30 minutes are
+     * filtered out.  Then the next arriving tuple is passed through and
+     * a new deadtime period is begun.
+     * </p><p>
+     * Use {@link Deadtime} directly if you need to change the deadtime period
+     * while the topology is running.
+     * </p>
+     * @param stream TStream to add deadtime filter to
+     * @param deadtimePeriod the deadtime period in {@code unit}
+     * @param unit the {@link TimeUnit} to apply to {@code deadtimePeriod}
+     * @return the deadtime filtered stream
+     * @see Deadtime
+     */
+    public static <T> TStream<T> deadtime(TStream<T> stream, long deadtimePeriod, TimeUnit unit) {
+        return stream.filter(new Deadtime<>(deadtimePeriod, unit));
+    }
+    
 }
