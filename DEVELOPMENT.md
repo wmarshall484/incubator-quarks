@@ -109,6 +109,11 @@ such as an MQTT broker, Apache Kafka, a cloud based IoT service, etc.
 * `android` - Code specific to Android.
 * `test` - SVT
 
+### Logging
+
+SLF4J is used for logging and tracing.
+Search the code for org.slf4j.LoggerFactory to see a sample of its use.
+
 ### Use of Java 8 features
 Quarks primary development environment is Java 8, to take advantage of lambda expressions
 since Quarks' primary api is a functional one.
