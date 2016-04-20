@@ -116,15 +116,17 @@ public class Filters {
     }
     
     /**
-     * A filter that discards tuples received during the "deadtime period"
-     * following a tuple this is allowed to pass through.
+     * Deadtime filter.
+     * 
+     * A filter that discards tuples for a period of time after passing
+     * a tuple.
      * <p>
      * E.g., for a deadtime period of 30 minutes, after letting a tuple
      * pass through, any tuples received during the next 30 minutes are
      * filtered out.  Then the next arriving tuple is passed through and
      * a new deadtime period is begun.
      * </p><p>
-     * See {@link Deadtime} for information about changing the deadtime period
+     * Use {@link Deadtime} directly if you need to change the deadtime period
      * while the topology is running.
      * </p>
      * @param stream TStream to add deadtime filter to

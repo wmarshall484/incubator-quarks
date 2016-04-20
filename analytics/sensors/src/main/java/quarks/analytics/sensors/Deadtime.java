@@ -7,29 +7,28 @@ import java.util.concurrent.TimeUnit;
 import quarks.function.Predicate;
 
 /**
- * A generic "deadtime" {@link Predicate}.
+ * Deadtime {@link Predicate}.
  * <p>
- * After accepting a tuple ({@link #test(Object) test()} returns true),
- * any tuples received during the "deadtime" period are rejected
- * ({@link #test(Object) test()} returns false).
- * Then the next tuple is accepted and a new deadtime period begun.
+ * {@link #test(Object) test()} returns true on its initial call
+ * and then false for any calls occurring during the following deadtime period.
+ * After the end of a deadtime period, the next call to {@code test()} 
+ * returns true and a new deadtime period is begun.
  * </p><p>
  * The deadtime period may be changed while the topology is running
  * via {@link #setPeriod(long, TimeUnit)}.
  * </p>
  *
  * @param <T> tuple type
+ * @see Filters#deadtime(quarks.topology.TStream, long, TimeUnit) Filters.deadtime()
  */
 public class Deadtime<T> implements Predicate<T> {
     private static final long serialVersionUID = 1L;
-    private transient long deadtimePeriod;
-    private transient TimeUnit deadtimeUnit;
-    private transient long deadtimePeriodMillis;
-    private transient long lastPassTimeMillis;
-    private transient long nextPassTimeMillis;
+    private long deadtimePeriodMillis;
+    private long lastTrueTimeMillis;
+    private volatile long nextTrueTimeMillis;
 
     /**
-     * Create a new deadtime Predicate
+     * Create a new Deadtime Predicate
      * <p>
      * Same as {@code Deadtime(0, TimeUnit.SECONDS)}
      */
@@ -38,10 +37,10 @@ public class Deadtime<T> implements Predicate<T> {
     }
     
     /**
-     * Create a new deadtime Predicate
+     * Create a new Deadtime Predicate
      * <p>
      * The first received tuple is always "accepted".
-     * @param deadtimePeriod see {@link #setPeriod(long, TimeUnit) setDeadtimePeriod()}
+     * @param deadtimePeriod see {@link #setPeriod(long, TimeUnit) setPeriod()}
      * @param unit {@link TimeUnit} of {@code deadtimePeriod}
      */
     public Deadtime(long deadtimePeriod, TimeUnit unit) {
@@ -51,37 +50,40 @@ public class Deadtime<T> implements Predicate<T> {
     /**
      * Set the deadtime period
      * <p>
-     * The next time to enable a tuple to be accepted is
-     * immediately adjusted relative to the last accepted tuple time.
+     * The end of a currently active deadtime period is shortened or extended
+     * to match the new deadtime period specification.
      * </p><p>
      * The deadtime period behavior is subject to the accuracy
      * of the system's {@link System#currentTimeMillis()}.
+     * A period of less than 1ms is equivalent to specifying 0.
      * </p>
-     * @param deadtimePeriod the amount of to time to reject
-     *        tuples received after the last passed tuple.
-     *        Specify a value of 0 to pass all received tuples.
+     * @param deadtimePeriod the amount of time for {@code test()}
+     *        to return false after returning true.
+     *        Specify a value of 0 for no deadtime period.
      *        Must be >= 0.
-     *        A period of 0 is used if the specified period is less than 1ms.
      * @param unit {@link TimeUnit} of {@code deadtimePeriod}
      */
     public synchronized void setPeriod(long deadtimePeriod, TimeUnit unit) {
         if (deadtimePeriod < 0)
             throw new IllegalArgumentException("deadtimePeriod");
         Objects.requireNonNull(unit, "unit");
-        this.deadtimePeriod = deadtimePeriod;
-        this.deadtimeUnit = unit;
-        this.deadtimePeriodMillis = unit.toMillis(deadtimePeriod);
-        nextPassTimeMillis = lastPassTimeMillis + deadtimePeriodMillis;
+        deadtimePeriodMillis = unit.toMillis(deadtimePeriod);
+        nextTrueTimeMillis = lastTrueTimeMillis + deadtimePeriodMillis;
     }
 
+    /**
+     * Test the deadtime predicate.
+     * @param value ignored
+     * @return false if in a deadtime period, true otherwise
+     */
     @Override
     public boolean test(T value) {
         long now = System.currentTimeMillis(); 
-        if (now < nextPassTimeMillis)
+        if (now < nextTrueTimeMillis)
             return false;
-        else {
-            lastPassTimeMillis = now;
-            nextPassTimeMillis = lastPassTimeMillis + deadtimePeriodMillis;
+        else synchronized(this) {
+            lastTrueTimeMillis = now;
+            nextTrueTimeMillis = now + deadtimePeriodMillis;
             return true;
         }
     }
@@ -91,8 +93,7 @@ public class Deadtime<T> implements Predicate<T> {
      */
     @Override
     public String toString() {
-        return "deadtimePeriod="+deadtimePeriod+" "+deadtimeUnit 
-                + " nextPass after "+new Date(nextPassTimeMillis);
+        return "nextPass after "+new Date(nextTrueTimeMillis);
     }
     
 }
