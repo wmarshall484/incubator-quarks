@@ -19,7 +19,6 @@ under the License.
 package quarks.test.svt.apps;
 
 import quarks.test.svt.apps.iotf.AbstractIotfApplication;
-import quarks.test.svt.utils.sensor.gps.GpsSensor;
 import quarks.topology.Topology;
 
 /**
