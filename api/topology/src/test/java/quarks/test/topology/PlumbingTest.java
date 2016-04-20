@@ -19,7 +19,7 @@ under the License.
 package quarks.test.topology;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
@@ -37,7 +37,6 @@ import quarks.topology.TStream;
 import quarks.topology.Topology;
 import quarks.topology.plumbing.PlumbingStreams;
 import quarks.topology.plumbing.Valve;
-import quarks.topology.plumbing.Valve.State;
 import quarks.topology.tester.Condition;
 
 @Ignore
@@ -225,20 +224,19 @@ public abstract class PlumbingTest extends TopologyAbstractTest {
     @Test
     public void testValveState() throws Exception {
         Valve<Integer> valve = new Valve<>();
-        assertSame(State.OPEN, valve.getState());
+        assertTrue(valve.isOpen());
         
-        valve.setState(State.CLOSED);
-        assertSame(State.CLOSED, valve.getState());
+        valve = new Valve<>(true);
+        assertTrue(valve.isOpen());
         
-        valve.setState(State.OPEN);
-        assertSame(State.OPEN, valve.getState());
+        valve = new Valve<>(false);
+        assertFalse(valve.isOpen());
         
-        valve = new Valve<>(State.OPEN);
-        assertSame(State.OPEN, valve.getState());
+        valve.setOpen(true);
+        assertTrue(valve.isOpen());
         
-        valve = new Valve<>(State.CLOSED);
-        assertSame(State.CLOSED, valve.getState());
-        
+        valve.setOpen(false);
+        assertFalse(valve.isOpen());
     }
     
     @Test
@@ -254,9 +252,9 @@ public abstract class PlumbingTest extends TopologyAbstractTest {
                                         // reject 4,5,6
                                         int curCnt = cnt.incrementAndGet();
                                         if (curCnt > 6)
-                                            valve.setState(State.OPEN);
+                                            valve.setOpen(true);
                                         else if (curCnt > 3)
-                                            valve.setState(State.CLOSED);
+                                            valve.setOpen(false);
                                         })
                                     .filter(valve);
 
@@ -272,7 +270,7 @@ public abstract class PlumbingTest extends TopologyAbstractTest {
         
         TStream<Integer> values = top.of(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
         
-        Valve<Integer> valve = new Valve<>(State.CLOSED);
+        Valve<Integer> valve = new Valve<>(false);
         
         AtomicInteger cnt = new AtomicInteger();
         TStream<Integer> filtered = values
@@ -280,9 +278,9 @@ public abstract class PlumbingTest extends TopologyAbstractTest {
                                         // reject all but 4,5,6
                                         int curCnt = cnt.incrementAndGet();
                                         if (curCnt > 6)
-                                            valve.setState(State.CLOSED);
+                                            valve.setOpen(false);
                                         else if (curCnt > 3)
-                                            valve.setState(State.OPEN);
+                                            valve.setOpen(true);
                                         })
                                     .filter(valve);
 

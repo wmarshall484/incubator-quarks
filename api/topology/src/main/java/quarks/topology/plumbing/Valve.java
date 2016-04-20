@@ -1,30 +1,29 @@
 package quarks.topology.plumbing;
 
-import java.util.Objects;
-
 import quarks.function.Predicate;
 
 /**
  * A generic "valve" {@link Predicate}.
  * <p>
- * A valve predicate accepts tuples when its state is {@link State#OPEN},
- * otherwise it rejects tuples.
+ * A valve is either open or closed.
+ * When used as a Predicate to {@code TStream.filter()},
+ * filter passes tuples only when the valve is open.
  * </p><p>
  * A valve is typically used to dynamically control whether or not
  * some downstream tuple processing is enabled.  A decision to change the
  * state of the valve may be a result of local analytics or an external
  * command.
  * <br>
- * E.g., a Valve might be used to control whether or not logging
- * of tuples is enabled.
+ * E.g., in a simple case, a Valve might be used to control
+ * whether or not logging or publishing of tuples is enabled.
  * <pre>{@code
  * TStream<JsonObject> stream = ...;
  * 
- * Valve<JsonObject> valve = new Valve<>(Valve.State.CLOSED);
+ * Valve<JsonObject> valve = new Valve<>(false);
  * stream.filter(valve).sink(someTupleLoggingConsumer);
  *                                 
  * // from some analytic or device command handler...
- *     valve.setState(Valve.State.OPEN);
+ *     valve.setOpen(true);
  * }</pre>
  * </p>
  *
@@ -32,52 +31,49 @@ import quarks.function.Predicate;
  */
 public class Valve<T> implements Predicate<T> {
     private static final long serialVersionUID = 1L;
-    private transient State state = State.OPEN;
-    
-    /**
-     * The valve state.
-     */
-    public enum State { 
-        /** accept tuples */ OPEN, /** reject tuples */ CLOSED };
+    private transient boolean isOpen;
 
     /**
      * Create a new Valve Predicate
      * <p>
-     * Same as {@code Valve(State.OPEN)}
+     * Same as {@code Valve(true)}
      */
     public Valve() {
-        this(State.OPEN);
+        this(true);
     }
     
     /**
      * Create a new Valve Predicate
      * <p>
-     * @param state the initial {@link State}
+     * @param isOpen the initial state
      */
-    public Valve(State state) {
-        setState(state);
+    public Valve(boolean isOpen) {
+        setOpen(isOpen);
     }
     
     /**
      * Set the valve state
      * @param state the state of the valve
      */
-    public void setState(State state) {
-        Objects.requireNonNull(state, "state");
-        this.state = state;
+    public void setOpen(boolean isOpen) {
+        this.isOpen = isOpen;
     }
     
     /**
      * Get the valve state
-     * @return the state
+     * @return the state, true if the valve is open, false otherwise
      */
-    public State getState() {
-        return state;
+    public boolean isOpen() {
+        return isOpen;
     }
 
+    /**
+     * Test the state of the valve, {@code value} is ignored.
+     * @return true when the valve is open, false otherwise
+     */
     @Override
     public boolean test(T value) {
-        return state == State.OPEN;
+        return isOpen;
     }
 
     /**
@@ -85,7 +81,7 @@ public class Valve<T> implements Predicate<T> {
      */
     @Override
     public String toString() {
-        return "state="+state;
+        return "isOpen="+isOpen;
     }
     
 }
