@@ -24,11 +24,13 @@ import static quarks.function.Functions.identity;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Test;
 
 import com.google.gson.JsonObject;
 
+import quarks.analytics.sensors.Deadtime;
 import quarks.analytics.sensors.Filters;
 import quarks.test.providers.direct.DirectTestSetup;
 import quarks.test.topology.TopologyAbstractTest;
@@ -115,4 +117,94 @@ public class FiltersTest  extends TopologyAbstractTest implements DirectTestSetu
         assertTrue(count.valid());
         assertTrue(contents.valid());
 	}
+    
+    @Test
+    public void testDeadtime() throws Exception {
+        Topology topology = newTopology("testDeadtime");
+        
+        int maxTupleCnt = 10;
+        AtomicInteger cnt = new AtomicInteger();
+        
+        TStream<Integer> values = topology.poll(() -> {
+            int curCnt = cnt.incrementAndGet();
+            if (curCnt > maxTupleCnt)
+                return null;
+            return curCnt;
+            }, 100, TimeUnit.MILLISECONDS);
+        
+        // use a deadtime value that causes filtering of every other tuple
+        TStream<Integer> filtered = Filters.deadtime(values, 150, TimeUnit.MILLISECONDS);
+        
+        Condition<Long> count = topology.getTester().tupleCount(filtered, maxTupleCnt/2);
+        Condition<List<Integer>> contents = topology.getTester().streamContents(filtered, 1, 3, 5, 7, 9 );
+        complete(topology, count);
+        
+        assertTrue(contents.getResult().toString(), contents.valid());
+    }
+    
+    @Test
+    public void testDeadtimeNoDeadtime() throws Exception {
+        Topology topology = newTopology("testDeadtimeNoDeadtime");
+        
+        TStream<Integer> values = topology.of(1,2,3,4,5,6,7,8,9,10);
+        
+        // no deadtime
+        TStream<Integer> filtered = Filters.deadtime(values, 0, TimeUnit.MILLISECONDS);
+        
+        Condition<Long> count = topology.getTester().tupleCount(filtered, 10);
+        Condition<List<Integer>> contents = topology.getTester().streamContents(filtered, 1,2,3,4,5,6,7,8,9,10 );
+        complete(topology, count);
+        
+        assertTrue(contents.getResult().toString(), contents.valid());
+    }
+    
+    @Test
+    public void testDeadtimeTooShort() throws Exception {
+        Topology topology = newTopology("testDeadtimeTooShort");
+        
+        TStream<Integer> values = topology.of(1,2,3,4,5,6,7,8,9,10);
+        
+        // no deadtime due to < 1ms
+        TStream<Integer> filtered = Filters.deadtime(values, 999, TimeUnit.MICROSECONDS);
+        
+        Condition<Long> count = topology.getTester().tupleCount(filtered, 10);
+        Condition<List<Integer>> contents = topology.getTester().streamContents(filtered, 1,2,3,4,5,6,7,8,9,10 );
+        complete(topology, count);
+        
+        assertTrue(contents.getResult().toString(), contents.valid());
+    }
+    
+    @Test
+    public void testDeadtimeDynamic() throws Exception {
+        Topology topology = newTopology("testDeadtimeDynamic");
+
+        // initial deadtime to consume 5 tuples. get 1, skip 2-6, get 7, skip 8-10
+        Deadtime<Integer> deadtime = new Deadtime<>(500, TimeUnit.MILLISECONDS);
+
+        int maxTupleCnt = 10;
+        AtomicInteger cnt = new AtomicInteger();
+        
+        TStream<Integer> values = topology.poll(() -> {
+            int curCnt = cnt.incrementAndGet();
+            if (curCnt > maxTupleCnt)
+                return null;
+            if (curCnt == 4) {
+                // shorten deadtime, so should now get tup 4,6,8,10
+                deadtime.setPeriod(150, TimeUnit.MILLISECONDS);
+            }
+            else if (curCnt == 7) {
+                // lengthen deadtime, so should now exclude 8 too and then 10
+                deadtime.setPeriod(300, TimeUnit.MILLISECONDS);
+            }
+            return curCnt;
+            }, 100, TimeUnit.MILLISECONDS);
+        
+        TStream<Integer> filtered = values.filter(deadtime);
+        
+        Condition<Long> count = topology.getTester().tupleCount(filtered, 4);
+        Condition<List<Integer>> contents = topology.getTester().streamContents(filtered, 1, 4, 6, 9 );
+        complete(topology, count);
+        
+        assertTrue(contents.getResult().toString(), contents.valid());
+    }
 }
