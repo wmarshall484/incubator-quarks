@@ -53,7 +53,7 @@ public class Valve<T> implements Predicate<T> {
     
     /**
      * Set the valve state
-     * @param state the state of the valve
+     * @param isOpen true to open the valve
      */
     public void setOpen(boolean isOpen) {
         this.isOpen = isOpen;
