@@ -34,7 +34,7 @@ import quarks.function.Supplier;
  * This methods are called at runtime to create
  * HTTP clients for {@link HttpStreams}. They are
  * passed into methods such as
- * @link {@link HttpStreams#requests(quarks.topology.TStream, Supplier, quarks.function.Function, quarks.function.Function, quarks.function.BiFunction)}
+ * {@link HttpStreams#requests(quarks.topology.TStream, Supplier, quarks.function.Function, quarks.function.Function, quarks.function.BiFunction)}
  * as functions, for example:
  * <UL style="list-style-type:none">
  * <LI>{@code () -> HttpClients::noAuthentication } // using a method reference</LI>

@@ -159,7 +159,7 @@ public final class Range<T extends Comparable<?>> implements Predicate<T>, Seria
     }
 
     /**
-     * Create a new Range<T>
+     * Create a new Range&lt;T&gt;
      * <p>
      * See {@link Ranges} for a collection of convenience constructors.
      * 
@@ -257,13 +257,13 @@ public final class Range<T extends Comparable<?>> implements Predicate<T>, Seria
      * can be used in cases where it isn't sufficient.
      * E.g., for unsigned byte comparisons
      * <pre>
-     * Comparator<Byte> unsignedByteComparator = new Comparator<Byte>() {
+     * Comparator&lt;Byte&gt; unsignedByteComparator = new Comparator&lt;Byte&gt;() {
      *     public int compare(Byte b1, Byte b2) {
      *         return Integer.compareUnsigned(Byte.toUnsignedInt(b1), Byte.toUnsignedInt(b2));
      *     }
      *     public boolean equals(Object o2) { return o2==this; }
      *     };
-     * Range<Byte> unsignedByteRange = Ranges.valueOfByte("[0..255]");
+     * Range&lt;Byte&gt; unsignedByteRange = Ranges.valueOfByte("[0..255]");
      * unsignedByteRange.contains(byteValue, unsignedByteComparator);
      * </pre>
      * 
@@ -410,7 +410,7 @@ public final class Range<T extends Comparable<?>> implements Predicate<T>, Seria
      * See toStringUnsigned().
      * <p>
      * No special processing is performed to escape/encode a "." present
-     * in an endpoint.toString() value.  Hence Range<T>.toString() for
+     * in an endpoint.toString() value.  Hence Range&lt;T&gt;.toString() for
      * a {@code T} of {@code String} (of value "." or with embedded ".."),
      * or some other non-numeric type may yield values that are not amenable
      * to parsing by {@link #valueOf(String, Function)}.

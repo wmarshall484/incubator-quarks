@@ -80,8 +80,8 @@ public abstract class AbstractTStream<G extends Topology, T> implements TStream<
      * 
      * <pre>
      * <code>
-     * TStream&lt;String> strings = ...
-     * TStream&lt;String> modifiedStrings = strings.modify(t -> t.concat("extra"));
+     * TStream&lt;String&gt; strings = ...
+     * TStream&lt;String&gt; modifiedStrings = strings.modify(t -&gt; t.concat("extra"));
      * </code>
      * </pre>
      * 
@@ -89,7 +89,7 @@ public abstract class AbstractTStream<G extends Topology, T> implements TStream<
      * <P>
      * This method is equivalent to
      * {@code map(Function<T,T> modifier}).
-     * </P
+     * </P>
      * 
      * @param modifier
      *            Modifier logic to be executed against each tuple.

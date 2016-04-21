@@ -96,7 +96,7 @@ public final class Ranges {
     }
     
     /**
-     * Create a Range from a Range<Integer>.toString() value. 
+     * Create a Range from a Range&lt;Integer&gt;.toString() value.
      * @param str the String
      * @return the Range
      * @throws IllegalArgumentException if unable to parse or convert
@@ -107,7 +107,7 @@ public final class Ranges {
     }
     
     /**
-     * Create a Range from a Range<Short>.toString() value. 
+     * Create a Range from a Range&lt;Short&gt;.toString() value.
      * @param str the String
      * @return the Range
      * @throws IllegalArgumentException if unable to parse or convert
@@ -118,7 +118,7 @@ public final class Ranges {
     }
     
     /**
-     * Create a Range from a Range<Byte>.toString() value. 
+     * Create a Range from a Range&lt;Byte&gt;.toString() value.
      * @param str the String
      * @return the Range
      * @throws IllegalArgumentException if unable to parse or convert
@@ -129,7 +129,7 @@ public final class Ranges {
     }
     
     /**
-     * Create a Range from a Range<Long>.toString() value. 
+     * Create a Range from a Range&lt;Long&gt;.toString() value.
      * @param str the String
      * @return the Range
      * @throws IllegalArgumentException if unable to parse or convert
@@ -140,7 +140,7 @@ public final class Ranges {
     }
     
     /**
-     * Create a Range from a Range<Float>.toString() value. 
+     * Create a Range from a Range&lt;Float&gt;.toString() value.
      * @param str the String
      * @return the Range
      * @throws IllegalArgumentException if unable to parse or convert
@@ -151,7 +151,7 @@ public final class Ranges {
     }
     
     /**
-     * Create a Range from a Range<Double>.toString() value. 
+     * Create a Range from a Range&lt;Double&gt;.toString() value.
      * @param str the String
      * @return the Range
      * @throws IllegalArgumentException if unable to parse or convert
@@ -162,7 +162,7 @@ public final class Ranges {
     }
     
     /**
-     * Create a Range from a Range<BigInteger>.toString() value. 
+     * Create a Range from a Range&lt;BigInteger&gt;.toString() value.
      * @param str the String
      * @return the Range
      * @throws IllegalArgumentException if unable to parse or convert
@@ -173,7 +173,7 @@ public final class Ranges {
     }
     
     /**
-     * Create a Range from a Range<BigDecimal>.toString() value. 
+     * Create a Range from a Range&lt;BigDecimal&gt;.toString() value.
      * @param str the String
      * @return the Range
      * @throws IllegalArgumentException if unable to parse or convert
@@ -184,7 +184,7 @@ public final class Ranges {
     }
     
     /**
-     * Create a Range from a Range<String>.toString() value. 
+     * Create a Range from a Range&lt;String&gt;.toString() value.
      * @param str the String
      * @return the Range
      * @throws IllegalArgumentException if str includes a String
@@ -195,7 +195,7 @@ public final class Ranges {
     }
     
     /**
-     * Create a Range from a Range<Character>.toString() value. 
+     * Create a Range from a Range&lt;Character&gt;.toString() value.
      * @param str the String
      * @return the Range
      * @throws IllegalArgumentException if unable to parse or convert

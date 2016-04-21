@@ -43,13 +43,13 @@ import quarks.oplet.core.Peek;
  * </UL>
  * For example with peeks {@code P1,P2,P3} added in that order and connections
  * {@code C1,C2} added, the graph will be logically:
- * 
+ *
  * <pre>
- * <code>
+ * {@code
  *                      -->C1
  * port-->P1-->P2-->P3--|
  *                      -->C2
- * </code>
+ * }
  * </pre>
  * 
  * A tuple {@code t} submitted by the port will be peeked at by {@code P1}, then
