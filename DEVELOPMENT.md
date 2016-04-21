@@ -109,9 +109,19 @@ such as an MQTT broker, Apache Kafka, a cloud based IoT service, etc.
 * `android` - Code specific to Android.
 * `test` - SVT
 
+### Coding Conventions
+
+Placeholder: see [QUARKS-23](https://issues.apache.org/jira/browse/QUARKS-23)
+
+A couple of key items in the mean time:
+* use spaces not hard tabs, indent is 4 spaces
+* don't use wildcard imports
+* don't deliver code with warnings (e.g., unused imports)
+
 ### Logging
 
-SLF4J is used for logging and tracing.
+[SLF4J](http://www.slf4j.org) is used for logging and tracing.
+
 Search the code for org.slf4j.LoggerFactory to see a sample of its use.
 
 ### Use of Java 8 features
