@@ -20,6 +20,9 @@ package quarks.runtime.appservice;
 
 import java.util.concurrent.ExecutionException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -31,6 +34,7 @@ import quarks.topology.mbeans.ApplicationServiceMXBean;
 public class AppServiceControl implements ApplicationServiceMXBean {
     
     private final AppService service;
+    private static final Logger logger = LoggerFactory.getLogger(AppServiceControl.class);
     
     AppServiceControl(AppService service) {
         this.service = service;
@@ -61,8 +65,7 @@ public class AppServiceControl implements ApplicationServiceMXBean {
         try {
             service.getSubmitter().submit(topology, config).get();
         } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            logger.error("Exception caught while waiting for submitted executable: {}", e);
         } catch (ExecutionException e) {
             Throwable t = e.getCause();
             if (t instanceof Error)

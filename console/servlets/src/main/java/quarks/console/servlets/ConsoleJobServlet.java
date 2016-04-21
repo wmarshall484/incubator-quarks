@@ -29,12 +29,16 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class ConsoleJobServlet extends HttpServlet {
     /**
 	 * This servlet looks for any running jobs in the embedded environment in which the http server was started
 	 */
 	private static final long serialVersionUID = -2939472165693224428L;
+	private static final Logger logger = LoggerFactory.getLogger(ConsoleJobServlet.class);
 
 	@Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -81,8 +85,7 @@ public class ConsoleJobServlet extends HttpServlet {
         try {
         	jobObjName = new ObjectName(sbuf.toString());
         	} catch (MalformedObjectNameException e) {
-                //System.out.println("No constructed jobs were found");
-                e.printStackTrace();
+                logger.error("Exception caught while initializing ObjectName: {}", e);
         	}
         String jsonString = "";
         if (jobsInfo) {

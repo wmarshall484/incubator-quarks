@@ -35,12 +35,16 @@ import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import quarks.console.servlets.MetricsGson.OpMetric;
 import quarks.console.servlets.MetricsGson.Operator;
 
 final class MetricsUtil {
 	
 	static MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
+	private static final Logger logger = LoggerFactory.getLogger(MetricsUtil.class);
 
 	static Iterator<ObjectInstance> getCounterObjectIterator(String jobId) {
 		ObjectName counterObjName = null;
@@ -52,8 +56,7 @@ final class MetricsUtil {
 		try {
 			counterObjName = new ObjectName(sbuf.toString());
 		} catch (MalformedObjectNameException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Error caught while initializing ObjectName: {}", e);
 		}
 		Set<ObjectInstance> counterInstances = mBeanServer.queryMBeans(counterObjName, null);
 		return counterInstances.iterator();
@@ -69,8 +72,7 @@ final class MetricsUtil {
 			try {
 				meterObjName = new ObjectName(sbuf1.toString());
 			} catch (MalformedObjectNameException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				logger.error("Error caught while initializing ObjectName: {}", e);
 			}
 			
 
@@ -94,15 +96,8 @@ final class MetricsUtil {
 					MBeanInfo mBeanInfo = null;
 					try {
 						mBeanInfo = mBeanServer.getMBeanInfo(mObjName);
-					} catch (IntrospectionException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (InstanceNotFoundException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (ReflectionException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+					} catch (IntrospectionException | InstanceNotFoundException | ReflectionException e) {
+						logger.error("Exception caught while getting MBeanInfo: {}", e);
 					}
 
 			    	for (MBeanAttributeInfo attributeInfo : mBeanInfo.getAttributes()) {
@@ -115,8 +110,7 @@ final class MetricsUtil {
 		    					aMetric.value = String.valueOf(mBeanServer.getAttribute(mObjName, aMetric.name));
 		    				} catch (AttributeNotFoundException | InstanceNotFoundException | MBeanException
 								| ReflectionException e) {
-		    					// TODO Auto-generated catch block
-		    					e.printStackTrace();
+		    				    logger.error("Exception caught while accessing MBean: {}", e);
 		    				}
 		    			}
 		    			// if the op associated with this metric is not in the job add it
@@ -147,15 +141,8 @@ final class MetricsUtil {
 			MBeanInfo mBeanInfo = null;
 			try {
 				mBeanInfo = mBeanServer.getMBeanInfo(cObjName);
-			} catch (IntrospectionException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (InstanceNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (ReflectionException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			} catch (IntrospectionException | InstanceNotFoundException | ReflectionException e) {
+				logger.error("Exception caught while getting MBeanInfo: {}", e);
 			}
 
 	    	for (MBeanAttributeInfo attributeInfo : mBeanInfo.getAttributes()) {
@@ -208,15 +195,8 @@ final class MetricsUtil {
 			
 				try {
 					mBeanInfo = mBeanServer.getMBeanInfo(mObjName);
-				} catch (IntrospectionException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (InstanceNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (ReflectionException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				} catch (IntrospectionException | InstanceNotFoundException | ReflectionException e) {
+					logger.error("Exception caught while getting MBeanInfo: {}", e);
 				}
 				
 		    	for (MBeanAttributeInfo attributeInfo : mBeanInfo.getAttributes()) {
@@ -229,8 +209,7 @@ final class MetricsUtil {
 							aMetric.value = String.valueOf(mBeanServer.getAttribute(mObjName, name));
 						} catch (AttributeNotFoundException | InstanceNotFoundException | MBeanException
 								| ReflectionException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+							logger.error("Exception caught while accessing MBean: {}", e);
 						}
     					if (!gsonJob.isOpInJob(opName)) {
     					    anOp = gsonJob.new Operator();
@@ -264,15 +243,8 @@ final class MetricsUtil {
 			
 				try {
 					mBeanInfo = mBeanServer.getMBeanInfo(cObjName);
-				} catch (IntrospectionException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (InstanceNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (ReflectionException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				} catch (IntrospectionException | InstanceNotFoundException | ReflectionException e) {
+					logger.error("Exception caught while getting MBeanInfo: {}", e);
 				}
 				
 		    	for (MBeanAttributeInfo attributeInfo : mBeanInfo.getAttributes()) {
@@ -286,8 +258,7 @@ final class MetricsUtil {
 							aMetric.value = String.valueOf(mBeanServer.getAttribute(cObjName, name));
 						} catch (AttributeNotFoundException | InstanceNotFoundException | MBeanException
 								| ReflectionException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+							logger.error("Exception caught while accessing MBean: {}", e);
 						}
     					if (!gsonJob.isOpInJob(opName1)) {
     					    anOp = gsonJob.new Operator();

@@ -35,9 +35,13 @@ import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 final class JobUtil {
 	
 	static MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
+	private static final Logger logger = LoggerFactory.getLogger(JobUtil.class);
 
 	static String getJobsInfo(ObjectName jobObjName) {
         Set<ObjectInstance> jobInstances = mBeanServer.queryMBeans(jobObjName, null);
@@ -54,15 +58,8 @@ final class JobUtil {
             MBeanInfo mBeanInfo = null;
 			try {
 				mBeanInfo = mBeanServer.getMBeanInfo(jobObjectName);
-			} catch (IntrospectionException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (InstanceNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (ReflectionException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			} catch (IntrospectionException | InstanceNotFoundException | ReflectionException e) {
+				logger.error("Exception caught while getting MBeanInfo: {}", e);
 			}
             
             /*
@@ -83,18 +80,9 @@ final class JobUtil {
 	    		s.append("\":\"");
 	    		try {
 					s.append((String)mBeanServer.getAttribute(jobObjectName, attr));
-				} catch (AttributeNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (InstanceNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (MBeanException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (ReflectionException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				} catch (AttributeNotFoundException | InstanceNotFoundException 
+						| MBeanException | ReflectionException e) {
+					logger.error("Exception caught while accessing MBean: {}", e);
 				}
 	    		s.append("\",\"");
 	    	}
@@ -124,15 +112,8 @@ final class JobUtil {
             MBeanInfo mBeanInfo = null;
 			try {
 				mBeanInfo = mBeanServer.getMBeanInfo(jobObjectName);
-			} catch (IntrospectionException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (InstanceNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (ReflectionException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			} catch (IntrospectionException | InstanceNotFoundException | ReflectionException e) {
+				logger.error("Exception caught while getting MBeanInfo {}", e);
 			}
 	    	/*
 	    	 * Now get the graph for the job
@@ -144,15 +125,8 @@ final class JobUtil {
 	    			try {
 						gSnapshot = (String) mBeanServer.invoke(jobObjectName, "graphSnapshot",null, null);
 						//System.out.println(gSnapshot);
-					} catch (InstanceNotFoundException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (ReflectionException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (MBeanException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+					} catch (InstanceNotFoundException | ReflectionException | MBeanException e) {
+						logger.error("Exception caught while invoking operation on MBean: {}", e);
 					}
 	    		}
 	    		

@@ -19,6 +19,9 @@ under the License.
 
 package quarks.connectors.iotf.runtime;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.ibm.iotf.client.device.Command;
 
 import quarks.function.Consumer;
@@ -30,6 +33,7 @@ import quarks.function.Consumer;
 public class IotfDeviceCommands implements Consumer<Consumer<Command>> {
     private static final long serialVersionUID = 1L;
     private final IotfConnector connector;
+    private static final Logger logger = LoggerFactory.getLogger(IotfDeviceCommands.class);
 
     public IotfDeviceCommands(IotfConnector connector) {
         this.connector = connector;
@@ -41,8 +45,7 @@ public class IotfDeviceCommands implements Consumer<Consumer<Command>> {
         try {
             connector.subscribeCommands(commandSubmitter);
         } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+			logger.error("Exception caught while subscribing commands: {}", e);
         }
     }
 }
