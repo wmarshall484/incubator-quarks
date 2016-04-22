@@ -123,7 +123,8 @@ public interface Connector<T> {
      * The alias must be unique within the topology.
      * The alias may be used in various contexts:
      * <ul>
-     * <li>Runtime control services for the connector are registered with this alias.</li>
+     * <li>Runtime control services for the Connector (stream/outputport)
+     * are registered with this alias.</li>
      * </ul>
      * </p>
      * 
