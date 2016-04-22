@@ -24,7 +24,6 @@
   <import file="../../common-build.xml"/>
 
   <path id="compile.classpath">
-    <pathelement location="${lib}/quarks.api.topology.jar" />
     <pathelement location="${lib}/quarks.api.function.jar" />
     <pathelement location="${lib}/quarks.api.execution.jar" />
     <pathelement location="${lib}/quarks.api.window.jar" />

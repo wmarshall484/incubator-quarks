@@ -101,9 +101,9 @@
         <ant dir="api/function" target="@{target}" useNativeBasedir="true"/>
         <ant dir="api/execution" target="@{target}" useNativeBasedir="true"/>
         <ant dir="api/window" target="@{target}" useNativeBasedir="true"/>
-        <ant dir="api/topology" target="@{target}" useNativeBasedir="true"/>
         <ant dir="api/oplet" target="@{target}" useNativeBasedir="true"/>
         <ant dir="api/graph" target="@{target}" useNativeBasedir="true"/>
+        <ant dir="api/topology" target="@{target}" useNativeBasedir="true"/>
         <ant dir="spi/graph" target="@{target}" useNativeBasedir="true"/>
         <ant dir="spi/topology" target="@{target}" useNativeBasedir="true"/>
         <ant dir="runtime/appservice" target="@{target}" useNativeBasedir="true"/>

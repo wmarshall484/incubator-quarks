@@ -26,9 +26,11 @@ import quarks.execution.mbeans.PeriodMXBean;
 import quarks.execution.services.ControlService;
 import quarks.oplet.OpletContext;
 import quarks.oplet.OutputContext;
-import quarks.topology.TStream;
 
 public abstract class PeriodicSource<T> extends Source<T> implements Runnable, PeriodMXBean {
+  
+    // see comment in TStream.TYPE
+    private static final String TSTREAM_TYPE = /*TStream.TYPE*/"stream";
 
     private long period;
     private TimeUnit unit;
@@ -48,7 +50,7 @@ public abstract class PeriodicSource<T> extends Source<T> implements Runnable, P
     public synchronized void start() {
         ControlService cs = getOpletContext().getService(ControlService.class);
         if (cs != null)
-            cs.registerControl(TStream.TYPE, getOpletContext().uniquify(getClass().getSimpleName()), 
+            cs.registerControl(TSTREAM_TYPE, getOpletContext().uniquify(getClass().getSimpleName()), 
                     getAlias(), PeriodMXBean.class, this);
         schedule(false);
     }

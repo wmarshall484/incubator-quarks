@@ -60,6 +60,8 @@ public interface TStream<T> extends TopologyElement {
      * The value is {@value} 
      */
     public static final String TYPE = "stream";
+    // N.B. to avoid build problems due to topology <=> oplet, 
+    // other code contain a copy of this value (ugh) as TSTREAM_TYPE
 
     /**
      * Declare a new stream that filters tuples from this stream. Each tuple
