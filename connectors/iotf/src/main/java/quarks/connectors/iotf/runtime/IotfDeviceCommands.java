@@ -45,7 +45,7 @@ public class IotfDeviceCommands implements Consumer<Consumer<Command>> {
         try {
             connector.subscribeCommands(commandSubmitter);
         } catch (Exception e) {
-			logger.error("Exception caught while subscribing commands: {}", e);
+            logger.error("Exception caught while subscribing commands", e);
         }
     }
 }

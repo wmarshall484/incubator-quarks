@@ -59,7 +59,7 @@ final class JobUtil {
 			try {
 				mBeanInfo = mBeanServer.getMBeanInfo(jobObjectName);
 			} catch (IntrospectionException | InstanceNotFoundException | ReflectionException e) {
-				logger.error("Exception caught while getting MBeanInfo: {}", e);
+				logger.error("Exception caught while getting MBeanInfo", e);
 			}
             
             /*
@@ -82,7 +82,7 @@ final class JobUtil {
 					s.append((String)mBeanServer.getAttribute(jobObjectName, attr));
 				} catch (AttributeNotFoundException | InstanceNotFoundException 
 						| MBeanException | ReflectionException e) {
-					logger.error("Exception caught while accessing MBean: {}", e);
+					logger.error("Exception caught while accessing MBean", e);
 				}
 	    		s.append("\",\"");
 	    	}
@@ -113,7 +113,7 @@ final class JobUtil {
 			try {
 				mBeanInfo = mBeanServer.getMBeanInfo(jobObjectName);
 			} catch (IntrospectionException | InstanceNotFoundException | ReflectionException e) {
-				logger.error("Exception caught while getting MBeanInfo {}", e);
+				logger.error("Exception caught while getting MBeanInfo", e);
 			}
 	    	/*
 	    	 * Now get the graph for the job
@@ -126,7 +126,7 @@ final class JobUtil {
 						gSnapshot = (String) mBeanServer.invoke(jobObjectName, "graphSnapshot",null, null);
 						//System.out.println(gSnapshot);
 					} catch (InstanceNotFoundException | ReflectionException | MBeanException e) {
-						logger.error("Exception caught while invoking operation on MBean: {}", e);
+						logger.error("Exception caught while invoking operation on MBean", e);
 					}
 	    		}
 	    		

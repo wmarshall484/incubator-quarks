@@ -65,7 +65,7 @@ public class AppServiceControl implements ApplicationServiceMXBean {
         try {
             service.getSubmitter().submit(topology, config).get();
         } catch (InterruptedException e) {
-            logger.error("Exception caught while waiting for submitted executable: {}", e);
+            logger.error("Exception caught while waiting for submitted executable", e);
         } catch (ExecutionException e) {
             Throwable t = e.getCause();
             if (t instanceof Error)

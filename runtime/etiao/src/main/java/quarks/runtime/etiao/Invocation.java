@@ -151,7 +151,7 @@ public class Invocation<T extends Oplet<I, O>, I, O> implements AutoCloseable {
         try {
             oplet.initialize(context);
         } catch (Exception e) {
-            logger.error("Error while initializing oplet: {}", e);
+            logger.error("Error while initializing oplet", e);
         }
         List<? extends Consumer<I>> streamers = oplet.getInputs();
         for (int i = 0; i < inputs.size(); i++)

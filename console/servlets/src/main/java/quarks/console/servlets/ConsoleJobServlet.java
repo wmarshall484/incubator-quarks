@@ -85,7 +85,7 @@ public class ConsoleJobServlet extends HttpServlet {
         try {
         	jobObjName = new ObjectName(sbuf.toString());
         	} catch (MalformedObjectNameException e) {
-                logger.error("Exception caught while initializing ObjectName: {}", e);
+                logger.error("Exception caught while initializing ObjectName", e);
         	}
         String jsonString = "";
         if (jobsInfo) {
