@@ -21,6 +21,7 @@ package quarks.topology;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
+import quarks.execution.services.ControlService;
 import quarks.execution.services.RuntimeServices;
 import quarks.function.Consumer;
 import quarks.function.Supplier;
@@ -92,10 +93,11 @@ public interface Topology extends TopologyElement {
      * method will be called when the topology's execution is terminated.
      * </p><p>
      * The poll rate may be changed when the topology is running via a runtime
-     * {@link quarks.execution.mbeans.PeriodicMXBean PeriodicMXBean} 
-     * control service for the returned stream.
+     * {@link quarks.execution.mbeans.PeriodMXBean PeriodMXBean}.
      * In order to use this mechanism the caller must provide a 
      * alias for the stream when building the topology.
+     * The {@code PeriodMXBean} is registered with the {@link ControlService}
+     * with type {@link TStream#TYPE} and the stream's alias.  
      * e.g.,
      * <pre>{@code
      * Topology t = ...
@@ -105,7 +107,7 @@ public interface Topology extends TopologyElement {
      * static <T> void setPollFrequency(TStream<T> pollStream, long period, TimeUnit unit) {
      *     ControlService cs = t.getRuntimeServiceSupplier().getService(ControlService.class);
      *     String alias = pollStream.getAlias();
-     *     PeriodicMXBean control = cs.getControl("periodic", alias, PeriodicMXBean.class);
+     *     PeriodMXBean control = cs.getControl(TStream.TYPE, alias, PeriodMXBean.class);
      *     control.setPoll(period, unit);
      * }
      * }</pre>

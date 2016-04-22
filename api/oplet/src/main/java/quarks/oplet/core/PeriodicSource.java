@@ -22,12 +22,13 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import quarks.execution.mbeans.PeriodicMXBean;
+import quarks.execution.mbeans.PeriodMXBean;
 import quarks.execution.services.ControlService;
 import quarks.oplet.OpletContext;
 import quarks.oplet.OutputContext;
+import quarks.topology.TStream;
 
-public abstract class PeriodicSource<T> extends Source<T> implements Runnable, PeriodicMXBean {
+public abstract class PeriodicSource<T> extends Source<T> implements Runnable, PeriodMXBean {
 
     private long period;
     private TimeUnit unit;
@@ -47,8 +48,8 @@ public abstract class PeriodicSource<T> extends Source<T> implements Runnable, P
     public synchronized void start() {
         ControlService cs = getOpletContext().getService(ControlService.class);
         if (cs != null)
-            cs.registerControl("periodic", getOpletContext().uniquify(getClass().getSimpleName()), 
-                    getAlias(), PeriodicMXBean.class, this);
+            cs.registerControl(TStream.TYPE, getOpletContext().uniquify(getClass().getSimpleName()), 
+                    getAlias(), PeriodMXBean.class, this);
         schedule(false);
     }
     

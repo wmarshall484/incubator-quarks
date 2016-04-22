@@ -35,7 +35,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import quarks.execution.Job;
-import quarks.execution.mbeans.PeriodicMXBean;
+import quarks.execution.mbeans.PeriodMXBean;
 import quarks.execution.services.ControlService;
 import quarks.execution.services.RuntimeServices;
 import quarks.function.Supplier;
@@ -153,7 +153,8 @@ public abstract class TopologyTest extends TopologyAbstractTest {
     static <T> void setPollFrequency(TStream<T> pollStream, long period, TimeUnit unit) {
         ControlService cs = pollStream.topology().getRuntimeServiceSupplier()
                                     .get().getService(ControlService.class);
-        PeriodicMXBean control = cs.getControl("periodic", pollStream.getAlias(), PeriodicMXBean.class);
+        PeriodMXBean control = cs.getControl(TStream.TYPE,
+                                  pollStream.getAlias(), PeriodMXBean.class);
         control.setPeriod(period, unit);
     }
 

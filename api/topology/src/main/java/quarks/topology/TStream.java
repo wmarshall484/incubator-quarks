@@ -53,6 +53,13 @@ import quarks.oplet.core.Sink;
  *            Tuple type.
  */
 public interface TStream<T> extends TopologyElement {
+  
+    /**
+     * TYPE is used to identify {@link ControlService} mbeans registered for
+     * for a TStream.
+     * The value is {@value} 
+     */
+    public static final String TYPE = "stream";
 
     /**
      * Declare a new stream that filters tuples from this stream. Each tuple
