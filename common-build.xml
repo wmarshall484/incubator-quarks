@@ -159,7 +159,7 @@
 		<copy file="${quarks.dir}/LICENSE" tofile="${classes}/META-INF/LICENSE"/>
 		<copy file="${quarks.dir}/NOTICE" tofile="${classes}/META-INF/NOTICE"/>
 	    <manifestclasspath property="jar.classpath" jarfile="${jar}"
-	        maxParentLevels="5">
+	        maxParentLevels="10">
 	      <classpath refid="compile.classpath"/>
 	    </manifestclasspath>
 	    <jar destfile="${jar}">
