@@ -299,7 +299,7 @@
          <dirset dir="${basedir}">
            <include name="*/*/src/main/java"/>
            <exclude name="android/**"/>
-         </dirset> 
+         </dirset>
       </sourcepath>
       <classpath>
         <fileset dir="ext">
