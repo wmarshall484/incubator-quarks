@@ -57,7 +57,7 @@
    <property name="quarks.samples" location="${target.java8.dir}/samples"/>
 
     <property name="src" location="src/main/java"/>
-	<property name="src.excludes" value=""/>
+    <property name="src.excludes" value=""/>
     <property name="resources" location="src/main/resources"/>
     <property name="classes" location="classes"/>
     <property name="jarname" value="${ant.project.name}.jar"/>
