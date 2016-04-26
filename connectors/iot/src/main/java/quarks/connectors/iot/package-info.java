@@ -48,8 +48,9 @@ under the License.
  * </UL>
  * Device commands can be used to perform any action on the device including displaying information,
  * controlling the device (e.g. reduce maximum engine revolutions), controlling the Quarks application, etc.
- * </LI>
+ * <BR>
  * The format for the payload is typically JSON, though other formats may be used.
+ * </LI>
  * </UL>
  * </P>
  * <P>

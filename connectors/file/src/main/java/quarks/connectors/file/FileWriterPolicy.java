@@ -54,14 +54,14 @@ import quarks.connectors.file.runtime.IFileWriterPolicy;
  * <p>
  * Sample use:
  * <pre>
- * FileWriterPolicy<String> policy = new FileWriterPolicy(
+ * FileWriterPolicy&lt;String&gt; policy = new FileWriterPolicy(
  *     FileWriterFlushConfig.newImplicitConfig(),
  *     FileWriterCycleConfig.newCountBasedConfig(1000),
  *     FileWriterRetentionConfig.newCountBasedConfig(10));
  * String basePathname = "/some/directory/and_base_name";
  * 
- * TStream<String> streamToWrite = ...
- * FileStreams.textFileWriter(streamToWrite, () -> basePathname, () -> policy)
+ * TStream&lt;String&gt; streamToWrite = ...
+ * FileStreams.textFileWriter(streamToWrite, () -&gt; basePathname, () -&gt; policy)
  * </pre>
  * 
  * @param <T> stream tuple type

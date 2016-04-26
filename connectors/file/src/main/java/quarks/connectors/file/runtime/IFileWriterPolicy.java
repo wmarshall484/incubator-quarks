@@ -42,8 +42,8 @@ import quarks.connectors.file.FileStreams;
  * <p>
  * A file writer uses a {@code IFileWriterPolicy} in the following manner:
  * <pre>
- * IFileWriterPolicy<T> policy = some policy implementation
- * policy.initialize(basePathname, () -> myFlushFn(), () -> myCycleFn());
+ * IFileWriterPolicy&lt;T&gt; policy = some policy implementation
+ * policy.initialize(basePathname, () -&gt; myFlushFn(), () -&gt; myCycleFn());
  * Path activeFilePath = null;
  * for each tuple {
  *   if (activePathFile == null) {

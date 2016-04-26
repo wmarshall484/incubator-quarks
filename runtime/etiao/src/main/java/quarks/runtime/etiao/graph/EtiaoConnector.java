@@ -38,6 +38,7 @@ class EtiaoConnector<P> implements Connector<P> {
     private final ExecutableVertex<?, ?, P> originalVertex;
 	@SuppressWarnings("unused")
     private final int originalPort;
+	private String alias;
 
 	/**
 	 * The active port for this connector. active is different to original when
@@ -165,4 +166,28 @@ class EtiaoConnector<P> implements Connector<P> {
     public Set<String> getTags() {
         return Collections.unmodifiableSet(tags);
     }
+
+    @Override
+    public void alias(String alias) {
+        if (this.alias != null)
+            throw new IllegalStateException("alias already set");
+        this.alias = alias;
+    }
+
+    @Override
+    public String getAlias() {
+        return alias;
+    }
+    
+    /**
+     * Intended only as a debug aid and content is not guaranteed. 
+     */
+    @Override
+    public String toString() {
+        return getClass().getSimpleName()
+                + " activePort=" + activePort
+                + " alias=" + getAlias()
+                + " tags=" + getTags();
+    }
+
 }

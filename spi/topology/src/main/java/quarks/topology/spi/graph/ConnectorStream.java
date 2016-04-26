@@ -286,6 +286,25 @@ public class ConnectorStream<G extends Topology, T> extends AbstractTStream<G, T
         return connector.getTags();
     }
 
+    @Override
+    public TStream<T> alias(String alias) {
+        connector.alias(alias);
+        return this;
+    }
 
+    @Override
+    public String getAlias() {
+        return connector.getAlias();
+    }
+    
+    /**
+     * Intended only as a debug aid and content is not guaranteed. 
+     */
+    @Override
+    public String toString() {
+        return getClass().getSimpleName()
+                + " alias=" + getAlias()
+                + " tags=" + getTags();
+    }
 
 }

@@ -28,6 +28,7 @@
     <pathelement location="${lib}/quarks.spi.topology.jar" />
     <pathelement location="${lib}/quarks.spi.graph.jar" />
     <pathelement location="${lib}/quarks.runtime.etiao.jar" />
+    <pathelement location="${lib}/quarks.runtime.jsoncontrol.jar" />
   </path>
 
   <path id="test.compile.classpath">

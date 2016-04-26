@@ -155,7 +155,8 @@ public class JMXControlService implements ControlService {
         Hashtable<String,String> table = new Hashtable<>();       
         table.put("interface", ObjectName.quote(interfaceName));
         table.put("type", ObjectName.quote(type));
-        table.put("alias", ObjectName.quote(alias));
+        if (alias != null)
+            table.put("alias", ObjectName.quote(alias));
         ObjectName objName = new ObjectName(getDomain(), table);
         
         // Add the wildcard for any other properties.

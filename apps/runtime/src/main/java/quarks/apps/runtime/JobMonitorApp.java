@@ -44,13 +44,14 @@ import quarks.topology.services.ApplicationService;
 
 /**
  * Job monitoring application.
- * <p>
+ * <P>
  * The application listens on JobRegistry events and resubmits jobs for which 
  * an event has been emitted because the job is unhealthy. The monitored 
  * applications must be registered with an {@code ApplicationService} 
  * prior to submission, otherwise the monitor application cannot restart 
- * them.</p>
- * <p> 
+ * them.
+ * </P>
+ * <P>
  * The monitoring application must be submitted within a context which 
  * provides the following services:
  * <ul>
@@ -61,7 +62,7 @@ import quarks.topology.services.ApplicationService;
  * restarting failed applications.</li>
  * <li>JobRegistryService - generates job monitoring events. </li>
  * </ul>
- * </p>
+ * </P>
  */
 public class JobMonitorApp {
     /**
@@ -138,7 +139,7 @@ public class JobMonitorApp {
     /**
      * Declares the following topology:
      * <pre>
-     * JobEvents source --> Filter (health == unhealthy) --> Restart application
+     * JobEvents source --&gt; Filter (health == unhealthy) --&gt; Restart application
      * </pre>
      * 
      * @param name the topology name

@@ -109,9 +109,19 @@ such as an MQTT broker, Apache Kafka, a cloud based IoT service, etc.
 * `android` - Code specific to Android.
 * `test` - SVT
 
+### Coding Conventions
+
+Placeholder: see [QUARKS-23](https://issues.apache.org/jira/browse/QUARKS-23)
+
+A couple of key items in the mean time:
+* use spaces not hard tabs, indent is 4 spaces
+* don't use wildcard imports
+* don't deliver code with warnings (e.g., unused imports)
+
 ### Logging
 
-SLF4J is used for logging and tracing.
+[SLF4J](http://www.slf4j.org) is used for logging and tracing.
+
 Search the code for org.slf4j.LoggerFactory to see a sample of its use.
 
 ### Use of Java 8 features
@@ -134,27 +144,27 @@ In general most code is expected to work on Android (but might not yet) with the
 * Functionality aimed at the developer environment, such as console and development provider
 * Any JMX related code.
 
-### The ASF / Github Integration
+### The ASF / GitHub Integration
 
 The Quarks code is in ASF resident git repositories:
 
     https://git-wip-us.apache.org/repos/asf/incubator-quarks.git
 
-The repositories are mirrored on github:
+The repositories are mirrored on GitHub:
 
     https://github.com/apache/incubator-quarks
 
-Use of the normal github workflow brings benefits to the team including 
+Use of the normal GitHub workflow brings benefits to the team including
 lightweight code reviewing, automatic regression tests, etc 
 for both committers and non-committers.  
 
-For a description of the github workflow see:
+For a description of the GitHub workflow see:
 
     https://guides.github.com/introduction/flow/
     https://guides.github.com/activities/hello-world/
 
 In summary:
-* fork the incubator-quarks github repository
+* fork the incubator-quarks GitHub repository
 * clone your fork, use lightweight per-task branches, and commit / push changes to your fork
   * descriptive branch names are good. You can also include a reference
     to the Jira issue.  e.g., mqtt-ssl-quarks-100 for issue QUARKS-100
@@ -163,8 +173,8 @@ In summary:
   * for early preview / feedback, create a pull request with [WIP] in the title.  
     Committers won’t consider it for merging until after [WIP] is removed.
 
-Since the github incubator-quarks repository is a mirror of the ASF repository,
-the usual github based merge workflow for committers isn’t supported.
+Since the GitHub incubator-quarks repository is a mirror of the ASF repository,
+the usual GitHub based merge workflow for committers isn’t supported.
 
 Committers can use one of several ways to ultimately merge the pull request
 into the repo at the ASF. One way is described here:
@@ -172,7 +182,7 @@ into the repo at the ASF. One way is described here:
 * http://mail-archives.apache.org/mod_mbox/incubator-quarks-dev/201603.mbox/%3C1633289677.553519.1457733763078.JavaMail.yahoo%40mail.yahoo.com%3E
 
 Notes with the above PR merge directions:
-  * use an https url unless you have a ssh key setup at github:
+  * use an https url unless you have a ssh key setup at GitHub:
     `git remote add mirror https://github.com/apache/incubator-quarks.git`
 
 ### Using Eclipse

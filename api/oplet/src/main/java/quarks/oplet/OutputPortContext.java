@@ -16,17 +16,15 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 */
+package quarks.oplet;
+
 /**
- * Samples showing use of the 
- * <a href="{@docRoot}/quarks/connectors/file/package-summary.html">
- *     File stream connector</a>.
- * <p>
- * See &lt;quarks-release&gt;/scripts/connectors/file/README to run the samples.
- * <p>
- * The following samples are provided:
- * <ul>
- * <li>FileReaderApp.java - a simple directory watcher and file reader application topology</li>
- * <li>FileWriterApp.java - a simple file writer application topology</li>
- * </ul>
+ * Information about an oplet output port. 
  */
-package quarks.samples.connectors.file;
+public interface OutputPortContext {
+    /**
+     * Get the alias of the output port if any.
+     * @return the alias; null if none.
+     */
+    String getAlias();
+}
