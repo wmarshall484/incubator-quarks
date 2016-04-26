@@ -55,4 +55,11 @@ public interface Edge {
      * @return set of tag values.
      */
     Set<String> getTags(); 
+    
+    /**
+     * Returns the alias associated with this edge.
+     * 
+     * @return the alias. null if none.
+     */
+    String getAlias(); 
 }

@@ -76,6 +76,12 @@ public interface OpletContext<I, O> extends RuntimeServices {
     List<? extends Consumer<O>> getOutputs();
 
     /**
+     * Get the oplet's output port context information.
+     * @return list of {@link OutputPortContext}, one for each output port.
+     */
+    List<OutputPortContext> getOutputContext();
+
+    /**
      * Get the job hosting this oplet. 
      * @return {@link JobContext} hosting this oplet invocation.
      */

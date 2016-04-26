@@ -115,5 +115,28 @@ public interface Connector<T> {
      * 
      * @return set of tag values.
      */
-    Set<String> getTags(); 
+    Set<String> getTags();
+    
+    /**
+     * Set the alias for the connector.
+     * <p>
+     * The alias must be unique within the topology.
+     * The alias may be used in various contexts:
+     * <ul>
+     * <li>Runtime control services for the Connector (stream/outputport)
+     * are registered with this alias.</li>
+     * </ul>
+     * </p>
+     * 
+     * @param alias the alias
+     * @throws IllegalStateException if the an alias has already been set
+     */
+    void alias(String alias);
+    
+    /**
+     * Returns the alias for the connector if any.
+     * @return the alias. null if one has not be set.
+     */
+    String getAlias();
+
 }

@@ -18,6 +18,12 @@ under the License.
 */
 package quarks.topology;
 
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import quarks.execution.services.ControlService;
 import quarks.function.BiFunction;
 import quarks.function.Consumer;
 import quarks.function.Function;
@@ -26,11 +32,6 @@ import quarks.function.ToIntFunction;
 import quarks.function.UnaryOperator;
 import quarks.oplet.core.Pipe;
 import quarks.oplet.core.Sink;
-
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A {@code TStream} is a declaration of a continuous sequence of tuples. A
@@ -52,6 +53,15 @@ import java.util.concurrent.TimeUnit;
  *            Tuple type.
  */
 public interface TStream<T> extends TopologyElement {
+  
+    /**
+     * TYPE is used to identify {@link ControlService} mbeans registered for
+     * for a TStream.
+     * The value is {@value} 
+     */
+    public static final String TYPE = "stream";
+    // N.B. to avoid build problems due to topology <=> oplet, 
+    // other code contain a copy of this value (ugh) as TSTREAM_TYPE
 
     /**
      * Declare a new stream that filters tuples from this stream. Each tuple
@@ -440,6 +450,29 @@ public interface TStream<T> extends TopologyElement {
      * @return set of tags
      */
     Set<String> getTags(); 
+    
+    /**
+     * Set an alias for the stream.
+     * <p>
+     * The alias must be unique within the topology.
+     * The alias may be used in various contexts:
+     * <ul>
+     * <li>Runtime control services for the stream are registered with this alias.</li>
+     * </ul>
+     * </p>
+     * 
+     * @param alias an alias for the stream.
+     * @return this
+     * @throws IllegalStateException if the an alias has already been set.
+     * @see ControlService
+     */
+    TStream<T> alias(String alias);
+    
+    /**
+     * Returns the stream's alias if any.
+     * @return the alias. null if one has not be set.
+     */
+    String getAlias();
     
     /**
      * Join this stream with a partitioned window of type {@code U} with key type {@code K}.
