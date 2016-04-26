@@ -37,7 +37,7 @@ public class InvocationContext<I, O> extends AbstractContext<I, O> {
 
 	private final String id;
 	private final int inputCount;
-	private List<? extends OutputPortContext> outputContext;
+	private List<OutputPortContext> outputContext;
 
 	/**
 	 * Creates an {@code InvocationContext} with the specified parameters.
@@ -53,7 +53,7 @@ public class InvocationContext<I, O> extends AbstractContext<I, O> {
             RuntimeServices services,
             int inputCount,
             List<? extends Consumer<O>> outputs,
-            List<? extends OutputPortContext> outputContext) {
+            List<OutputPortContext> outputContext) {
         super(job, services);
         this.id = id;
         this.inputCount = inputCount;
@@ -82,7 +82,7 @@ public class InvocationContext<I, O> extends AbstractContext<I, O> {
     }
 
     @Override
-    public List<? extends OutputPortContext> getOutputContext() {
+    public List<OutputPortContext> getOutputContext() {
         return outputContext;
     }
 }

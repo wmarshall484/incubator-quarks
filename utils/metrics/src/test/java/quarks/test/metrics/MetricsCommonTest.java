@@ -147,7 +147,7 @@ public class MetricsCommonTest {
         }
 
         @Override
-        public List<? extends OutputPortContext> getOutputContext() {
+        public List<OutputPortContext> getOutputContext() {
             throw new UnsupportedOperationException();
         }
     }
