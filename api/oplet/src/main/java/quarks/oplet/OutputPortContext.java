@@ -21,7 +21,7 @@ package quarks.oplet;
 /**
  * Information about an oplet output port. 
  */
-public interface OutputContext {
+public interface OutputPortContext {
     /**
      * Get the alias of the output port if any.
      * @return the alias; null if none.

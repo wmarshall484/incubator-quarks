@@ -23,7 +23,7 @@ import java.util.List;
 import quarks.execution.services.RuntimeServices;
 import quarks.function.Consumer;
 import quarks.oplet.JobContext;
-import quarks.oplet.OutputContext;
+import quarks.oplet.OutputPortContext;
 
 /**
  * Context information for the {@code Oplet}'s execution context.
@@ -37,7 +37,7 @@ public class InvocationContext<I, O> extends AbstractContext<I, O> {
 
 	private final String id;
 	private final int inputCount;
-	private List<? extends OutputContext> outputContext;
+	private List<? extends OutputPortContext> outputContext;
 
 	/**
 	 * Creates an {@code InvocationContext} with the specified parameters.
@@ -53,7 +53,7 @@ public class InvocationContext<I, O> extends AbstractContext<I, O> {
             RuntimeServices services,
             int inputCount,
             List<? extends Consumer<O>> outputs,
-            List<? extends OutputContext> outputContext) {
+            List<? extends OutputPortContext> outputContext) {
         super(job, services);
         this.id = id;
         this.inputCount = inputCount;
@@ -82,7 +82,7 @@ public class InvocationContext<I, O> extends AbstractContext<I, O> {
     }
 
     @Override
-    public List<? extends OutputContext> getOutputContext() {
+    public List<? extends OutputPortContext> getOutputContext() {
         return outputContext;
     }
 }

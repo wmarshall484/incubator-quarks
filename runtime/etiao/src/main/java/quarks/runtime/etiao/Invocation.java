@@ -27,7 +27,7 @@ import quarks.function.Consumer;
 import quarks.function.Functions;
 import quarks.oplet.JobContext;
 import quarks.oplet.Oplet;
-import quarks.oplet.OutputContext;
+import quarks.oplet.OutputPortContext;
 
 /**
  * An {@link Oplet} invocation in the context of the 
@@ -43,8 +43,8 @@ import quarks.oplet.OutputContext;
 public class Invocation<T extends Oplet<I, O>, I, O> implements AutoCloseable {
     /** Prefix used by oplet unique identifiers. */
     public static final String ID_PREFIX = "OP_";
-    private static final OutputContext DEFAULT_OUTPUT_CONTEXT = 
-        new OutputContext() {
+    private static final OutputPortContext DEFAULT_OUTPUT_CONTEXT = 
+        new OutputPortContext() {
             @Override
             public String getAlias() {
                 return null;
@@ -59,7 +59,7 @@ public class Invocation<T extends Oplet<I, O>, I, O> implements AutoCloseable {
 
     private List<Consumer<O>> outputs;
     private List<SettableForwarder<I>> inputs;
-    private List<OutputContext> outputContext;
+    private List<OutputPortContext> outputContext;
 
     protected Invocation(String id, T oplet, int inputCount, int outputCount) {
     	this.id = id;
@@ -139,9 +139,9 @@ public class Invocation<T extends Oplet<I, O>, I, O> implements AutoCloseable {
      * Set the specified output port's context.
      * 
      * @param port index of the output port
-     * @param context the new {@link OutputContext}
+     * @param context the new {@link OutputPortContext}
      */
-    public void setContext(int port, OutputContext context) {
+    public void setContext(int port, OutputPortContext context) {
         if (context == null)
             throw new NullPointerException();
         outputContext.set(port, context);

@@ -37,7 +37,7 @@ import quarks.metrics.oplets.RateMeter;
 import quarks.oplet.JobContext;
 import quarks.oplet.Oplet;
 import quarks.oplet.OpletContext;
-import quarks.oplet.OutputContext;
+import quarks.oplet.OutputPortContext;
 import quarks.oplet.core.AbstractOplet;
 import quarks.oplet.core.Peek;
 
@@ -147,7 +147,7 @@ public class MetricsCommonTest {
         }
 
         @Override
-        public List<? extends OutputContext> getOutputContext() {
+        public List<? extends OutputPortContext> getOutputContext() {
             throw new UnsupportedOperationException();
         }
     }

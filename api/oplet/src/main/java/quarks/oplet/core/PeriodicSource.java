@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 import quarks.execution.mbeans.PeriodMXBean;
 import quarks.execution.services.ControlService;
 import quarks.oplet.OpletContext;
-import quarks.oplet.OutputContext;
+import quarks.oplet.OutputPortContext;
 
 public abstract class PeriodicSource<T> extends Source<T> implements Runnable, PeriodMXBean {
   
@@ -56,7 +56,7 @@ public abstract class PeriodicSource<T> extends Source<T> implements Runnable, P
     }
     
     private String getAlias() {
-        OutputContext oc = getOpletContext().getOutputContext().get(0);
+        OutputPortContext oc = getOpletContext().getOutputContext().get(0);
         return oc.getAlias();
     }
 
