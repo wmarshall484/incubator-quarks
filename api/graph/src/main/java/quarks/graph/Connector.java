@@ -43,13 +43,13 @@ import quarks.oplet.core.Peek;
  * </UL>
  * For example with peeks {@code P1,P2,P3} added in that order and connections
  * {@code C1,C2} added, the graph will be logically:
- * 
+ *
  * <pre>
- * <code>
+ * {@code
  *                      -->C1
  * port-->P1-->P2-->P3--|
  *                      -->C2
- * </code>
+ * }
  * </pre>
  * 
  * A tuple {@code t} submitted by the port will be peeked at by {@code P1}, then
@@ -115,5 +115,28 @@ public interface Connector<T> {
      * 
      * @return set of tag values.
      */
-    Set<String> getTags(); 
+    Set<String> getTags();
+    
+    /**
+     * Set the alias for the connector.
+     * <p>
+     * The alias must be unique within the topology.
+     * The alias may be used in various contexts:
+     * <ul>
+     * <li>Runtime control services for the Connector (stream/outputport)
+     * are registered with this alias.</li>
+     * </ul>
+     * </p>
+     * 
+     * @param alias the alias
+     * @throws IllegalStateException if the an alias has already been set
+     */
+    void alias(String alias);
+    
+    /**
+     * Returns the alias for the connector if any.
+     * @return the alias. null if one has not be set.
+     */
+    String getAlias();
+
 }

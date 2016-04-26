@@ -115,11 +115,12 @@ public interface IotDevice extends TopologyElement {
      * <LI>{@link #CMD_ID command} - Command identifier as a String</LI>
      * <LI>{@link #CMD_TS tsms} - Timestamp of the command in milliseconds since the 1970/1/1 epoch.</LI>
      * <LI>{@link #CMD_FORMAT format} - Format of the command as a String</LI>
-     * <LI>{@link #CMD_PAYLOAD payload} - Payload of the command</LI>
+     * <LI>{@link #CMD_PAYLOAD payload} - Payload of the command
      * <UL>
      * <LI>If {@code format} is {@code json} then {@code payload} is JSON</LI>
-     * <LI>Otherwise {@code payload} is String
+     * <LI>Otherwise {@code payload} is String</LI>
      * </UL>
+     * </LI>
      * </UL>
      * 
      * 

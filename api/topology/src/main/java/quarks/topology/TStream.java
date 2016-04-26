@@ -18,6 +18,12 @@ under the License.
 */
 package quarks.topology;
 
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import quarks.execution.services.ControlService;
 import quarks.function.BiFunction;
 import quarks.function.Consumer;
 import quarks.function.Function;
@@ -26,11 +32,6 @@ import quarks.function.ToIntFunction;
 import quarks.function.UnaryOperator;
 import quarks.oplet.core.Pipe;
 import quarks.oplet.core.Sink;
-
-import java.util.EnumMap;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A {@code TStream} is a declaration of a continuous sequence of tuples. A
@@ -52,6 +53,15 @@ import java.util.concurrent.TimeUnit;
  *            Tuple type.
  */
 public interface TStream<T> extends TopologyElement {
+  
+    /**
+     * TYPE is used to identify {@link ControlService} mbeans registered for
+     * for a TStream.
+     * The value is {@value} 
+     */
+    public static final String TYPE = "stream";
+    // N.B. to avoid build problems due to topology <=> oplet, 
+    // other code contain a copy of this value (ugh) as TSTREAM_TYPE
 
     /**
      * Declare a new stream that filters tuples from this stream. Each tuple
@@ -65,8 +75,8 @@ public interface TStream<T> extends TopologyElement {
      * 
      * <pre>
      * <code>
-     * TStream&lt;String> s = ...
-     * TStream&lt;String> filtered = s.filter(t -> !t.isEmpty());
+     * TStream&lt;String&gt; s = ...
+     * TStream&lt;String&gt; filtered = s.filter(t -&gt; !t.isEmpty());
      *             
      * </code>
      * </pre>
@@ -94,12 +104,12 @@ public interface TStream<T> extends TopologyElement {
      * <pre>
      * <code>
      * // Using lambda expression
-     * TStream&lt;String> strings = ...
-     * TStream&lt;Double> doubles = strings.map(v -> Double.valueOf(v));
+     * TStream&lt;String&gt; strings = ...
+     * TStream&lt;Double&gt; doubles = strings.map(v -&gt; Double.valueOf(v));
      * 
      * // Using method reference
-     * TStream&lt;String> strings = ...
-     * TStream&lt;Double> doubles = strings.map(Double::valueOf);
+     * TStream&lt;String&gt; strings = ...
+     * TStream&lt;Double&gt; doubles = strings.map(Double::valueOf);
      * 
      * </code>
      * </pre>
@@ -130,9 +140,9 @@ public interface TStream<T> extends TopologyElement {
      * 
      * <pre>
      * <code>
-     * TStream&lt;String> lines = ...
-     * TStream&lt;String> words = lines.flatMap(
-     *                     line -> Arrays.asList(line.split(" ")));
+     * TStream&lt;String&gt; lines = ...
+     * TStream&lt;String&gt; words = lines.flatMap(
+     *                     line -&gt; Arrays.asList(line.split(" ")));
      *             
      * </code>
      * </pre>
@@ -155,7 +165,7 @@ public interface TStream<T> extends TopologyElement {
      * called. The return value {@code r} determines the destination stream:
      * 
      * <pre>
-     * if r < 0 the tuple is discarded
+     * if r &lt; 0 the tuple is discarded
      * else it is sent to the stream at position (r % n) in the returned array.
      * </pre>
      * </P>
@@ -174,10 +184,10 @@ public interface TStream<T> extends TopologyElement {
      * destination stream. For example, these are logically equivalent:
      * 
      * <pre>
-     * List&lt;TStream&lt;String>> streams = stream.split(2, tuple -> tuple.length());
+     * List&lt;TStream&lt;String&gt;&gt; streams = stream.split(2, tuple -&gt; tuple.length());
      * 
-     * TStream&lt;String> stream0 = stream.filter(tuple -> (tuple.length() % 2) == 0);
-     * TStream&lt;String> stream1 = stream.filter(tuple -> (tuple.length() % 2) == 1);
+     * TStream&lt;String&gt; stream0 = stream.filter(tuple -&gt; (tuple.length() % 2) == 0);
+     * TStream&lt;String&gt; stream1 = stream.filter(tuple -&gt; (tuple.length() % 2) == 1);
      * </pre>
      * </P>
      * <P>
@@ -185,8 +195,8 @@ public interface TStream<T> extends TopologyElement {
      * 
      * <pre>
      * <code>
-     * TStream&lt;LogRecord> lrs = ...
-     * List&lt;&lt;TStream&lt;LogRecord>> splits = lrr.split(3, lr -> {
+     * TStream&lt;LogRecord&gt; lrs = ...
+     * List&lt;&lt;TStream&lt;LogRecord&gt;&gt; splits = lrr.split(3, lr -&gt; {
             if (SEVERE.equals(lr.getLevel()))
                 return 0;
             else if (WARNING.equals(lr.getLevel()))
@@ -220,7 +230,7 @@ public interface TStream<T> extends TopologyElement {
      *            enum data to split
      * @param splitter
      *            the splitter function
-     * @return EnumMap<E,TStream<T>>
+     * @return EnumMap&lt;E,TStream&lt;T&gt;&gt;
      * @throws IllegalArgumentException
      * if {@code enumclass.size <= 0}
      */
@@ -252,8 +262,8 @@ public interface TStream<T> extends TopologyElement {
      * 
      * <pre>
      * <code>
-     * TStream&lt;String> values = ...
-     * values.sink(t -> System.out.println(tuple));
+     * TStream&lt;String&gt; values = ...
+     * values.sink(t -&gt; System.out.println(tuple));
      * </code>
      * </pre>
      * 
@@ -304,8 +314,8 @@ public interface TStream<T> extends TopologyElement {
      * 
      * <pre>
      * <code>
-     * TStream&lt;String> strings = ...
-     * TStream&lt;String> modifiedStrings = strings.modify(t -> t.concat("extra"));
+     * TStream&lt;String&gt; strings = ...
+     * TStream&lt;String&gt; modifiedStrings = strings.modify(t -&gt; t.concat("extra"));
      * </code>
      * </pre>
      * 
@@ -313,7 +323,7 @@ public interface TStream<T> extends TopologyElement {
      * <P>
      * This method is equivalent to
      * {@code map(Function<T,T> modifier}).
-     * </P
+     * </P>
      * 
      * @param modifier
      *            Modifier logic to be executed against each tuple.
@@ -440,6 +450,29 @@ public interface TStream<T> extends TopologyElement {
      * @return set of tags
      */
     Set<String> getTags(); 
+    
+    /**
+     * Set an alias for the stream.
+     * <p>
+     * The alias must be unique within the topology.
+     * The alias may be used in various contexts:
+     * <ul>
+     * <li>Runtime control services for the stream are registered with this alias.</li>
+     * </ul>
+     * </p>
+     * 
+     * @param alias an alias for the stream.
+     * @return this
+     * @throws IllegalStateException if the an alias has already been set.
+     * @see ControlService
+     */
+    TStream<T> alias(String alias);
+    
+    /**
+     * Returns the stream's alias if any.
+     * @return the alias. null if one has not be set.
+     */
+    String getAlias();
     
     /**
      * Join this stream with a partitioned window of type {@code U} with key type {@code K}.

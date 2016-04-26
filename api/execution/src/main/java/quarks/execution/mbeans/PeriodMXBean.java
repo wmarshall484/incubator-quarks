@@ -16,17 +16,24 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 */
-package quarks.oplet.core.mbeans;
+package quarks.execution.mbeans;
 
 import java.util.concurrent.TimeUnit;
 
 /**
- * Control interface for a periodic oplet.
+ * Control mbean interface for an entity having an a time period control.
+ * <P>
+ * This mbean lacks a {@code TYPE} declaration because it's
+ * a generic control interface applicable to a variety of
+ * object types (e.g., a stream or window).
+ * The type of the associated object is to be used when
+ * registering instances of this mbean with the
+ * {@link quarks.execution.services.ControlService ControlService}.
+ * </P>
  * 
- * @see quarks.oplet.core.PeriodicSource
- *
+ * @see quarks.topology.Topology#poll(quarks.function.Supplier, long, TimeUnit)
  */
-public interface PeriodicMXBean {
+public interface PeriodMXBean {
     
     /**
      * Get the period.
@@ -44,4 +51,9 @@ public interface PeriodicMXBean {
      * Set the period.
      */
     public void setPeriod(long period);
+    
+    /**
+     * Set the period and unit
+     */
+    public void setPeriod(long period, TimeUnit unit);
 }

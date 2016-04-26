@@ -22,11 +22,15 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import quarks.execution.mbeans.PeriodMXBean;
 import quarks.execution.services.ControlService;
 import quarks.oplet.OpletContext;
-import quarks.oplet.core.mbeans.PeriodicMXBean;
+import quarks.oplet.OutputPortContext;
 
-public abstract class PeriodicSource<T> extends Source<T> implements Runnable, PeriodicMXBean {
+public abstract class PeriodicSource<T> extends Source<T> implements Runnable, PeriodMXBean {
+  
+    // see comment in TStream.TYPE
+    private static final String TSTREAM_TYPE = /*TStream.TYPE*/"stream";
 
     private long period;
     private TimeUnit unit;
@@ -46,8 +50,14 @@ public abstract class PeriodicSource<T> extends Source<T> implements Runnable, P
     public synchronized void start() {
         ControlService cs = getOpletContext().getService(ControlService.class);
         if (cs != null)
-            cs.registerControl("periodic", getOpletContext().uniquify(getClass().getSimpleName()), null, PeriodicMXBean.class, this);
+            cs.registerControl(TSTREAM_TYPE, getOpletContext().uniquify(getClass().getSimpleName()), 
+                    getAlias(), PeriodMXBean.class, this);
         schedule(false);
+    }
+    
+    private String getAlias() {
+        OutputPortContext oc = getOpletContext().getOutputContext().get(0);
+        return oc.getAlias();
     }
 
     private synchronized void schedule(boolean delay) {
@@ -82,11 +92,17 @@ public abstract class PeriodicSource<T> extends Source<T> implements Runnable, P
 
     @Override
     public synchronized void setPeriod(long period) {
+        setPeriod(period, getUnit());
+    }
+
+    @Override
+    public synchronized void setPeriod(long period, TimeUnit unit) {
         if (period <= 0)
             throw new IllegalArgumentException();
-        if (this.period != period) {
+        if (this.period != period || this.unit != unit) {
             future.cancel(false);
             this.period = period;
+            this.unit = unit;
             schedule(true);
         }  
     }

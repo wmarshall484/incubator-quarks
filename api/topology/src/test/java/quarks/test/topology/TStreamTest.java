@@ -53,6 +53,72 @@ import quarks.topology.tester.Condition;
 public abstract class TStreamTest extends TopologyAbstractTest {
 
     @Test
+    public void testAlias() throws Exception {
+
+        Topology t = newTopology();
+
+        TStream<String> s = t.strings("a", "b");
+        assertEquals(null, s.getAlias());
+        
+        TStream<String> s2 = s.alias("sAlias");
+        assertSame(s, s2);
+        assertEquals("sAlias", s.getAlias());
+        
+        try {
+            s.alias("another");  // expect ISE - alias already set
+            assertTrue(false);
+        } catch (IllegalStateException e) {
+            ; // expected
+        }
+        
+        // test access at runtime
+        s2 = s.peek(tuple -> {
+            assertEquals("sAlias", s.getAlias());
+        }).filter(tuple -> true);
+
+        // just verify that alias presence doesn't otherwise muck up things
+        Condition<Long> tc = t.getTester().tupleCount(s2, 2);
+        Condition<List<String>> contents = t.getTester().streamContents(s2, "a", "b");
+        complete(t, tc);
+
+        assertTrue("contents "+contents.getResult(), contents.valid());
+    }
+
+    @Test
+    public void testTag() throws Exception {
+
+        Topology t = newTopology();
+
+        List<String> tags = new ArrayList<>(Arrays.asList("tag1", "tag2"));
+        
+        TStream<String> s = t.strings("a", "b");
+        assertEquals(0, s.getTags().size());
+        
+        TStream<String> s2 = s.tag("tag1", "tag2");
+        assertSame(s, s2);
+        assertTrue("s.tags="+s.getTags(), s.getTags().containsAll(tags));
+        
+        tags.add("tag3");
+        s.tag("tag3");
+        assertTrue("s.tags="+s.getTags(), s.getTags().containsAll(tags));
+        
+        s.tag("tag3", "tag2", "tag1");  // ok to redundantly add
+        assertTrue("s.tags="+s.getTags(), s.getTags().containsAll(tags));
+
+        // test access at runtime
+        s2 = s.peek(tuple -> {
+            assertTrue("s.tags="+s.getTags(), s.getTags().containsAll(tags));
+        }).filter(tuple -> true);
+
+        // just verify that tag presence doesn't otherwise muck up things
+        Condition<Long> tc = t.getTester().tupleCount(s2, 2);
+        Condition<List<String>> contents = t.getTester().streamContents(s2, "a", "b");
+        complete(t, tc);
+
+        assertTrue("contents "+contents.getResult(), contents.valid());
+    }
+
+    @Test
     public void testFilter() throws Exception {
 
         Topology t = newTopology();
