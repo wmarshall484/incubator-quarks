@@ -35,16 +35,12 @@ import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import quarks.console.servlets.MetricsGson.OpMetric;
 import quarks.console.servlets.MetricsGson.Operator;
 
 final class MetricsUtil {
 	
 	static MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
-	private static final Logger logger = LoggerFactory.getLogger(MetricsUtil.class);
 
 	static Iterator<ObjectInstance> getCounterObjectIterator(String jobId) {
 		ObjectName counterObjName = null;
@@ -56,7 +52,7 @@ final class MetricsUtil {
 		try {
 			counterObjName = new ObjectName(sbuf.toString());
 		} catch (MalformedObjectNameException e) {
-			logger.error("Error caught while initializing ObjectName", e);
+		    e.printStackTrace();
 		}
 		Set<ObjectInstance> counterInstances = mBeanServer.queryMBeans(counterObjName, null);
 		return counterInstances.iterator();
@@ -72,7 +68,7 @@ final class MetricsUtil {
 			try {
 				meterObjName = new ObjectName(sbuf1.toString());
 			} catch (MalformedObjectNameException e) {
-				logger.error("Error caught while initializing ObjectName", e);
+			    e.printStackTrace();
 			}
 			
 
@@ -97,7 +93,7 @@ final class MetricsUtil {
 					try {
 						mBeanInfo = mBeanServer.getMBeanInfo(mObjName);
 					} catch (IntrospectionException | InstanceNotFoundException | ReflectionException e) {
-						logger.error("Exception caught while getting MBeanInfo", e);
+					    e.printStackTrace();
 					}
 
 			    	for (MBeanAttributeInfo attributeInfo : mBeanInfo.getAttributes()) {
@@ -110,7 +106,7 @@ final class MetricsUtil {
 		    					aMetric.value = String.valueOf(mBeanServer.getAttribute(mObjName, aMetric.name));
 		    				} catch (AttributeNotFoundException | InstanceNotFoundException | MBeanException
 								| ReflectionException e) {
-                                logger.error("Exception caught while accessing MBean", e);
+		    				    e.printStackTrace();
 		    				}
 		    			}
 		    			// if the op associated with this metric is not in the job add it
@@ -142,7 +138,7 @@ final class MetricsUtil {
 			try {
 				mBeanInfo = mBeanServer.getMBeanInfo(cObjName);
 			} catch (IntrospectionException | InstanceNotFoundException | ReflectionException e) {
-				logger.error("Exception caught while getting MBeanInfo", e);
+			    e.printStackTrace();
 			}
 
 	    	for (MBeanAttributeInfo attributeInfo : mBeanInfo.getAttributes()) {
@@ -196,7 +192,7 @@ final class MetricsUtil {
 				try {
 					mBeanInfo = mBeanServer.getMBeanInfo(mObjName);
 				} catch (IntrospectionException | InstanceNotFoundException | ReflectionException e) {
-					logger.error("Exception caught while getting MBeanInfo", e);
+				    e.printStackTrace();
 				}
 				
 		    	for (MBeanAttributeInfo attributeInfo : mBeanInfo.getAttributes()) {
@@ -209,7 +205,7 @@ final class MetricsUtil {
 							aMetric.value = String.valueOf(mBeanServer.getAttribute(mObjName, name));
 						} catch (AttributeNotFoundException | InstanceNotFoundException | MBeanException
 								| ReflectionException e) {
-							logger.error("Exception caught while accessing MBean", e);
+						    e.printStackTrace();
 						}
     					if (!gsonJob.isOpInJob(opName)) {
     					    anOp = gsonJob.new Operator();
@@ -244,7 +240,7 @@ final class MetricsUtil {
 				try {
 					mBeanInfo = mBeanServer.getMBeanInfo(cObjName);
 				} catch (IntrospectionException | InstanceNotFoundException | ReflectionException e) {
-					logger.error("Exception caught while getting MBeanInfo", e);
+				    e.printStackTrace();
 				}
 				
 		    	for (MBeanAttributeInfo attributeInfo : mBeanInfo.getAttributes()) {
@@ -258,7 +254,7 @@ final class MetricsUtil {
 							aMetric.value = String.valueOf(mBeanServer.getAttribute(cObjName, name));
 						} catch (AttributeNotFoundException | InstanceNotFoundException | MBeanException
 								| ReflectionException e) {
-							logger.error("Exception caught while accessing MBean", e);
+						    e.printStackTrace();
 						}
     					if (!gsonJob.isOpInJob(opName1)) {
     					    anOp = gsonJob.new Operator();
@@ -277,5 +273,4 @@ final class MetricsUtil {
 		}	
 		return gsonJob;
 	}
-	
 }
