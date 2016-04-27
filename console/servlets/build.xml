@@ -35,6 +35,7 @@
 	
   <path id="compile.classpath">
   	<pathelement location="${quarks.console}/server/ext/jetty-9.3.6/servlet-api-3.1.jar" />
+	<pathelement location="${ext}/slf4j-1.7.12/slf4j-api-1.7.12.jar"/>
     <path refid="quarks.ext.classpath" />
   </path>
 
