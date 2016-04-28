@@ -81,7 +81,6 @@ public class ConsoleJobServlet extends HttpServlet {
         try {
         	jobObjName = new ObjectName(sbuf.toString());
         	} catch (MalformedObjectNameException e) {
-                //System.out.println("No constructed jobs were found");
                 e.printStackTrace();
         	}
         String jsonString = "";

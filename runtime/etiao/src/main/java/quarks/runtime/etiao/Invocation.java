@@ -22,6 +22,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import quarks.execution.services.RuntimeServices;
 import quarks.function.Consumer;
 import quarks.function.Functions;
@@ -60,6 +63,7 @@ public class Invocation<T extends Oplet<I, O>, I, O> implements AutoCloseable {
     private List<Consumer<O>> outputs;
     private List<SettableForwarder<I>> inputs;
     private List<OutputPortContext> outputContext;
+    private static final Logger logger = LoggerFactory.getLogger(Invocation.class);
 
     protected Invocation(String id, T oplet, int inputCount, int outputCount) {
     	this.id = id;
@@ -170,8 +174,7 @@ public class Invocation<T extends Oplet<I, O>, I, O> implements AutoCloseable {
         try {
             oplet.initialize(context);
         } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            logger.error("Error while initializing oplet", e);
         }
         List<? extends Consumer<I>> streamers = oplet.getInputs();
         for (int i = 0; i < inputs.size(); i++)
