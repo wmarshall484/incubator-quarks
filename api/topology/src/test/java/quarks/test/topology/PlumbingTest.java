@@ -23,6 +23,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -32,6 +34,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.google.gson.JsonObject;
+
+import quarks.function.Function;
 import quarks.function.Functions;
 import quarks.topology.TStream;
 import quarks.topology.Topology;
@@ -288,6 +293,134 @@ public abstract class PlumbingTest extends TopologyAbstractTest {
         Condition<List<Integer>> contents = top.getTester().streamContents(filtered, 4,5,6 );
         complete(top, count);
         assertTrue(contents.getResult().toString(), contents.valid());
+    }
+    
+    private Function<Integer,JsonObject> fakeAnalytic(int channel, long period, TimeUnit unit) {
+      return value -> { 
+        try {
+          Thread.sleep(unit.toMillis(period));
+          JsonObject jo = new JsonObject();
+          jo.addProperty("channel", channel);
+          jo.addProperty("result", value);
+          return jo;
+        } catch (InterruptedException e) {
+          throw new RuntimeException("channel="+channel+" interrupted", e);
+        }
+      };
+    }
+
+    private Function<TStream<Integer>,TStream<JsonObject>> fakePipeline(int channel, long period, TimeUnit unit) {
+      return stream -> stream.map(fakeAnalytic(channel, period, unit)).filter(t->true).tag("pipeline-ch"+channel);
+    }
+    
+    @Test
+    public void testConcurrentMap() throws Exception {
+        Topology top = newTopology("testConcurrentMap");
+        
+        Function<Integer,JsonObject> a1 = fakeAnalytic(0, 100, TimeUnit.MILLISECONDS);
+        Function<Integer,JsonObject> a2 = fakeAnalytic(1, 100, TimeUnit.MILLISECONDS);
+        Function<Integer,JsonObject> a3 = fakeAnalytic(2, 100, TimeUnit.MILLISECONDS);
+        Function<Integer,JsonObject> a4 = fakeAnalytic(3, 100, TimeUnit.MILLISECONDS);
+        Function<Integer,JsonObject> a5 = fakeAnalytic(4, 100, TimeUnit.MILLISECONDS);
+        
+        List<Function<Integer,JsonObject>> mappers = new ArrayList<>(Arrays.asList(a1, a2, a3, a4, a5));
+        Function<List<JsonObject>,Integer> combiner = list -> {
+            int sum = 0;
+            int cnt = 0;
+            System.out.println("combiner: "+list);
+            for(JsonObject jo : list) {
+              assertEquals(cnt++, jo.getAsJsonPrimitive("channel").getAsInt());
+              sum += jo.getAsJsonPrimitive("result").getAsInt();
+            }
+            return sum;
+        };
+
+        TStream<Integer> values = top.of(1, 2, 3);
+        Integer[] resultTuples = new Integer[]{
+            1*mappers.size(),
+            2*mappers.size(),
+            3*mappers.size(),
+        };
+        
+        TStream<Integer> result = PlumbingStreams.concurrentMap(values, mappers, combiner);
+        
+        Condition<Long> count = top.getTester().tupleCount(result, 3);
+        Condition<List<Integer>> contents = top.getTester().streamContents(result, resultTuples );
+        long begin = System.currentTimeMillis();
+        complete(top, count);
+        long end = System.currentTimeMillis();
+        assertTrue(contents.getResult().toString(), contents.valid());
+        
+        long actDuration = end - begin;
+        
+        long expMinSerialDuration = resultTuples.length * mappers.size() * 100;
+        long expMaxDuration = resultTuples.length * (100 + 75/*slop and more tuple overhead*/);
+        
+        System.out.println("expMaxDuration="+expMaxDuration+" actDuration="+actDuration+" expMinSerialDuration="+expMinSerialDuration);
+        
+        // a gross level performance check
+        assertTrue("expMinSerialDuration="+expMinSerialDuration+" actDuration="+actDuration, 
+            actDuration < 0.5 * expMinSerialDuration);
+        
+        // a tighter performance check
+        assertTrue("expMaxDuration="+expMaxDuration+" actDuration="+actDuration, 
+            actDuration <= expMaxDuration);
+    }
+    
+    @Test
+    public void testConcurrent() throws Exception {
+        Topology top = newTopology("testConcurrent");
+        
+        int ch = 0;
+        Function<TStream<Integer>,TStream<JsonObject>> p1 = fakePipeline(ch++, 100, TimeUnit.MILLISECONDS);
+        Function<TStream<Integer>,TStream<JsonObject>> p2 = fakePipeline(ch++, 100, TimeUnit.MILLISECONDS);
+        Function<TStream<Integer>,TStream<JsonObject>> p3 = fakePipeline(ch++, 100, TimeUnit.MILLISECONDS);
+        Function<TStream<Integer>,TStream<JsonObject>> p4 = fakePipeline(ch++, 100, TimeUnit.MILLISECONDS);
+        Function<TStream<Integer>,TStream<JsonObject>> p5 = fakePipeline(ch++, 100, TimeUnit.MILLISECONDS);
+        
+        List<Function<TStream<Integer>,TStream<JsonObject>>> pipelines = new ArrayList<>(Arrays.asList(p1, p2, p3, p4, p5));
+        Function<List<JsonObject>,Integer> tupleCombiner = list -> {
+            int sum = 0;
+            int cnt = 0;
+            System.out.println("combiner: "+list);
+            for(JsonObject jo : list) {
+              assertEquals(cnt++, jo.getAsJsonPrimitive("channel").getAsInt());
+              sum += jo.getAsJsonPrimitive("result").getAsInt();
+            }
+            return sum;
+        };
+        Function<TStream<List<JsonObject>>,TStream<Integer>> combiner = stream -> stream.map(tupleCombiner);
+        
+        TStream<Integer> values = top.of(1, 2, 3);
+        Integer[] resultTuples = new Integer[]{
+            1*pipelines.size(),
+            2*pipelines.size(),
+            3*pipelines.size(),
+        };
+        
+        TStream<Integer> result = PlumbingStreams.concurrent(values, pipelines, combiner).tag("result");
+        
+        Condition<Long> count = top.getTester().tupleCount(result, 3);
+        Condition<List<Integer>> contents = top.getTester().streamContents(result, resultTuples );
+        long begin = System.currentTimeMillis();
+        complete(top, count);
+        long end = System.currentTimeMillis();
+        assertTrue(contents.getResult().toString(), contents.valid());
+        
+        long actDuration = end - begin;
+        
+        long expMinSerialDuration = resultTuples.length * pipelines.size() * 100;
+        long expMaxDuration = resultTuples.length * (100 + 75/*slop and more tuple overhead*/);
+        
+        System.out.println("expMaxDuration="+expMaxDuration+" actDuration="+actDuration+" expMinSerialDuration="+expMinSerialDuration);
+        
+        // a gross level performance check
+        assertTrue("expMinSerialDuration="+expMinSerialDuration+" actDuration="+actDuration, 
+            actDuration < 0.5 * expMinSerialDuration);
+        
+        // a tighter performance check
+        assertTrue("expMaxDuration="+expMaxDuration+" actDuration="+actDuration, 
+            actDuration <= expMaxDuration);
     }
 
 }

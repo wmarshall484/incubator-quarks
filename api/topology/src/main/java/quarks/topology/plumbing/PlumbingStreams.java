@@ -18,10 +18,21 @@ under the License.
 */
 package quarks.topology.plumbing;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import quarks.function.Function;
+import quarks.function.UnaryOperator;
 import quarks.oplet.plumbing.Isolate;
 import quarks.oplet.plumbing.PressureReliever;
 import quarks.oplet.plumbing.UnorderedIsolate;
@@ -207,6 +218,7 @@ public class PlumbingStreams {
      * 
      * @param <T> Tuple type.
      * @param <K> Key type.
+     * @see #isolate(TStream, int) isolate
      */
     public static <T,K> TStream<T> pressureReliever(TStream<T> stream, Function<T,K> keyFunction, int count) {
         return stream.pipe(new PressureReliever<>(count, keyFunction));
@@ -227,6 +239,27 @@ public class PlumbingStreams {
     public static <T> TStream<T> isolate(TStream<T> stream, boolean ordered) {
         return stream.pipe(
                 ordered ? new Isolate<T>() : new UnorderedIsolate<T>());
+    }
+    
+    /**
+     * Isolate upstream processing from downstream processing.
+     * <P>
+     * If the processing against the returned stream cannot keep up
+     * with the arrival rate of tuples on {@code stream}, upstream
+     * processing will block until there is space in the queue between
+     * the streams.
+     * </P><P>
+     * Processing of tuples occurs in the order they were received.
+     * </P>
+     *  
+     * @param stream Stream to be isolated from downstream processing.
+     * @param queueCapacity size of the queue between {@code stream} and
+     *        the returned stream.
+     * @return Stream that is isolated from {@code stream}.
+     * @see #pressureReliever(TStream, Function, int) pressureReliever
+     */
+    public static <T> TStream<T> isolate(TStream<T> stream, int queueCapacity) {
+      return stream.pipe(new Isolate<T>(queueCapacity));
     }
     
     /**
@@ -286,7 +319,79 @@ public class PlumbingStreams {
      * @return result stream
      */
     public static <T,U,R> TStream<R> concurrentMap(TStream<T> stream, List<Function<T,U>> mappers, Function<List<U>,R> combiner) {
-      throw new IllegalStateException("NYI / TODO");
+      Objects.requireNonNull(stream, "stream");
+      Objects.requireNonNull(mappers, "mappers");
+      Objects.requireNonNull(combiner, "combiner");
+      
+      List<Function<TStream<T>,TStream<U>>> pipelines = new ArrayList<>();
+      for (Function<T,U> mapper : mappers) {
+        pipelines.add(s -> s.map(mapper));
+      }
+      
+      return concurrent(stream, pipelines, s -> s.map(combiner));
+    }
+    
+    // Q: is there any value to this implementation approach?  Or just dispose of it?
+    @SuppressWarnings("unused")
+    private static <T,U,R> TStream<R> concurrentMapSingleOp(TStream<T> stream, List<Function<T,U>> mappers, Function<List<U>,R> combiner) {
+      Objects.requireNonNull(stream, "stream");
+      Objects.requireNonNull(mappers, "mappers");
+      Objects.requireNonNull(combiner, "combiner");
+      
+      // INITIAL IMPL TO GET STARTED - validate interface and test
+      // explore an impl with no new oplets
+      //
+      // This is the most lightweight impl possible wrt no intermediate streams
+      // i.e., all of the processing is handled within a single injected map()
+      // 
+      // TODO: want to create ExecutorService using provider's ThreadFactory service.
+      //       Can't get RuntimeServicesSupplier from a stream.
+      //
+      // Note, we impose this "non-null mapper result" requirement so as
+      // to enable alternative implementations that might be burdened if
+      // null results were allowed.
+      // The implementation below could easily handle null results w/o
+      // losing synchronization, with the combiner needing to deal with
+      // a null result in the list it's given.
+      
+      AtomicReference<ExecutorService> executorRef = new AtomicReference<>();
+      
+      return stream.map(tuple -> {
+        if (executorRef.get() == null) {
+          executorRef.compareAndSet(null, Executors.newFixedThreadPool(Math.min(mappers.size(), 20)));
+        }
+        ExecutorService executor = executorRef.get();
+        List<U> results = new ArrayList<>(Collections.nCopies(mappers.size(), null));
+        List<Future<?>> futures = new ArrayList<>(mappers.size());
+
+        // Submit a task for each mapper invocation
+        int ch = 0;
+        for (Function<T,U> mapper : mappers) {
+          final int resultIndx = ch++;
+          Future<?> future = executor.submit(() -> {
+            U result = mapper.apply(tuple);
+            if (result == null)
+              throw new IllegalStateException("mapper index "+resultIndx+" returned null");
+            results.set(resultIndx, result); 
+          });
+          futures.add(future);
+        }
+        // Await completion of all
+        for (Future<?> future : futures) {
+          try {
+            future.get();
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("mapper interrupted", e);
+          } catch (Exception e) {
+            throw new RuntimeException("mapper threw", e);
+          }
+        }
+        // Run the combiner
+        R result = combiner.apply(results);
+        return result;
+      });
+      
     }
 
     /**
@@ -348,6 +453,159 @@ public class PlumbingStreams {
      * @return result stream
      */
     public static <T,U,R> TStream<R> concurrent(TStream<T> stream, List<Function<TStream<T>,TStream<U>>> pipelines, Function<TStream<List<U>>,TStream<R>> combiner) {
-      throw new IllegalStateException("NYI / TODO");
+      Objects.requireNonNull(stream, "stream");
+      Objects.requireNonNull(pipelines, "pipelines");
+      Objects.requireNonNull(combiner, "combiner");
+      
+      // INITIAL IMPL TO GET STARTED - validate interface and test
+      // explore an impl with no new oplets
+      //
+      // A few impl options exist.  Some with feedback loop to control stepping,
+      // some without.  Feedback is OK for single JVM case, less so for
+      // multi-JVM/distributed case.
+      // 
+      // Some impls with special oplets some that avoid them.
+      //
+      // Summary of what's below:
+      // feedback loop and no new oplets:
+      //                      |-> isolate -> p1 -> map.toPair |
+      // stream -> map.gate =>|-> isolate -> p2 -> map.toPair |-> union -> map.Collector -> combiner 
+      //                      |-> isolate -> p3 -> map.toPair |
+      //                                      . . .
+      //
+      
+      // Add a gate.  This keeps all pipelines working lock-step.
+      // It also provides the guarantee needed by gatedBarrier below.
+      Semaphore gateSemaphore = new Semaphore(1);
+      stream = gate(stream, gateSemaphore).tag("concurrent.gate");
+      
+      // Add parallel fanout - with the gate the queue size really doesn't matter
+      List<TStream<T>> fanouts = parallelFanout(stream, pipelines.size(), 1);
+      for (int i = 0; i < fanouts.size(); i++) 
+        fanouts.get(i).tag("concurrent.isolated-ch"+i);
+      
+      // Add pipelines
+      List<TStream<U>> results = new ArrayList<>(pipelines.size());
+      int ch = 0;
+      for (Function<TStream<T>,TStream<U>> pipeline : pipelines) {
+        results.add(pipeline.apply(fanouts.get(ch)).tag("concurrent-ch"+ch));
+        ch++;
+      }
+      
+      // Add the barrier
+      TStream<List<U>> barrier = gatedBarrier(results).tag("concurrent.barrier");
+      
+      // barrier = barrier.peek(tuple -> System.out.println("concurrent.barrier List<U> "+tuple));
+      
+      // Add peek() to signal ok to begin next tuple
+      barrier = barrier.peek(tuple -> { gateSemaphore.release(); }).tag("concurrent.gateRelease");
+      
+      // Add the combiner to the topology
+      return combiner.apply(barrier);
     }
+    
+    private static <T> TStream<T> gate(TStream<T> stream, Semaphore semaphore) {
+      return stream.map(tuple -> { 
+          try {
+            semaphore.acquire();
+            return tuple;
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException("interrupted", e);
+          }});
+    }
+    
+    private static <T> List<TStream<T>> parallelFanout(TStream<T> stream, int numFanouts, int queueCapacity) {
+      // TODO want an ExecutorService to enable nThreads for mPipelines.
+      // i.e., not use "isolate", or need a way to create a collection of
+      // related "isolate" that use an executor
+      return parallelFanout(stream, numFanouts, inStream -> PlumbingStreams.isolate(inStream, queueCapacity));
+    }
+    
+    private static <T> List<TStream<T>> parallelFanout(TStream<T> stream, int numFanouts, UnaryOperator<TStream<T>> isolator) {
+      List<TStream<T>> fanouts = new ArrayList<>(numFanouts);
+      for (int i = 0; i < numFanouts; i++) {
+        fanouts.add(isolator.apply(stream));
+      }
+      return fanouts;
+    }
+    
+    /**
+     * Add a barrier that collects corresponding tuples from each input stream.
+     * <P>
+     * "GatedBarrier" is a special implementation that only works because
+     * its caller guarantees that one tuple will be received from each stream
+     * before a second tuple is received from any of the streams.
+     * </P><P>
+     * The result tuple is a list of input tuples, one from each
+     * input stream, at the same index as it's input stream.  i.e., result[0]
+     * is the tuple from streams[0], result[1] is the tuple from streams[1],
+     * and so on.
+     * </P><P>
+     * The operation waits indefinitely for a tuple on each input stream
+     * to be received.
+     * </P><P>
+     * TODO remove this when we have a barrier oplet.
+     * </P>  
+     * 
+     * @param <T> Tuple type
+     * @param streams streams to perform the barrier on
+     * @return stream whose tuples are each a list of tuples.
+     */
+    private static <T> TStream<List<T>> gatedBarrier(List<TStream<T>> streams) {
+      // TODO really want a multi-iport oplet for the fanin/barrier.
+      // Hack for now by using union but adding per-pipeline map() 
+      // that creates a Pair containing the inputPortId and result,
+      // so a following map can collect them into List<U> tuple.
+      //
+      // streams[0] -> map.toPair |
+      // streams[1] -> map.toPair |-> union -> map.Collector
+      // streams[2] -> map.toPair |
+      //  ...
+      
+      // Add the barrier per-pipeline "to-pair" map()
+      List<TStream<Pair<Integer,T>>> chPairStreams = new ArrayList<>(streams.size());
+      int ch = 0;
+      for (TStream<T> stream : streams) {
+        final int finalCh = ch;
+        chPairStreams.add(stream.map(u -> new Pair<Integer,T>(finalCh, u)).tag("barrier.toPair-ch"+finalCh));
+        ch++;
+      }
+      
+      // Add the barrier "fanin" union()
+      TStream<Pair<Integer,T>> union = chPairStreams.get(0).union(new HashSet<>(chPairStreams)).tag("barrier.union");
+      
+      // union = union.peek(pair -> System.out.println("concurrent.barrier.union pair<ch,U> "+pair));
+      
+      // Add the barrier collector map()
+      AtomicInteger barrierCnt = new AtomicInteger();
+      AtomicReference<List<T>> barrierChResults = new AtomicReference<>();
+      
+      TStream<List<T>> barrier = union.map(pair -> {
+          List<T> chResults = barrierChResults.get();
+          if (chResults == null) {
+            chResults = new ArrayList<>(Collections.nCopies(streams.size(), null));
+            barrierChResults.set(chResults);
+          }
+          if (chResults.get(pair.k) != null)
+              throw new IllegalStateException("caller violation: barrier port "+pair.k+" already has a tuple");
+          chResults.set(pair.k, pair.v);
+          
+          if (barrierCnt.incrementAndGet() < chResults.size())
+            return null;
+          
+          barrierCnt.set(0);
+          barrierChResults.set(null);
+          
+          return chResults;
+        });
+      
+      // keep the threads associated with the supply streams isolated
+      // from any downstream processing.  this is needed here because this impl
+      // doesn't have queuing/isolation on its feeding streams.
+      barrier = PlumbingStreams.isolate(barrier, 1);
+     
+      return barrier;
+    }
+
 }

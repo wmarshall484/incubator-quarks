@@ -37,7 +37,24 @@ public class Isolate<T> extends Pipe<T,T> implements Runnable {
     private static final long serialVersionUID = 1L;
     
     private Thread thread;
-    private LinkedBlockingQueue<T> tuples = new LinkedBlockingQueue<>();
+    private final LinkedBlockingQueue<T> tuples;
+    
+    /**
+     * Create a new Isolate oplet.
+     * <BR>
+     * Same as Isolate(Integer.MAX_VALUE).
+     */
+    public Isolate() {
+      this(Integer.MAX_VALUE);
+    }
+    
+    /**
+     * Create a new Isolate oplet.
+     * @param queueCapacity {@link #accept()} blocks when this capacity is reached
+     */
+    public Isolate(int queueCapacity) {
+      tuples = new LinkedBlockingQueue<>(queueCapacity);
+    }
     
     @Override
     public void initialize(OpletContext<T, T> context) {
