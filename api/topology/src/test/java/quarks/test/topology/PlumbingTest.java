@@ -24,7 +24,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -317,13 +316,18 @@ public abstract class PlumbingTest extends TopologyAbstractTest {
     public void testConcurrentMap() throws Exception {
         Topology top = newTopology("testConcurrentMap");
         
-        Function<Integer,JsonObject> a1 = fakeAnalytic(0, 100, TimeUnit.MILLISECONDS);
-        Function<Integer,JsonObject> a2 = fakeAnalytic(1, 100, TimeUnit.MILLISECONDS);
-        Function<Integer,JsonObject> a3 = fakeAnalytic(2, 100, TimeUnit.MILLISECONDS);
-        Function<Integer,JsonObject> a4 = fakeAnalytic(3, 100, TimeUnit.MILLISECONDS);
-        Function<Integer,JsonObject> a5 = fakeAnalytic(4, 100, TimeUnit.MILLISECONDS);
+        int ch = 0;
+        List<Function<Integer,JsonObject>> mappers = new ArrayList<>();
+        mappers.add(fakeAnalytic(ch++, 100, TimeUnit.MILLISECONDS));
+        mappers.add(fakeAnalytic(ch++, 100, TimeUnit.MILLISECONDS));
+        mappers.add(fakeAnalytic(ch++, 100, TimeUnit.MILLISECONDS));
+        mappers.add(fakeAnalytic(ch++, 100, TimeUnit.MILLISECONDS));
+        mappers.add(fakeAnalytic(ch++, 100, TimeUnit.MILLISECONDS));
+        mappers.add(fakeAnalytic(ch++, 100, TimeUnit.MILLISECONDS));
+        // a couple much faster just in case something's amiss with queues
+        mappers.add(fakeAnalytic(ch++, 3, TimeUnit.MILLISECONDS));
+        mappers.add(fakeAnalytic(ch++, 13, TimeUnit.MILLISECONDS));
         
-        List<Function<Integer,JsonObject>> mappers = new ArrayList<>(Arrays.asList(a1, a2, a3, a4, a5));
         Function<List<JsonObject>,Integer> combiner = list -> {
             int sum = 0;
             int cnt = 0;
@@ -372,13 +376,13 @@ public abstract class PlumbingTest extends TopologyAbstractTest {
         Topology top = newTopology("testConcurrent");
         
         int ch = 0;
-        Function<TStream<Integer>,TStream<JsonObject>> p1 = fakePipeline(ch++, 100, TimeUnit.MILLISECONDS);
-        Function<TStream<Integer>,TStream<JsonObject>> p2 = fakePipeline(ch++, 100, TimeUnit.MILLISECONDS);
-        Function<TStream<Integer>,TStream<JsonObject>> p3 = fakePipeline(ch++, 100, TimeUnit.MILLISECONDS);
-        Function<TStream<Integer>,TStream<JsonObject>> p4 = fakePipeline(ch++, 100, TimeUnit.MILLISECONDS);
-        Function<TStream<Integer>,TStream<JsonObject>> p5 = fakePipeline(ch++, 100, TimeUnit.MILLISECONDS);
+        List<Function<TStream<Integer>,TStream<JsonObject>>> pipelines = new ArrayList<>();
+        pipelines.add(fakePipeline(ch++, 100, TimeUnit.MILLISECONDS));
+        pipelines.add(fakePipeline(ch++, 100, TimeUnit.MILLISECONDS));
+        pipelines.add(fakePipeline(ch++, 100, TimeUnit.MILLISECONDS));
+        pipelines.add(fakePipeline(ch++, 100, TimeUnit.MILLISECONDS));
+        pipelines.add(fakePipeline(ch++, 100, TimeUnit.MILLISECONDS));
         
-        List<Function<TStream<Integer>,TStream<JsonObject>>> pipelines = new ArrayList<>(Arrays.asList(p1, p2, p3, p4, p5));
         Function<List<JsonObject>,Integer> tupleCombiner = list -> {
             int sum = 0;
             int cnt = 0;

@@ -25,12 +25,10 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import quarks.function.Function;
-import quarks.function.UnaryOperator;
 import quarks.oplet.plumbing.Barrier;
 import quarks.oplet.plumbing.Isolate;
 import quarks.oplet.plumbing.PressureReliever;
@@ -445,32 +443,18 @@ public class PlumbingStreams {
       Objects.requireNonNull(pipelines, "pipelines");
       Objects.requireNonNull(combiner, "combiner");
       
-      // INITIAL IMPL TO GET STARTED - validate interface and test
-      // explore an impl with no new oplets
-      //
-      // A few impl options exist.  Some with feedback loop to control stepping,
-      // some without.  Feedback is OK for single JVM case, less so for
-      // multi-JVM/distributed case.
-      // 
-      // Some impls with special oplets some that avoid them.
-      //
       // Summary of what's below:
-      // feedback loop and no new oplets:
-      //                      |-> isolate -> p1 -> map.toPair |
-      // stream -> map.gate =>|-> isolate -> p2 -> map.toPair |-> union -> map.Collector -> combiner 
-      //                      |-> isolate -> p3 -> map.toPair |
-      //                                      . . .
-      //
+      //           |-> isolate(1) -> p1 -> |
+      // stream -> |-> isolate(1) -> p2 -> |-> barrier(10) -> combiner 
+      //           |-> isolate(1) -> p3 -> |
+      //                . . .
+
+      int barrierQueueCapacity = 10;  // don't preclude pipelines from getting ahead some.
       
-      // Add a gate.  This keeps all pipelines working lock-step.
-      // It also provides the guarantee needed by gatedBarrier below.
-      Semaphore gateSemaphore = new Semaphore(1);
-      stream = gate(stream, gateSemaphore).tag("concurrent.gate");
-      
-      // Add parallel fanout - with the gate the queue size really doesn't matter
-      List<TStream<T>> fanouts = parallelFanout(stream, pipelines.size(), 1);
-      for (int i = 0; i < fanouts.size(); i++) 
-        fanouts.get(i).tag("concurrent.isolated-ch"+i);
+      // Add concurrent (isolated) fanouts
+      List<TStream<T>> fanouts = new ArrayList<>(pipelines.size());
+      for (int i = 0; i < pipelines.size(); i++)
+        fanouts.add(isolate(stream, 1).tag("concurrent.isolated-ch"+i));
       
       // Add pipelines
       List<TStream<U>> results = new ArrayList<>(pipelines.size());
@@ -481,42 +465,10 @@ public class PlumbingStreams {
       }
       
       // Add the barrier
-      // TStream<List<U>> barrier = gatedBarrier(results).tag("concurrent.barrier");
-      TStream<List<U>> barrier = barrier(results).tag("concurrent.barrier");
+      TStream<List<U>> barrier = barrier(results, barrierQueueCapacity).tag("concurrent.barrier");
       
-      // barrier = barrier.peek(tuple -> System.out.println("concurrent.barrier List<U> "+tuple));
-      
-      // Add peek() to signal ok to begin next tuple
-      barrier = barrier.peek(tuple -> { gateSemaphore.release(); }).tag("concurrent.gateRelease");
-      
-      // Add the combiner to the topology
+      // Add the combiner
       return combiner.apply(barrier);
-    }
-    
-    private static <T> TStream<T> gate(TStream<T> stream, Semaphore semaphore) {
-      return stream.map(tuple -> { 
-          try {
-            semaphore.acquire();
-            return tuple;
-          } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("interrupted", e);
-          }});
-    }
-    
-    private static <T> List<TStream<T>> parallelFanout(TStream<T> stream, int numFanouts, int queueCapacity) {
-      // TODO want an ExecutorService to enable nThreads for mPipelines.
-      // i.e., not use "isolate", or need a way to create a collection of
-      // related "isolate" that use an executor
-      return parallelFanout(stream, numFanouts, inStream -> PlumbingStreams.isolate(inStream, queueCapacity));
-    }
-    
-    private static <T> List<TStream<T>> parallelFanout(TStream<T> stream, int numFanouts, UnaryOperator<TStream<T>> isolator) {
-      List<TStream<T>> fanouts = new ArrayList<>(numFanouts);
-      for (int i = 0; i < numFanouts; i++) {
-        fanouts.add(isolator.apply(stream));
-      }
-      return fanouts;
     }
 
     /**
