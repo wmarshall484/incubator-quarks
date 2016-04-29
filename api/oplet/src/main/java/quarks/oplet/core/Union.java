@@ -18,10 +18,7 @@ under the License.
 */
 package quarks.oplet.core;
 
-import java.util.Collections;
-import java.util.List;
-
-import quarks.function.Consumer;
+import quarks.oplet.OpletContext;
 
 /**
  * Union oplet, merges multiple input ports
@@ -30,19 +27,19 @@ import quarks.function.Consumer;
  * Processing for each input is identical
  * and just submits the tuple to the single output.
  */
-public final class Union<T> extends AbstractOplet<T, T> {
+public final class Union<T> extends FanIn<T, T> {
 
     @Override
     public void start() {
     }
 
-    /**
-     * For each input set the output directly to the only output.
-     */
+    
     @Override
-    public List<? extends Consumer<T>> getInputs() {
-        Consumer<T> output = getOpletContext().getOutputs().get(0);
-        return Collections.nCopies(getOpletContext().getInputCount(), output);
+    public void initialize(OpletContext<T, T> context) {
+      super.initialize(context);
+      
+      // forward every tuple to the output port
+      setReceiver((tuple, iportIndex) -> tuple);
     }
 
     @Override

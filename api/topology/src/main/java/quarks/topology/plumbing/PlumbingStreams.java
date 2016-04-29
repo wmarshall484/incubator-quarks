@@ -20,7 +20,6 @@ package quarks.topology.plumbing;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
@@ -28,11 +27,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import quarks.function.Function;
 import quarks.function.UnaryOperator;
+import quarks.oplet.plumbing.Barrier;
 import quarks.oplet.plumbing.Isolate;
 import quarks.oplet.plumbing.PressureReliever;
 import quarks.oplet.plumbing.UnorderedIsolate;
@@ -45,17 +44,6 @@ import quarks.topology.TopologyProvider;
  * but are not part of the logic of the application.
  */
 public class PlumbingStreams {
-  
-    // Use apache.math3.Pair ?
-    private static class Pair<K,V> { 
-      K k;
-      V v;
-      Pair(K k, V v) {
-        this.k = k;
-        this.v = v;
-      }
-      public String toString() { return "k="+k+" v="+v; };
-    };
   
     /**
      * Insert a blocking delay between tuples.
@@ -493,7 +481,8 @@ public class PlumbingStreams {
       }
       
       // Add the barrier
-      TStream<List<U>> barrier = gatedBarrier(results).tag("concurrent.barrier");
+      // TStream<List<U>> barrier = gatedBarrier(results).tag("concurrent.barrier");
+      TStream<List<U>> barrier = barrier(results).tag("concurrent.barrier");
       
       // barrier = barrier.peek(tuple -> System.out.println("concurrent.barrier List<U> "+tuple));
       
@@ -529,83 +518,48 @@ public class PlumbingStreams {
       }
       return fanouts;
     }
-    
+
     /**
-     * Add a barrier that collects corresponding tuples from each input stream.
+     * A tuple synchronization barrier.
      * <P>
-     * "GatedBarrier" is a special implementation that only works because
-     * its caller guarantees that one tuple will be received from each stream
-     * before a second tuple is received from any of the streams.
-     * </P><P>
-     * The result tuple is a list of input tuples, one from each
-     * input stream, at the same index as it's input stream.  i.e., result[0]
-     * is the tuple from streams[0], result[1] is the tuple from streams[1],
-     * and so on.
-     * </P><P>
-     * The operation waits indefinitely for a tuple on each input stream
-     * to be received.
-     * </P><P>
-     * TODO remove this when we have a barrier oplet.
-     * </P>  
-     * 
-     * @param <T> Tuple type
-     * @param streams streams to perform the barrier on
-     * @return stream whose tuples are each a list of tuples.
+     * Same as {@code barrier(others, 1)}
+     * </P>
+     * @see #barrier(List, int)
      */
-    private static <T> TStream<List<T>> gatedBarrier(List<TStream<T>> streams) {
-      // TODO really want a multi-iport oplet for the fanin/barrier.
-      // Hack for now by using union but adding per-pipeline map() 
-      // that creates a Pair containing the inputPortId and result,
-      // so a following map can collect them into List<U> tuple.
-      //
-      // streams[0] -> map.toPair |
-      // streams[1] -> map.toPair |-> union -> map.Collector
-      // streams[2] -> map.toPair |
-      //  ...
-      
-      // Add the barrier per-pipeline "to-pair" map()
-      List<TStream<Pair<Integer,T>>> chPairStreams = new ArrayList<>(streams.size());
-      int ch = 0;
-      for (TStream<T> stream : streams) {
-        final int finalCh = ch;
-        chPairStreams.add(stream.map(u -> new Pair<Integer,T>(finalCh, u)).tag("barrier.toPair-ch"+finalCh));
-        ch++;
-      }
-      
-      // Add the barrier "fanin" union()
-      TStream<Pair<Integer,T>> union = chPairStreams.get(0).union(new HashSet<>(chPairStreams)).tag("barrier.union");
-      
-      // union = union.peek(pair -> System.out.println("concurrent.barrier.union pair<ch,U> "+pair));
-      
-      // Add the barrier collector map()
-      AtomicInteger barrierCnt = new AtomicInteger();
-      AtomicReference<List<T>> barrierChResults = new AtomicReference<>();
-      
-      TStream<List<T>> barrier = union.map(pair -> {
-          List<T> chResults = barrierChResults.get();
-          if (chResults == null) {
-            chResults = new ArrayList<>(Collections.nCopies(streams.size(), null));
-            barrierChResults.set(chResults);
-          }
-          if (chResults.get(pair.k) != null)
-              throw new IllegalStateException("caller violation: barrier port "+pair.k+" already has a tuple");
-          chResults.set(pair.k, pair.v);
-          
-          if (barrierCnt.incrementAndGet() < chResults.size())
-            return null;
-          
-          barrierCnt.set(0);
-          barrierChResults.set(null);
-          
-          return chResults;
-        });
-      
-      // keep the threads associated with the supply streams isolated
-      // from any downstream processing.  this is needed here because this impl
-      // doesn't have queuing/isolation on its feeding streams.
-      barrier = PlumbingStreams.isolate(barrier, 1);
-     
-      return barrier;
+    public static <T> TStream<List<T>> barrier(List<TStream<T>> streams) {
+      return barrier(streams, 1);
     }
 
+    /**
+     * A tuple synchronization barrier.
+     * <P>
+     * A barrier has n input streams with tuple type {@code T}
+     * and one output stream with tuple type {@code List<T>}.
+     * Once the barrier receives one tuple on each of its input streams,
+     * it generates an output tuple containing one tuple from each input stream.
+     * It then waits until it has received another tuple from each input stream.
+     * </P><P>
+     * Input stream 0's tuple is in the output tuple's list[0],
+     * stream 1's tuple in list[1], and so on.
+     * </P><P>
+     * The barrier's output stream is isolated from the input streams.
+     * </P><P>
+     * The barrier has a queue of size {@code queueCapacity} for each
+     * input stream.  When a tuple for an input stream is received it is
+     * added to its queue.  The stream will block if the queue is full.
+     * </P>
+     *
+     * @param <T> Type of the tuple.
+     * 
+     * @param streams the list of input streams
+     * @param queueCapacity the size of each input stream's queue
+     * @return the output stream
+     * @see Barrier
+     */
+    public static <T> TStream<List<T>> barrier(List<TStream<T>> streams, int queueCapacity) {
+      List<TStream<T>> others = new ArrayList<>(streams);
+      TStream<T> s1 = others.remove(0);
+      return s1.fanin(new Barrier<T>(queueCapacity), others);
+    }
+ 
 }

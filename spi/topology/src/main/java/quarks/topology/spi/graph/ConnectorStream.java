@@ -41,6 +41,8 @@ import quarks.function.ToIntFunction;
 import quarks.graph.Connector;
 import quarks.graph.Graph;
 import quarks.graph.Vertex;
+import quarks.oplet.Oplet;
+import quarks.oplet.core.FanIn;
 import quarks.oplet.core.Pipe;
 import quarks.oplet.core.Sink;
 import quarks.oplet.core.Split;
@@ -63,8 +65,8 @@ import quarks.window.Windows;
 /**
  * A stream that directly adds oplets to the graph.
  *
- * @param <G>
- * @param <T>
+ * @param <G> topology type
+ * @param <T> tuple type
  */
 public class ConnectorStream<G extends Topology, T> extends AbstractTStream<G, T> {
 
@@ -157,6 +159,30 @@ public class ConnectorStream<G extends Topology, T> extends AbstractTStream<G, T
     @Override
     public <U> TStream<U> pipe(Pipe<T, U> pipe) {
         return connectPipe(pipe);
+    }
+
+    @Override
+    public <U> TStream<U> fanin(FanIn<T,U> fanin, List<TStream<T>> others) {
+      if (others.isEmpty() || others.size() == 1 && others.contains(this)) 
+        throw new IllegalArgumentException("others");  // use pipe()
+      if (new HashSet<>(others).size() != others.size())
+        throw new IllegalArgumentException("others has dups");
+      
+      for (TStream<T> other : others)
+          verify(other);
+      
+      others = new ArrayList<>(others);
+      others.add(0, this);
+      
+      Vertex<Oplet<T,U>, T, U> fanInVertex = graph().insert(fanin, others.size(), 1);
+      int inputPort = 0;
+      for (TStream<T> other : others) {
+          @SuppressWarnings("unchecked")
+          ConnectorStream<G,T> cs = (ConnectorStream<G, T>) other;
+          cs.connector.connect(fanInVertex, inputPort++);
+      }
+          
+      return derived(fanInVertex.getConnectors().get(0));
     }
 
     @Override

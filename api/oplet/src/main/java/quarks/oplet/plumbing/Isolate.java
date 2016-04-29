@@ -33,7 +33,7 @@ import quarks.oplet.core.Pipe;
  *
  * @param <T> Type of the tuple.
  */
-public class Isolate<T> extends Pipe<T,T> implements Runnable {
+public class Isolate<T> extends Pipe<T,T> {
     private static final long serialVersionUID = 1L;
     
     private Thread thread;
@@ -50,7 +50,9 @@ public class Isolate<T> extends Pipe<T,T> implements Runnable {
     
     /**
      * Create a new Isolate oplet.
-     * @param queueCapacity {@link #accept()} blocks when this capacity is reached
+     * @param queueCapacity size of the queue between the input stream
+     *          and the output stream.
+     *          {@link #accept(Object) accept} blocks when the queue is full.
      */
     public Isolate(int queueCapacity) {
       tuples = new LinkedBlockingQueue<>(queueCapacity);
@@ -59,7 +61,7 @@ public class Isolate<T> extends Pipe<T,T> implements Runnable {
     @Override
     public void initialize(OpletContext<T, T> context) {
         super.initialize(context);
-        thread = context.getService(ThreadFactory.class).newThread(this);
+        thread = context.getService(ThreadFactory.class).newThread(() -> run());
     }
    
     @Override
@@ -78,8 +80,7 @@ public class Isolate<T> extends Pipe<T,T> implements Runnable {
         }      
     }
 
-    @Override
-    public void run() {
+    private void run() {
         while (!Thread.interrupted()) {
             try {
                 submit(tuples.take());
