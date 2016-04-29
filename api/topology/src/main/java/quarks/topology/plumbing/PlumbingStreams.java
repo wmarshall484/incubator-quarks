@@ -19,14 +19,9 @@ under the License.
 package quarks.topology.plumbing;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 import quarks.function.Function;
 import quarks.oplet.plumbing.Barrier;
@@ -251,41 +246,18 @@ public class PlumbingStreams {
     /**
      * Perform analytics concurrently.
      * <P>
-     * Process input tuples one at at time, invoking the specified
-     * analytics ({@code mappers}) concurrently, combine the results,
-     * and then process the next input tuple in the same manner.
+     * This is a convenience function that calls
+     * {@link #concurrent(TStream, List, Function)} after
+     * creating {@code pipeline} and {@code combiner} functions
+     * from the supplied {@code mappers} and {@code combiner} arguments.
      * </P><P>
-     * Logically, instead of doing this:
+     * That is, it is logically, if not exactly, the same as:
      * <pre>{@code
-     * sensorReadings<T> -> A1 -> A2 -> A3 -> results<R>
+     * List<Function<TStream<T>,TStream<U>>> pipelines = new ArrayList<>();
+     * for (Function<T,U> mapper : mappers)
+     *   pipelines.add(s -> s.map(mapper));
+     * concurrent(stream, pipelines, s -> s.map(combiner));
      * }</pre>
-     * create a graph that's logically like this:
-     * <pre>{@code
-     * - 
-     *                      |->  A1  ->|
-     * sensorReadings<T> -> |->  A2  ->| -> result<R>
-     *                      |->  A3  ->|
-     * }</pre>
-     * </P><P>
-     * The typical use case for this is when an application has a collection
-     * of independent analytics to perform on each tuple and the analytics
-     * are sufficiently long running such that performing them concurrently
-     * is desired.
-     * </P><P>
-     * Note, this is in contrast to "parallel" stream processing,
-     * which in Java8 Streams and other contexts means processing multiple
-     * tuples in parallel, each on a replicated processing pipeline.
-     * </P><P>
-     * Threadsafety - one of the following must be true:
-     * <ul>
-     * <li>the tuples from {@code stream} are threadsafe</li>
-     * <li>the {@code mappers} do not modify the input tuples</li>
-     * <li>the {@code mappers} provide their own synchronization controls
-     *     to protect concurrent modifications of the input tuples</li>
-     * </ul>
-     * </P><P>
-     * Logically, a thread is allocated for each of the {@code mappers}.
-     * The actual degree of concurrency may be {@link TopologyProvider} dependent.
      * </P>
      * 
      * @param <T> Tuple type on input stream.
@@ -316,69 +288,6 @@ public class PlumbingStreams {
       
       return concurrent(stream, pipelines, s -> s.map(combiner));
     }
-    
-    // Q: is there any value to this implementation approach?  Or just dispose of it?
-    @SuppressWarnings("unused")
-    private static <T,U,R> TStream<R> concurrentMapSingleOp(TStream<T> stream, List<Function<T,U>> mappers, Function<List<U>,R> combiner) {
-      Objects.requireNonNull(stream, "stream");
-      Objects.requireNonNull(mappers, "mappers");
-      Objects.requireNonNull(combiner, "combiner");
-      
-      // INITIAL IMPL TO GET STARTED - validate interface and test
-      // explore an impl with no new oplets
-      //
-      // This is the most lightweight impl possible wrt no intermediate streams
-      // i.e., all of the processing is handled within a single injected map()
-      // 
-      // TODO: want to create ExecutorService using provider's ThreadFactory service.
-      //       Can't get RuntimeServicesSupplier from a stream.
-      //
-      // Note, we impose this "non-null mapper result" requirement so as
-      // to enable alternative implementations that might be burdened if
-      // null results were allowed.
-      // The implementation below could easily handle null results w/o
-      // losing synchronization, with the combiner needing to deal with
-      // a null result in the list it's given.
-      
-      AtomicReference<ExecutorService> executorRef = new AtomicReference<>();
-      
-      return stream.map(tuple -> {
-        if (executorRef.get() == null) {
-          executorRef.compareAndSet(null, Executors.newFixedThreadPool(Math.min(mappers.size(), 20)));
-        }
-        ExecutorService executor = executorRef.get();
-        List<U> results = new ArrayList<>(Collections.nCopies(mappers.size(), null));
-        List<Future<?>> futures = new ArrayList<>(mappers.size());
-
-        // Submit a task for each mapper invocation
-        int ch = 0;
-        for (Function<T,U> mapper : mappers) {
-          final int resultIndx = ch++;
-          Future<?> future = executor.submit(() -> {
-            U result = mapper.apply(tuple);
-            if (result == null)
-              throw new IllegalStateException("mapper index "+resultIndx+" returned null");
-            results.set(resultIndx, result); 
-          });
-          futures.add(future);
-        }
-        // Await completion of all
-        for (Future<?> future : futures) {
-          try {
-            future.get();
-          } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("mapper interrupted", e);
-          } catch (Exception e) {
-            throw new RuntimeException("mapper threw", e);
-          }
-        }
-        // Run the combiner
-        R result = combiner.apply(results);
-        return result;
-      });
-      
-    }
 
     /**
      * Perform analytics concurrently.
@@ -394,9 +303,9 @@ public class PlumbingStreams {
      * create a graph that's logically like this:
      * <pre>{@code
      * - 
-     *                      |->  A1pipeline  ->|
-     * sensorReadings<T> -> |->  A2pipeline  ->| -> result<R>
-     *                      |->  A3pipeline  ->|
+     *                      |-> A1pipeline ->|
+     * sensorReadings<T> -> |-> A2pipeline ->| -> result<R>
+     *                      |-> A3pipeline ->|
      * }</pre>
      * </P><P>
      * The typical use case for this is when an application has a collection
@@ -437,6 +346,7 @@ public class PlumbingStreams {
      *                 I.e., list entry [0] is the result from pipelines[0],
      *                 list entry [1] is the result from pipelines[1], etc.
      * @return result stream
+     * @see #barrier(List, int) barrier
      */
     public static <T,U,R> TStream<R> concurrent(TStream<T> stream, List<Function<TStream<T>,TStream<U>>> pipelines, Function<TStream<List<U>>,TStream<R>> combiner) {
       Objects.requireNonNull(stream, "stream");
