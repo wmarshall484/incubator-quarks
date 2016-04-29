@@ -52,8 +52,7 @@ final class MetricsUtil {
 		try {
 			counterObjName = new ObjectName(sbuf.toString());
 		} catch (MalformedObjectNameException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		    e.printStackTrace();
 		}
 		Set<ObjectInstance> counterInstances = mBeanServer.queryMBeans(counterObjName, null);
 		return counterInstances.iterator();
@@ -69,8 +68,7 @@ final class MetricsUtil {
 			try {
 				meterObjName = new ObjectName(sbuf1.toString());
 			} catch (MalformedObjectNameException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			    e.printStackTrace();
 			}
 			
 
@@ -94,15 +92,8 @@ final class MetricsUtil {
 					MBeanInfo mBeanInfo = null;
 					try {
 						mBeanInfo = mBeanServer.getMBeanInfo(mObjName);
-					} catch (IntrospectionException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (InstanceNotFoundException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (ReflectionException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+					} catch (IntrospectionException | InstanceNotFoundException | ReflectionException e) {
+					    e.printStackTrace();
 					}
 
 			    	for (MBeanAttributeInfo attributeInfo : mBeanInfo.getAttributes()) {
@@ -115,8 +106,7 @@ final class MetricsUtil {
 		    					aMetric.value = String.valueOf(mBeanServer.getAttribute(mObjName, aMetric.name));
 		    				} catch (AttributeNotFoundException | InstanceNotFoundException | MBeanException
 								| ReflectionException e) {
-		    					// TODO Auto-generated catch block
-		    					e.printStackTrace();
+		    				    e.printStackTrace();
 		    				}
 		    			}
 		    			// if the op associated with this metric is not in the job add it
@@ -147,15 +137,8 @@ final class MetricsUtil {
 			MBeanInfo mBeanInfo = null;
 			try {
 				mBeanInfo = mBeanServer.getMBeanInfo(cObjName);
-			} catch (IntrospectionException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (InstanceNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (ReflectionException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			} catch (IntrospectionException | InstanceNotFoundException | ReflectionException e) {
+			    e.printStackTrace();
 			}
 
 	    	for (MBeanAttributeInfo attributeInfo : mBeanInfo.getAttributes()) {
@@ -208,15 +191,8 @@ final class MetricsUtil {
 			
 				try {
 					mBeanInfo = mBeanServer.getMBeanInfo(mObjName);
-				} catch (IntrospectionException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (InstanceNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (ReflectionException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				} catch (IntrospectionException | InstanceNotFoundException | ReflectionException e) {
+				    e.printStackTrace();
 				}
 				
 		    	for (MBeanAttributeInfo attributeInfo : mBeanInfo.getAttributes()) {
@@ -229,8 +205,7 @@ final class MetricsUtil {
 							aMetric.value = String.valueOf(mBeanServer.getAttribute(mObjName, name));
 						} catch (AttributeNotFoundException | InstanceNotFoundException | MBeanException
 								| ReflectionException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+						    e.printStackTrace();
 						}
     					if (!gsonJob.isOpInJob(opName)) {
     					    anOp = gsonJob.new Operator();
@@ -264,15 +239,8 @@ final class MetricsUtil {
 			
 				try {
 					mBeanInfo = mBeanServer.getMBeanInfo(cObjName);
-				} catch (IntrospectionException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (InstanceNotFoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (ReflectionException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				} catch (IntrospectionException | InstanceNotFoundException | ReflectionException e) {
+				    e.printStackTrace();
 				}
 				
 		    	for (MBeanAttributeInfo attributeInfo : mBeanInfo.getAttributes()) {
@@ -286,8 +254,7 @@ final class MetricsUtil {
 							aMetric.value = String.valueOf(mBeanServer.getAttribute(cObjName, name));
 						} catch (AttributeNotFoundException | InstanceNotFoundException | MBeanException
 								| ReflectionException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+						    e.printStackTrace();
 						}
     					if (!gsonJob.isOpInJob(opName1)) {
     					    anOp = gsonJob.new Operator();
@@ -306,5 +273,4 @@ final class MetricsUtil {
 		}	
 		return gsonJob;
 	}
-	
 }

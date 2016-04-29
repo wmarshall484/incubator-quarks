@@ -223,7 +223,7 @@ public class Executable implements RuntimeServices {
                     }
                 }
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                logger.error("Exception caught while waiting for future to complete", e);
             }
             remainingTasks--;
         }

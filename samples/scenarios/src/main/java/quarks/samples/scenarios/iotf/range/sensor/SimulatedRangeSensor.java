@@ -16,24 +16,27 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 */
+package quarks.samples.scenarios.iotf.range.sensor;
 
-package quarks.samples.console;
+import java.util.Random;
 
-import quarks.console.server.HttpServer;
+import quarks.function.Supplier;
 
-public class HttpServerSample {
+public class SimulatedRangeSensor implements Supplier<Double> {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+    Random rand;
 
-    public static void main(String[] args)  {
-
-        try {
-        HttpServer server = HttpServer.getInstance();
-        server.startServer();
-        String consolePath = server.getConsoleUrl();
-        System.out.println("Point your browser to :");
-        System.out.println(consolePath);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
+    public SimulatedRangeSensor() {
+        rand = new Random();
     }
+
+    @Override
+    public Double get() {
+        Double distance = 20 + rand.nextDouble() * 20;
+        return distance;
+    }
+
 }
