@@ -306,6 +306,15 @@ public class PlumbingStreams {
      *                      |-> A1pipeline ->|
      * sensorReadings<T> -> |-> A2pipeline ->| -> result<R>
      *                      |-> A3pipeline ->|
+     * 
+     * }</pre>
+     * more specifically a graph like this:
+     * <pre>{@code
+     * -
+     *           |-> isolate(1) -> pipeline1 -> |
+     * stream -> |-> isolate(1) -> pipeline2 -> |-> barrier(10) -> combiner 
+     *           |-> isolate(1) -> pipeline3 -> |
+     *                . . .
      * }</pre>
      * </P><P>
      * The typical use case for this is when an application has a collection
@@ -353,12 +362,6 @@ public class PlumbingStreams {
       Objects.requireNonNull(pipelines, "pipelines");
       Objects.requireNonNull(combiner, "combiner");
       
-      // Summary of what's below:
-      //           |-> isolate(1) -> p1 -> |
-      // stream -> |-> isolate(1) -> p2 -> |-> barrier(10) -> combiner 
-      //           |-> isolate(1) -> p3 -> |
-      //                . . .
-
       int barrierQueueCapacity = 10;  // don't preclude pipelines from getting ahead some.
       
       // Add concurrent (isolated) fanouts
