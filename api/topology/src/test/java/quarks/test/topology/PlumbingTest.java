@@ -35,8 +35,10 @@ import org.junit.Test;
 
 import com.google.gson.JsonObject;
 
+import quarks.function.BiFunction;
 import quarks.function.Function;
 import quarks.function.Functions;
+import quarks.function.ToIntFunction;
 import quarks.topology.TStream;
 import quarks.topology.Topology;
 import quarks.topology.plumbing.PlumbingStreams;
@@ -350,25 +352,22 @@ public abstract class PlumbingTest extends TopologyAbstractTest {
         
         Condition<Long> count = top.getTester().tupleCount(result, 3);
         Condition<List<Integer>> contents = top.getTester().streamContents(result, resultTuples );
+
         long begin = System.currentTimeMillis();
         complete(top, count);
         long end = System.currentTimeMillis();
+
         assertTrue(contents.getResult().toString(), contents.valid());
         
         long actDuration = end - begin;
-        
         long expMinSerialDuration = resultTuples.length * mappers.size() * 100;
-        long expMaxDuration = resultTuples.length * (100 + 75/*slop and more tuple overhead*/);
+        long expMinDuration = resultTuples.length * 100;
         
-        System.out.println("expMaxDuration="+expMaxDuration+" actDuration="+actDuration+" expMinSerialDuration="+expMinSerialDuration);
+        System.out.println(top.getName()+" expMinDuration="+expMinDuration+" actDuration="+actDuration+" expMinSerialDuration="+expMinSerialDuration);
         
-        // a gross level performance check
+        // a gross level performance check w/concurrent channels
         assertTrue("expMinSerialDuration="+expMinSerialDuration+" actDuration="+actDuration, 
             actDuration < 0.5 * expMinSerialDuration);
-        
-        // a tighter performance check
-        assertTrue("expMaxDuration="+expMaxDuration+" actDuration="+actDuration, 
-            actDuration <= expMaxDuration);
     }
     
     @Test
@@ -405,25 +404,201 @@ public abstract class PlumbingTest extends TopologyAbstractTest {
         
         Condition<Long> count = top.getTester().tupleCount(result, 3);
         Condition<List<Integer>> contents = top.getTester().streamContents(result, resultTuples );
+
         long begin = System.currentTimeMillis();
         complete(top, count);
         long end = System.currentTimeMillis();
+        
         assertTrue(contents.getResult().toString(), contents.valid());
         
         long actDuration = end - begin;
-        
         long expMinSerialDuration = resultTuples.length * pipelines.size() * 100;
-        long expMaxDuration = resultTuples.length * (100 + 75/*slop and more tuple overhead*/);
+        long expMinDuration = resultTuples.length * 100;
         
-        System.out.println("expMaxDuration="+expMaxDuration+" actDuration="+actDuration+" expMinSerialDuration="+expMinSerialDuration);
+        System.out.println(top.getName()+" expMinDuration="+expMinDuration+" actDuration="+actDuration+" expMinSerialDuration="+expMinSerialDuration);
         
-        // a gross level performance check
+        // a gross level performance check w/concurrent channels
         assertTrue("expMinSerialDuration="+expMinSerialDuration+" actDuration="+actDuration, 
             actDuration < 0.5 * expMinSerialDuration);
-        
-        // a tighter performance check
-        assertTrue("expMaxDuration="+expMaxDuration+" actDuration="+actDuration, 
-            actDuration <= expMaxDuration);
     }
+
+    private BiFunction<Integer,Integer,JsonObject> fakeParallelAnalytic(long period, TimeUnit unit) {
+      return (value,channel) -> { 
+        try {
+          Thread.sleep(unit.toMillis(period));  // simulate work for this period
+          JsonObject jo = new JsonObject();
+          jo.addProperty("channel", channel);
+          jo.addProperty("result", value);
+          return jo;
+        } catch (InterruptedException e) {
+          throw new RuntimeException("channel="+channel+" interrupted", e);
+        }
+      };
+    }
+    
+    private BiFunction<TStream<Integer>,Integer,TStream<JsonObject>> fakeParallelPipeline(long period, TimeUnit unit) {
+      return (stream,channel) -> stream
+          .map(value -> fakeParallelAnalytic(period, unit).apply(value,channel))
+          .filter(t->true)
+          .tag("pipeline-ch"+channel);
+    }
+    
+    private Function<JsonObject,JsonObject> fakeJsonAnalytic(int channel, long period, TimeUnit unit) {
+      return jo -> { 
+        try {
+          Thread.sleep(unit.toMillis(period));  // simulate work for this period
+          return jo;
+        } catch (InterruptedException e) {
+          throw new RuntimeException("channel="+channel+" interrupted", e);
+        }
+      };
+    }
+    
+    @SuppressWarnings("unused")
+    private BiFunction<TStream<JsonObject>,Integer,TStream<JsonObject>> fakeParallelPipelineTiming(long period, TimeUnit unit) {
+      return (stream,channel) -> stream
+          .map(jo -> { jo.addProperty("startPipelineMsec", System.currentTimeMillis());
+                       return jo; })
+          .map(fakeJsonAnalytic(channel, period, unit))
+          .filter(t->true)
+          .map(jo -> { jo.addProperty("endPipelineMsec", System.currentTimeMillis());
+                      return jo; })
+          .tag("pipeline-ch"+channel);
+    }
+    
+    @Test
+    public void testParallelMap() throws Exception {
+        Topology top = newTopology("testParallelMap");
+        
+        BiFunction<Integer,Integer,JsonObject> mapper = 
+            fakeParallelAnalytic(100, TimeUnit.MILLISECONDS);
+        
+        int width = 5;
+        ToIntFunction<Integer> splitter = tuple -> tuple % width;
+        
+        Integer[] resultTuples = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+        TStream<Integer> values = top.of(resultTuples);
+        
+        TStream<JsonObject> result = PlumbingStreams.parallelMap(values, width, splitter, mapper).tag("result");
+        TStream<Integer> result2 = result.map(jo -> {
+            int r = jo.getAsJsonPrimitive("result").getAsInt();
+            assertEquals(splitter.applyAsInt(r), jo.getAsJsonPrimitive("channel").getAsInt());
+            return r;
+          });
+        
+        Condition<Long> count = top.getTester().tupleCount(result, resultTuples.length);
+        Condition<List<Integer>> contents = top.getTester().contentsUnordered(result2, resultTuples);
+    
+        long begin = System.currentTimeMillis();
+        complete(top, count);
+        long end = System.currentTimeMillis();
+        
+        assertTrue(contents.getResult().toString(), contents.valid());
+        
+        long actDuration = end - begin;
+        long expMinSerialDuration = resultTuples.length * 100;
+        long expMinDuration = (resultTuples.length / width) * 100;
+        
+        System.out.println(top.getName()+" expMinDuration="+expMinDuration+" actDuration="+actDuration+" expMinSerialDuration="+expMinSerialDuration);
+        
+        // a gross level performance check w/parallel channels
+        assertTrue("expMinSerialDuration="+expMinSerialDuration+" actDuration="+actDuration, 
+            actDuration < 0.5 * expMinSerialDuration);
+    }
+    
+    @Test
+    public void testParallel() throws Exception {
+        Topology top = newTopology("testParallel");
+        
+        BiFunction<TStream<Integer>,Integer,TStream<JsonObject>> pipeline = 
+            fakeParallelPipeline(100, TimeUnit.MILLISECONDS);
+        
+        int width = 5;
+        ToIntFunction<Integer> splitter = tuple -> tuple % width;
+        
+        Integer[] resultTuples = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+        TStream<Integer> values = top.of(resultTuples);
+        
+        TStream<JsonObject> result = PlumbingStreams.parallel(values, width, splitter, pipeline).tag("result");
+        TStream<Integer> result2 = result.map(jo -> {
+            int r = jo.getAsJsonPrimitive("result").getAsInt();
+            assertEquals(splitter.applyAsInt(r), jo.getAsJsonPrimitive("channel").getAsInt());
+            return r;
+          });
+        
+        Condition<Long> count = top.getTester().tupleCount(result, resultTuples.length);
+        Condition<List<Integer>> contents = top.getTester().contentsUnordered(result2, resultTuples);
+        
+        long begin = System.currentTimeMillis();
+        complete(top, count);
+        long end = System.currentTimeMillis();
+        
+        assertTrue(contents.getResult().toString(), contents.valid());
+        
+        long actDuration = end - begin;
+        long expMinSerialDuration = resultTuples.length * 100;
+        long expMinDuration = (resultTuples.length / width) * 100;
+        
+        System.out.println(top.getName()+" expMinDuration="+expMinDuration+" actDuration="+actDuration+" expMinSerialDuration="+expMinSerialDuration);
+        
+        // a gross level performance check w/parallel channels
+        assertTrue("expMinSerialDuration="+expMinSerialDuration+" actDuration="+actDuration, 
+            actDuration < 0.5 * expMinSerialDuration);
+    }
+    
+//    @Test
+//    public void testParallelTiming() throws Exception {
+//        Topology top = newTopology("testParallelTiming");
+//        
+//        BiFunction<TStream<JsonObject>,Integer,TStream<JsonObject>> pipeline = 
+//            fakeParallelPipelineTiming(100, TimeUnit.MILLISECONDS);
+//        
+//        int width = 5;
+//        // ToIntFunction<Integer> splitter = tuple -> tuple % width;
+//        ToIntFunction<JsonObject> splitter = jo -> jo.getAsJsonPrimitive("result").getAsInt() % width;
+//        
+//        Integer[] resultTuples = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+//        TStream<Integer> values = top.of(resultTuples);
+//        
+//        TStream<JsonObject> inStream = values.map(value -> {
+//            JsonObject jo = new JsonObject();
+//            jo.addProperty("result", value);
+//            jo.addProperty("channel", splitter.applyAsInt(jo));
+//            jo.addProperty("enterParallelMsec", System.currentTimeMillis());
+//            return jo;
+//          });
+//        TStream<JsonObject> result = PlumbingStreams.parallel(inStream, width, splitter, pipeline).tag("result");
+//        TStream<Integer> result2 = result.map(jo -> {
+//            jo.addProperty("exitParallelMsec", System.currentTimeMillis());
+//            System.out.println("ch="+jo.getAsJsonPrimitive("channel").getAsInt()
+//                +" endPipeline-startPipeline="
+//                  +(jo.getAsJsonPrimitive("endPipelineMsec").getAsLong()
+//                    - jo.getAsJsonPrimitive("startPipelineMsec").getAsLong())
+//                +" exitParallel-startPipeine="
+//                  +(jo.getAsJsonPrimitive("exitParallelMsec").getAsLong()
+//                      - jo.getAsJsonPrimitive("startPipelineMsec").getAsLong()));
+//            int r = jo.getAsJsonPrimitive("result").getAsInt();
+//            assertEquals(splitter.applyAsInt(jo), jo.getAsJsonPrimitive("channel").getAsInt());
+//            return r;
+//          });
+//        
+//        Condition<Long> count = top.getTester().tupleCount(result, resultTuples.length);
+//        Condition<List<Integer>> contents = top.getTester().contentsUnordered(result2, resultTuples);
+//        long begin = System.currentTimeMillis();
+//        complete(top, count);
+//        long end = System.currentTimeMillis();
+//        assertTrue(contents.getResult().toString(), contents.valid());
+//        
+//        long actDuration = end - begin;
+//        
+//        long expMinSerialDuration = resultTuples.length * 100;
+//        long expMinDuration = (resultTuples.length / width) * 100;
+//        
+//        System.out.println(top.getName()+" expMinDuration="+expMinDuration+" actDuration="+actDuration+" expMinSerialDuration="+expMinSerialDuration);
+//        
+//        // a gross level performance check w/parallel channels
+//        assertTrue("expMinSerialDuration="+expMinSerialDuration+" actDuration="+actDuration, 
+//            actDuration < 0.5 * expMinSerialDuration);
+//    }
 
 }

@@ -19,11 +19,15 @@ under the License.
 package quarks.topology.plumbing;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import quarks.function.BiFunction;
 import quarks.function.Function;
+import quarks.function.ToIntFunction;
 import quarks.oplet.plumbing.Barrier;
 import quarks.oplet.plumbing.Isolate;
 import quarks.oplet.plumbing.PressureReliever;
@@ -298,14 +302,14 @@ public class PlumbingStreams {
      * </P><P>
      * Logically, instead of doing this:
      * <pre>{@code
-     * sensorReadings<T> -> A1pipeline -> A2pipeline -> A3pipeline -> results<R>
+     * sensorReadings<T> -> A1 -> A2 -> A3 -> results<R>
      * }</pre>
      * create a graph that's logically like this:
      * <pre>{@code
      * - 
-     *                      |-> A1pipeline ->|
-     * sensorReadings<T> -> |-> A2pipeline ->| -> result<R>
-     *                      |-> A3pipeline ->|
+     *                      |-> A1 ->|
+     * sensorReadings<T> -> |-> A2 ->| -> results<R>
+     *                      |-> A3 ->|
      * 
      * }</pre>
      * more specifically a graph like this:
@@ -425,6 +429,106 @@ public class PlumbingStreams {
       List<TStream<T>> others = new ArrayList<>(streams);
       TStream<T> s1 = others.remove(0);
       return s1.fanin(new Barrier<T>(queueCapacity), others);
+    }
+
+    /**
+     * Perform an analytic function on tuples in parallel.
+     * <P>
+     * Same as {@code parallel(stream, width, splitter, (s,ch) -> s.map(t -> mapper.apply(t, ch))}
+     * </P>
+     * @param stream input stream
+     * @param splitter the tuple channel allocation function
+     * @param mapper analytic function
+     * @param width number of channels
+     * @return the unordered result stream
+     */
+    public static <T,U> TStream<U> parallelMap(TStream<T> stream, int width, ToIntFunction<T> splitter, BiFunction<T,Integer,U> mapper) {
+      BiFunction<TStream<T>,Integer,TStream<U>> pipeline = (s,ch) -> s.map(t -> mapper.apply(t, ch));
+      return parallel(stream, width, splitter, pipeline);
+    }
+    
+    /**
+     * Perform an analytic pipeline on tuples in parallel.
+     * <P>
+     * Splits {@code stream} into {@code width} parallel processing channels,
+     * partitioning tuples among the channels using {@code splitter}.
+     * Each channel runs a copy of {@code pipeline}.
+     * The resulting stream is isolated from the upstream parallel channels.
+     * <P></P>
+     * The ordering of tuples in {@code stream} is not maintained in the
+     * results from {@code parallel}.
+     * </P><P>
+     * {@code pipeline} is not required to yield a result for each input
+     * tuple.
+     * </P><P>
+     * A common splitter function is a {@link quarks.function.Functions#roundRobinSplitter(width) roundRobinSplitter}.
+     * </P><P>
+     * The generated graph looks like this:
+     * <pre>{@code
+     * -
+     *                                    |-> isolate(10) -> pipeline-ch1 -> |
+     * stream -> split(width,splitter) -> |-> isolate(10) -> pipeline-ch2 -> |-> union -> isolate(width)
+     *                                    |-> isolate(10) -> pipeline-ch3 -> |
+     *                                                . . .
+     * }</pre>
+     * </P>
+     * 
+     * @param <T> Input stream tuple type
+     * @param <R> Result stream tuple type
+     * 
+     * @param stream the input stream
+     * @param width number of parallel processing channels
+     * @param splitter the tuple channel allocation function
+     * @param pipeline the pipeline for each channel.  
+     *        {@code pipeline.apply(inputStream,channel)}
+     *        is called to generate the pipeline for each channel.
+     * @return the isolated unordered result from each parallel channel
+     * @see #concurrent(TStream, List, Function) concurrent
+     * @see quarks.function.Functions#roundRobinSplitter(width) roundRobinSplitter
+     */
+    public static <T,R> TStream<R> parallel(TStream<T> stream, int width, ToIntFunction<T> splitter, BiFunction<TStream<T>,Integer,TStream<R>> pipeline) {
+      Objects.requireNonNull(stream, "stream");
+      if (width < 1)
+        throw new IllegalArgumentException("width");
+      Objects.requireNonNull(splitter, "splitter");
+      Objects.requireNonNull(pipeline, "pipeline");
+      
+      // Add the splitter
+      List<TStream<T>> channels = stream.split(width, splitter);
+      for (int ch = 0; ch < width; ch++)
+        channels.set(ch, channels.get(ch).tag("parallel.split-ch"+ch));
+      
+      // Add concurrency (isolation) to the channels
+      int chBufferSize = 10; // don't immediately block stream if channel is busy
+      for (int ch = 0; ch < width; ch++)
+        channels.set(ch, isolate(channels.get(ch), chBufferSize).tag("parallel.isolated-ch"+ch));
+      
+      // Add pipelines
+      List<TStream<R>> results = new ArrayList<>(width);
+      for (int ch = 0; ch < width; ch++) {
+        results.add(pipeline.apply(channels.get(ch), ch).tag("parallel-ch"+ch));
+      }
+      
+      // Add the Union
+      TStream<R> result =  results.get(0).union(new HashSet<>(results)).tag("parallel.union");
+      
+      // Add the isolate - keep channel threads to just their pipeline processing
+      return isolate(result, width);
+    }
+    
+    /**
+     * A round-robin splitter ToIntFunction
+     * <P>
+     * The splitter function cycles among the {@code width} channels
+     * on successive calls to {@code roundRobinSplitter.applyAsInt()},
+     * returning {@code 0, 1, ..., width-1, 0, 1, ..., width-1}.
+     * </P>
+     * @see TStream#split(int, ToIntFunction) TStream.split
+     * @see PlumbingStreams#parallel(TStream, int, ToIntFunction, BiFunction) parallel
+     */
+    public static ToIntFunction<Double> roundRobinSplitter(int width) {
+      AtomicInteger cnt = new AtomicInteger();
+      return tuple -> cnt.getAndIncrement() % width;
     }
  
 }
