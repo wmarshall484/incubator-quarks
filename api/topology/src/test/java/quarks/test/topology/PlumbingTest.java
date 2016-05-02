@@ -383,7 +383,7 @@ public abstract class PlumbingTest extends TopologyAbstractTest {
         pipelines.add(fakePipeline(ch++, 100, TimeUnit.MILLISECONDS));
         pipelines.add(fakePipeline(ch++, 100, TimeUnit.MILLISECONDS));
         
-        Function<List<JsonObject>,Integer> tupleCombiner = list -> {
+        Function<List<JsonObject>,Integer> combiner = list -> {
             int sum = 0;
             int cnt = 0;
             System.out.println("combiner: "+list);
@@ -393,7 +393,6 @@ public abstract class PlumbingTest extends TopologyAbstractTest {
             }
             return sum;
         };
-        Function<TStream<List<JsonObject>>,TStream<Integer>> combiner = stream -> stream.map(tupleCombiner);
         
         TStream<Integer> values = top.of(1, 2, 3);
         Integer[] resultTuples = new Integer[]{

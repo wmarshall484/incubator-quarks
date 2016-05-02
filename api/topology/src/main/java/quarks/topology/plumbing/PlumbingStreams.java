@@ -256,7 +256,7 @@ public class PlumbingStreams {
      * List<Function<TStream<T>,TStream<U>>> pipelines = new ArrayList<>();
      * for (Function<T,U> mapper : mappers)
      *   pipelines.add(s -> s.map(mapper));
-     * concurrent(stream, pipelines, s -> s.map(combiner));
+     * concurrent(stream, pipelines, combiner);
      * }</pre>
      * </P>
      * 
@@ -286,7 +286,7 @@ public class PlumbingStreams {
         pipelines.add(s -> s.map(mapper));
       }
       
-      return concurrent(stream, pipelines, s -> s.map(combiner));
+      return concurrent(stream, pipelines, combiner);
     }
 
     /**
@@ -349,15 +349,15 @@ public class PlumbingStreams {
      *                 For each input tuple, a pipeline MUST create exactly one output tuple.
      *                 Tuple flow into the pipelines will cease if that requirement
      *                 is not met.
-     * @param combiner a function that creates a result stream from a stream
-     *                 whose tuples are the list of each pipeline's result.
+     * @param combiner function to create a result tuple from the list of
+     *                 results from {@code pipelines}.
      *                 The input tuple list's order is 1:1 with the {@code pipelines} list.
      *                 I.e., list entry [0] is the result from pipelines[0],
      *                 list entry [1] is the result from pipelines[1], etc.
      * @return result stream
      * @see #barrier(List, int) barrier
      */
-    public static <T,U,R> TStream<R> concurrent(TStream<T> stream, List<Function<TStream<T>,TStream<U>>> pipelines, Function<TStream<List<U>>,TStream<R>> combiner) {
+    public static <T,U,R> TStream<R> concurrent(TStream<T> stream, List<Function<TStream<T>,TStream<U>>> pipelines, Function<List<U>,R> combiner) {
       Objects.requireNonNull(stream, "stream");
       Objects.requireNonNull(pipelines, "pipelines");
       Objects.requireNonNull(combiner, "combiner");
@@ -381,7 +381,7 @@ public class PlumbingStreams {
       TStream<List<U>> barrier = barrier(results, barrierQueueCapacity).tag("concurrent.barrier");
       
       // Add the combiner
-      return combiner.apply(barrier);
+      return barrier.map(combiner);
     }
 
     /**
