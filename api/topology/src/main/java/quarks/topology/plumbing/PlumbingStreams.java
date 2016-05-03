@@ -441,6 +441,8 @@ public class PlumbingStreams {
      * @param mapper analytic function
      * @param width number of channels
      * @return the unordered result stream
+     * @see #roundRobinSplitter(int) roundRobinSplitter
+     * @see #concurrentMap(TStream, List, Function) concurrentMap
      */
     public static <T,U> TStream<U> parallelMap(TStream<T> stream, int width, ToIntFunction<T> splitter, BiFunction<T,Integer,U> mapper) {
       BiFunction<TStream<T>,Integer,TStream<U>> pipeline = (s,ch) -> s.map(t -> mapper.apply(t, ch));
@@ -461,7 +463,7 @@ public class PlumbingStreams {
      * {@code pipeline} is not required to yield a result for each input
      * tuple.
      * </P><P>
-     * A common splitter function is a {@link quarks.function.Functions#roundRobinSplitter(width) roundRobinSplitter}.
+     * A common splitter function is a {@link #roundRobinSplitter(int) roundRobinSplitter}.
      * </P><P>
      * The generated graph looks like this:
      * <pre>{@code
@@ -483,8 +485,8 @@ public class PlumbingStreams {
      *        {@code pipeline.apply(inputStream,channel)}
      *        is called to generate the pipeline for each channel.
      * @return the isolated unordered result from each parallel channel
+     * @see #roundRobinSplitter(int) roundRobinSplitter
      * @see #concurrent(TStream, List, Function) concurrent
-     * @see quarks.function.Functions#roundRobinSplitter(width) roundRobinSplitter
      */
     public static <T,R> TStream<R> parallel(TStream<T> stream, int width, ToIntFunction<T> splitter, BiFunction<TStream<T>,Integer,TStream<R>> pipeline) {
       Objects.requireNonNull(stream, "stream");
