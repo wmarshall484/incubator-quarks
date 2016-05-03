@@ -30,6 +30,7 @@ import quarks.function.Function;
 import quarks.function.Predicate;
 import quarks.function.ToIntFunction;
 import quarks.function.UnaryOperator;
+import quarks.oplet.core.FanIn;
 import quarks.oplet.core.Pipe;
 import quarks.oplet.core.Sink;
 
@@ -298,6 +299,22 @@ public interface TStream<T> extends TopologyElement {
      *      oplet. 
      */
     <U> TStream<U> pipe(Pipe<T, U> pipe);
+
+    /**
+     * Declare a stream that contains the output of the specified 
+     * {@link FanIn} oplet applied to this stream and {@code others}.
+     * 
+     * @param <U> Tuple type of the returned streams.
+     * @param fanin The {@link FanIn} oplet.
+     * @param others The other input streams. 
+     *        Must not be empty or contain duplicates or {@code this}
+     * 
+     * @return a stream that contains the tuples emitted by the oplet.
+     * @see #union(Set)
+     * @see #pipe(Pipe)
+     * @see #sink(Sink)
+     */
+    <U> TStream<U> fanin(FanIn<T,U> fanin, List<TStream<T>> others);
 
     /**
      * Declare a new stream that modifies each tuple from this stream into one
