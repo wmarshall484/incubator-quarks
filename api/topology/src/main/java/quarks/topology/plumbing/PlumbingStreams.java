@@ -528,7 +528,7 @@ public class PlumbingStreams {
      * @see TStream#split(int, ToIntFunction) TStream.split
      * @see PlumbingStreams#parallel(TStream, int, ToIntFunction, BiFunction) parallel
      */
-    public static ToIntFunction<Double> roundRobinSplitter(int width) {
+    public static <T> ToIntFunction<T> roundRobinSplitter(int width) {
       AtomicInteger cnt = new AtomicInteger();
       return tuple -> cnt.getAndIncrement() % width;
     }
