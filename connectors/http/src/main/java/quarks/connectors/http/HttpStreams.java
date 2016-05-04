@@ -21,6 +21,7 @@ package quarks.connectors.http;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 
 import com.google.gson.JsonObject;
@@ -46,6 +47,12 @@ public class HttpStreams {
                 t -> HttpGet.METHOD_NAME, uri, HttpResponders.json());
     }
     
+    public static TStream<JsonObject> postJson(TStream<JsonObject> stream, 
+            Supplier<CloseableHttpClient> clientCreator,
+            Function<JsonObject, String> uri) {
+        return HttpStreams.<JsonObject, JsonObject> requests(stream, clientCreator, 
+                t -> HttpPost.METHOD_NAME, uri, HttpResponders.json());
+    }
     /**
      * Make an HTTP request for each tuple on a stream.
      * <UL>
