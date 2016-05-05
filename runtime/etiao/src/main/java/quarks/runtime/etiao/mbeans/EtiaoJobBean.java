@@ -46,12 +46,12 @@ public class EtiaoJobBean implements JobMXBean {
 
     @Override
     public State getCurrentState() {
-        return State.fromString(job.getCurrentState().name());
+        return State.valueOf(job.getCurrentState().name());
     }
 
     @Override
     public State getNextState() {
-        return State.fromString(job.getNextState().name());
+        return State.valueOf(job.getNextState().name());
     }
 
     @Override
