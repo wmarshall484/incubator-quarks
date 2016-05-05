@@ -42,28 +42,6 @@ public interface JobMXBean {
         PAUSED, 
         /** All the graph nodes are closed. */
         CLOSED;
-        
-        /**
-         * Converts from a string representation of a job status to the corresponding enumeration value.
-         * 
-         * @param state specifies a job status string value.
-         * 
-         * @return the corresponding {@code Status} enumeration value.
-         * 
-         * @throws IllegalArgumentException if the input string does not map to an enumeration value.
-         * @throws NullPointerException if the input value is null.
-         */
-        static public State fromString(String state) {
-            if (state ==  null) {
-                throw new NullPointerException("state");  
-            }
-            for (State value : State.values()) {
-                if (value.name().equals(state)) {
-                    return value;
-                }
-            }
-            throw new IllegalArgumentException(state);
-        }
     }
     
     /**
