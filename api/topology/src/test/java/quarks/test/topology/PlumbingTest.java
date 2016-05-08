@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -601,4 +602,66 @@ public abstract class PlumbingTest extends TopologyAbstractTest {
 //            actDuration < 0.5 * expMinSerialDuration);
 //    }
 
+    @Test
+    public void testGate() throws Exception {
+        // Timing variances on shared machines can cause this test to fail
+        assumeTrue(!Boolean.getBoolean("quarks.build.ci"));
+        Topology topology = newTopology("testGate");
+
+        TStream<String> raw = topology.strings("a", "b", "c", "d", "e");
+
+        Semaphore semaphore = new Semaphore(1);
+        raw = PlumbingStreams.gate(raw, semaphore);
+
+        ArrayList<Integer> resultAvailablePermits = new ArrayList<>();
+        ArrayList<Integer> arrayResult = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            arrayResult.add(0);
+            arrayResult.add(1);
+        }
+
+        raw.sink(t -> {
+            //Add 0 to list because semaphore.acquire() in sync has occurred
+            resultAvailablePermits.add(semaphore.availablePermits());
+            semaphore.release();
+            //Add 1 to list because semaphore.release() has executed
+            resultAvailablePermits.add(semaphore.availablePermits());
+        });
+
+        Condition<List<String>> contents = topology.getTester()
+            .streamContents(raw, "a", "b", "c", "d", "e");
+        complete(topology, contents);
+
+        assertTrue("valid:" + contents.getResult(), contents.valid());
+        assertTrue("valid:" + resultAvailablePermits, resultAvailablePermits.equals(arrayResult));
+    }
+
+    @Test
+    public void testGateWithLocking() throws Exception {
+        // Timing variances on shared machines can cause this test to fail
+        assumeTrue(!Boolean.getBoolean("quarks.build.ci"));
+        Topology topology = newTopology("testGateWithLocking");
+
+        TStream<String> raw = topology.strings("a", "b", "c", "d", "e");
+
+        Semaphore semaphore = new Semaphore(3);
+        raw = PlumbingStreams.gate(raw, semaphore);
+
+        ArrayList<Integer> resultAvailablePermits = new ArrayList<>();
+        ArrayList<Integer> arrayResult = new ArrayList<>();
+        arrayResult.add(2);
+        arrayResult.add(1);
+        arrayResult.add(0);
+
+        raw.sink(t -> {
+            //Add number of availablePermits
+            resultAvailablePermits.add(semaphore.availablePermits());
+        });
+
+        Condition<List<String>> contents = topology.getTester().streamContents(raw, "a", "b", "c");
+        complete(topology, contents, 1000, TimeUnit.MILLISECONDS);
+
+        assertTrue("valid:" + contents.getResult(), contents.valid());
+        assertTrue("valid:" + resultAvailablePermits, resultAvailablePermits.equals(arrayResult));
+    }
 }
