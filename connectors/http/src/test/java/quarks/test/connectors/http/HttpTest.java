@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.entity.ByteArrayEntity;
 import org.junit.Test;
 
 import com.google.gson.JsonObject;
@@ -170,4 +171,50 @@ public class HttpTest {
         
         assertTrue(endCondition.getResult().toString(), endCondition.valid());
     }
+    
+    @Test
+    public void testJsonPost() throws Exception {
+
+        DirectProvider ep = new DirectProvider();
+
+        Topology topology = ep.newTopology();
+
+        final String url = "http://httpbin.org/post?";
+
+        JsonObject request1 = new JsonObject();
+        request1.addProperty("a", "abc");
+        request1.addProperty("b", "42");
+
+        TStream<JsonObject> rc = HttpStreams.postJson(
+                topology.collection(Arrays.asList(request1)),
+                HttpClients::noAuthentication, t -> url,
+                t -> new ByteArrayEntity(request1.toString().getBytes()));
+
+        TStream<Boolean> resStream = rc.map(j -> {
+            assertTrue(j.has("request"));
+            assertTrue(j.has("response"));
+            JsonObject req = j.getAsJsonObject("request");
+            JsonObject res = j.getAsJsonObject("response");
+
+            assertTrue(res.has("status"));
+            assertTrue(res.has("entity"));
+
+            assertEquals(req,
+                    res.getAsJsonObject("entity").getAsJsonObject("json"));
+            return true;
+        });
+
+        rc.print();
+
+        Tester tester = topology.getTester();
+
+        Condition<List<Boolean>> endCondition = tester.streamContents(resStream,
+                true);
+
+        tester.complete(ep, new JsonObject(), endCondition, 10,
+                TimeUnit.SECONDS);
+
+        assertTrue(endCondition.getResult().toString(), endCondition.valid());
+    }
+
 }
