@@ -517,6 +517,83 @@ public class PlumbingStreams {
       // Add the isolate - keep channel threads to just their pipeline processing
       return isolate(result, width);
     }
+
+    /**
+     * Perform an analytic pipeline on tuples in parallel.
+     * <P>
+     * Splits {@code stream} into {@code width} parallel processing channels,
+     * partitioning tuples among the channels in a load balanced fashion.
+     * Each channel runs a copy of {@code pipeline}.
+     * The resulting stream is isolated from the upstream parallel channels.
+     * <P></P>
+     * The ordering of tuples in {@code stream} is not maintained in the
+     * results from {@code parallel}.
+     * </P><P>
+     * A {@code pipeline} <b>MUST</b> yield a result for each input
+     * tuple.  Failure to do so will result in the channel remaining
+     * in a busy state and no longer available to process additional tuples.
+     * </P><P>
+     * A {@link LoadBalancedSplitter} is used to distribute tuples.
+     * </P><P>
+     * The generated graph looks like this:
+     * <pre>{@code
+     * -
+     *                                    |-> isolate(1) -> pipeline-ch1 -> peek(splitter.channelDone()) -> |
+     * stream -> split(width,splitter) -> |-> isolate(1) -> pipeline-ch2 -> peek(splitter.channelDone()) -> |-> union -> isolate(width)
+     *                                    |-> isolate(1) -> pipeline-ch3 -> peek(splitter.channelDone()) -> |
+     *                                                . . .
+     * }</pre>
+     * </P><P>
+     * Note, this implementation requires that the splitter is used from
+     * only a single JVM.  The {@link quarks.providers.direct.DirectProvider DirectProvider}
+     * provider meets this requirement.
+     * </P>
+     * 
+     * @param <T> Input stream tuple type
+     * @param <R> Result stream tuple type
+     * 
+     * @param stream the input stream
+     * @param width number of parallel processing channels
+     * @param pipeline the pipeline for each channel.  
+     *        {@code pipeline.apply(inputStream,channel)}
+     *        is called to generate the pipeline for each channel.
+     * @return the isolated unordered result from each parallel channel
+     * @see #parallel(TStream, int, ToIntFunction, BiFunction)
+     * @see LoadBalancedSplitter
+     */
+    public static <T,R> TStream<R> parallelBalanced(TStream<T> stream, int width, BiFunction<TStream<T>,Integer,TStream<R>> pipeline) {
+      Objects.requireNonNull(stream, "stream");
+      if (width < 1)
+        throw new IllegalArgumentException("width");
+      Objects.requireNonNull(pipeline, "pipeline");
+      
+      LoadBalancedSplitter<T> splitter = new LoadBalancedSplitter<>(width);
+      
+      // Add the splitter
+      List<TStream<T>> channels = stream.split(width, splitter);
+      for (int ch = 0; ch < width; ch++)
+        channels.set(ch, channels.get(ch).tag("parallel.split-ch"+ch));
+      
+      // Add concurrency (isolation) to the channels
+      int chBufferSize = 1; // 1 is enough with load balanced impl
+      for (int ch = 0; ch < width; ch++)
+        channels.set(ch, isolate(channels.get(ch), chBufferSize).tag("parallel.isolated-ch"+ch));
+      
+      // Add pipelines
+      List<TStream<R>> results = new ArrayList<>(width);
+      for (int ch = 0; ch < width; ch++) {
+        final int finalCh = ch;
+        results.add(pipeline.apply(channels.get(ch), ch)
+            .tag("parallel-ch"+ch)
+            .peek(tuple -> splitter.channelDone(finalCh)));
+      }
+      
+      // Add the Union
+      TStream<R> result =  results.get(0).union(new HashSet<>(results)).tag("parallel.union");
+      
+      // Add the isolate - keep channel threads to just their pipeline processing
+      return isolate(result, width);
+    }
     
     /**
      * A round-robin splitter ToIntFunction
