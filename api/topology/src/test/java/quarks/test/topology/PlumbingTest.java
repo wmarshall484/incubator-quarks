@@ -24,6 +24,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -556,6 +557,73 @@ public abstract class PlumbingTest extends TopologyAbstractTest {
         else
           assertTrue("expMinSerialDuration="+expMinSerialDuration+" actDuration="+actDuration, 
               actDuration < 0.5 * expMinSerialDuration);
+    }
+    
+    @Test
+    public void testParallelBalanced() throws Exception {
+        // May need tweak validation sensitivity or add this:
+        // Timing variances on shared machines can cause this test to fail
+        // assumeTrue(!Boolean.getBoolean("quarks.build.ci"));
+
+        Topology top = newTopology("testParallelBalanced");
+        
+        // arrange for even channels to process ~2x as many as odd channels.
+        BiFunction<TStream<Integer>,Integer,TStream<JsonObject>> pipeline = 
+            (stream,ch) -> {
+              long delay = (ch % 2 == 0) ? 10 : 20; 
+              return stream.map(fakeAnalytic(ch, delay, TimeUnit.MILLISECONDS));
+            };
+        
+        int width = 4;
+        int tupCnt = 60;
+        Integer[] resultTuples = new Integer[tupCnt];
+        for (int i = 0; i < tupCnt; i++)
+          resultTuples[i] = i;
+        AtomicInteger[] chCounts = new AtomicInteger[width];
+        for (int ch = 0; ch < width; ch++)
+          chCounts[ch] = new AtomicInteger();
+        
+        TStream<Integer> values = top.of(resultTuples);
+        
+        TStream<JsonObject> result = PlumbingStreams.parallelBalanced(values, width, pipeline).tag("result");
+        TStream<Integer> result2 = result.map(jo -> {
+            int r = jo.getAsJsonPrimitive("result").getAsInt();
+            int ch = jo.getAsJsonPrimitive("channel").getAsInt();
+            chCounts[ch].incrementAndGet();
+            return r;
+          });
+        
+        Condition<Long> count = top.getTester().tupleCount(result, resultTuples.length);
+        Condition<List<Integer>> contents = top.getTester().contentsUnordered(result2, resultTuples);
+        
+        long begin = System.currentTimeMillis();
+        complete(top, count);
+        long end = System.currentTimeMillis();
+        
+        assertTrue(contents.getResult().toString(), contents.valid());
+        
+        long actDuration = end - begin;
+        long expMinSerialDuration = resultTuples.length * 20;
+        long expMinDuration = (resultTuples.length / width) * 20;
+        
+        System.out.println(top.getName()+" expMinDuration="+expMinDuration+" actDuration="+actDuration+" expMinSerialDuration="+expMinSerialDuration);
+        System.out.println(top.getName()+" chCounts="+Arrays.asList(chCounts));
+        
+        // a gross level performance check w/parallel channels
+        assertTrue("expMinSerialDuration="+expMinSerialDuration+" actDuration="+actDuration, 
+            actDuration < 0.5 * expMinSerialDuration);
+        
+        int evenChCounts = 0;
+        int oddChCounts = 0;
+        for (int ch = 0; ch < width; ch++) {
+          assertTrue(chCounts[ch].get() != 0);
+          if (ch % 2 == 0)
+            evenChCounts += chCounts[ch].get();
+          else
+            oddChCounts += chCounts[ch].get();
+        }
+        assertTrue(oddChCounts > 0.4 * evenChCounts
+            && oddChCounts < 0.6 * evenChCounts);
     }
     
 //    @Test
