@@ -366,8 +366,11 @@ public abstract class PlumbingTest extends TopologyAbstractTest {
         System.out.println(top.getName()+" expMinDuration="+expMinDuration+" actDuration="+actDuration+" expMinSerialDuration="+expMinSerialDuration);
         
         // a gross level performance check w/concurrent channels
-        assertTrue("expMinSerialDuration="+expMinSerialDuration+" actDuration="+actDuration, 
-            actDuration < 0.5 * expMinSerialDuration);
+        if (Boolean.getBoolean("quarks.build.ci"))
+          System.err.println(top.getName()+" WARNING skipped performance check on 'ci' system use");
+        else
+          assertTrue("expMinSerialDuration="+expMinSerialDuration+" actDuration="+actDuration, 
+              actDuration < 0.5 * expMinSerialDuration);
     }
     
     @Test
@@ -418,8 +421,11 @@ public abstract class PlumbingTest extends TopologyAbstractTest {
         System.out.println(top.getName()+" expMinDuration="+expMinDuration+" actDuration="+actDuration+" expMinSerialDuration="+expMinSerialDuration);
         
         // a gross level performance check w/concurrent channels
-        assertTrue("expMinSerialDuration="+expMinSerialDuration+" actDuration="+actDuration, 
-            actDuration < 0.5 * expMinSerialDuration);
+        if (Boolean.getBoolean("quarks.build.ci"))
+          System.err.println(top.getName()+" WARNING skipped performance check on 'ci' system use");
+        else
+          assertTrue("expMinSerialDuration="+expMinSerialDuration+" actDuration="+actDuration, 
+              actDuration < 0.5 * expMinSerialDuration);
     }
 
     private BiFunction<Integer,Integer,JsonObject> fakeParallelAnalytic(long period, TimeUnit unit) {
@@ -502,8 +508,11 @@ public abstract class PlumbingTest extends TopologyAbstractTest {
         System.out.println(top.getName()+" expMinDuration="+expMinDuration+" actDuration="+actDuration+" expMinSerialDuration="+expMinSerialDuration);
         
         // a gross level performance check w/parallel channels
-        assertTrue("expMinSerialDuration="+expMinSerialDuration+" actDuration="+actDuration, 
-            actDuration < 0.5 * expMinSerialDuration);
+        if (Boolean.getBoolean("quarks.build.ci"))
+          System.err.println(top.getName()+" WARNING skipped performance check on 'ci' system use");
+        else
+          assertTrue("expMinSerialDuration="+expMinSerialDuration+" actDuration="+actDuration, 
+              actDuration < 0.5 * expMinSerialDuration);
     }
     
     @Test
@@ -542,8 +551,11 @@ public abstract class PlumbingTest extends TopologyAbstractTest {
         System.out.println(top.getName()+" expMinDuration="+expMinDuration+" actDuration="+actDuration+" expMinSerialDuration="+expMinSerialDuration);
         
         // a gross level performance check w/parallel channels
-        assertTrue("expMinSerialDuration="+expMinSerialDuration+" actDuration="+actDuration, 
-            actDuration < 0.5 * expMinSerialDuration);
+        if (Boolean.getBoolean("quarks.build.ci"))
+          System.err.println(top.getName()+" WARNING skipped performance check on 'ci' system use");
+        else
+          assertTrue("expMinSerialDuration="+expMinSerialDuration+" actDuration="+actDuration, 
+              actDuration < 0.5 * expMinSerialDuration);
     }
     
 //    @Test
