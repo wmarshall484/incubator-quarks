@@ -24,6 +24,9 @@ import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -41,6 +44,8 @@ import quarks.execution.services.Controls;
  * a work in progress.
  */
 public class JsonControlService implements ControlService {
+    
+    private static final Logger logger = LoggerFactory.getLogger(ControlService.class);
 
     /**
      * Key for the type of the control MBean in a JSON request.
@@ -112,6 +117,7 @@ public class JsonControlService implements ControlService {
         if (mbeans.containsKey(controlId))
             throw new IllegalStateException();
 
+        logger.trace("Register control id: {}", controlId);
         mbeans.put(controlId, new ControlMBean<T>(controlInterface, control));
         return controlId;
     }
@@ -121,6 +127,7 @@ public class JsonControlService implements ControlService {
      */
     @Override
     public synchronized void unregister(String controlId) {
+        logger.trace("Unegister control id: {}", controlId);
         mbeans.remove(controlId);
     }
 
@@ -135,6 +142,8 @@ public class JsonControlService implements ControlService {
         final String type = request.get(TYPE_KEY).getAsString();
         String alias = request.get(ALIAS_KEY).getAsString();
         final String controlId = getControlId(type, null, alias);
+        
+        logger.trace("Operation - control id: {}", controlId);
 
         ControlMBean<?> mbean;
         synchronized (this) {
@@ -145,6 +154,8 @@ public class JsonControlService implements ControlService {
             return new JsonPrimitive(Boolean.FALSE);
 
         String methodName = request.get(OP_KEY).getAsString();
+        
+        logger.trace("Operation method - control id: {} method: {}", controlId, methodName);
         
         int argumentCount = 0;
         JsonArray args = null;
@@ -159,7 +170,11 @@ public class JsonControlService implements ControlService {
         if (method == null)
             return new JsonPrimitive(Boolean.FALSE);
 
+        logger.trace("Execute operation - control id: {} method: {}", controlId, methodName);
+        
         executeMethod(method, mbean.getControl(), getArguments(method, args));
+        
+        logger.trace("Execute completed - control id: {} method: {}", controlId, methodName);
 
         return new JsonPrimitive(Boolean.TRUE);
     }
