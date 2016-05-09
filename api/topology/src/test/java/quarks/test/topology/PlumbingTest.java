@@ -604,8 +604,6 @@ public abstract class PlumbingTest extends TopologyAbstractTest {
 
     @Test
     public void testGate() throws Exception {
-        // Timing variances on shared machines can cause this test to fail
-        assumeTrue(!Boolean.getBoolean("quarks.build.ci"));
         Topology topology = newTopology("testGate");
 
         TStream<String> raw = topology.strings("a", "b", "c", "d", "e");
@@ -638,8 +636,6 @@ public abstract class PlumbingTest extends TopologyAbstractTest {
 
     @Test
     public void testGateWithLocking() throws Exception {
-        // Timing variances on shared machines can cause this test to fail
-        assumeTrue(!Boolean.getBoolean("quarks.build.ci"));
         Topology topology = newTopology("testGateWithLocking");
 
         TStream<String> raw = topology.strings("a", "b", "c", "d", "e");
