@@ -18,6 +18,8 @@ under the License.
 */
 package quarks.execution.mbeans;
 
+import quarks.execution.Job.Action;
+
 /**
  * Control interface for a job.
  */
@@ -150,4 +152,13 @@ public interface JobMXBean {
      * @return a JSON-formatted string representing the running graph. 
      */
     String graphSnapshot();
+    
+    /**
+     * Initiates an execution state change.
+     * 
+     * @param action which triggers the state change.
+     * @throws IllegalArgumentException if the job is not in an appropriate 
+     *      state for the requested action, or the action is not supported.
+     */
+    void stateChange(Action action);
 }

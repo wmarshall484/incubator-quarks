@@ -21,6 +21,7 @@ package quarks.runtime.etiao.mbeans;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import quarks.execution.Job.Action;
 import quarks.execution.mbeans.JobMXBean;
 import quarks.runtime.etiao.EtiaoJob;
 import quarks.runtime.etiao.graph.model.GraphType;
@@ -68,5 +69,9 @@ public class EtiaoJobBean implements JobMXBean {
     @Override
     public String getLastError() {
         return job.getLastError();
+    }
+    @Override
+    public void stateChange(Action action) {
+        job.stateChange(action);
     }
 }
