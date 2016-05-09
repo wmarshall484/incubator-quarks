@@ -336,8 +336,8 @@ public abstract class PlumbingTest extends TopologyAbstractTest {
             int cnt = 0;
             System.out.println("combiner: "+list);
             for(JsonObject jo : list) {
-              assertEquals(cnt++, jo.getAsJsonPrimitive("channel").getAsInt());
-              sum += jo.getAsJsonPrimitive("result").getAsInt();
+              assertEquals(cnt++, jo.get("channel").getAsInt());
+              sum += jo.get("result").getAsInt();
             }
             return sum;
         };
@@ -391,8 +391,8 @@ public abstract class PlumbingTest extends TopologyAbstractTest {
             int cnt = 0;
             System.out.println("combiner: "+list);
             for(JsonObject jo : list) {
-              assertEquals(cnt++, jo.getAsJsonPrimitive("channel").getAsInt());
-              sum += jo.getAsJsonPrimitive("result").getAsInt();
+              assertEquals(cnt++, jo.get("channel").getAsInt());
+              sum += jo.get("result").getAsInt();
             }
             return sum;
         };
@@ -488,8 +488,8 @@ public abstract class PlumbingTest extends TopologyAbstractTest {
         
         TStream<JsonObject> result = PlumbingStreams.parallelMap(values, width, splitter, mapper).tag("result");
         TStream<Integer> result2 = result.map(jo -> {
-            int r = jo.getAsJsonPrimitive("result").getAsInt();
-            assertEquals(splitter.applyAsInt(r), jo.getAsJsonPrimitive("channel").getAsInt());
+            int r = jo.get("result").getAsInt();
+            assertEquals(splitter.applyAsInt(r), jo.get("channel").getAsInt());
             return r;
           });
         
@@ -531,8 +531,8 @@ public abstract class PlumbingTest extends TopologyAbstractTest {
         
         TStream<JsonObject> result = PlumbingStreams.parallel(values, width, splitter, pipeline).tag("result");
         TStream<Integer> result2 = result.map(jo -> {
-            int r = jo.getAsJsonPrimitive("result").getAsInt();
-            assertEquals(splitter.applyAsInt(r), jo.getAsJsonPrimitive("channel").getAsInt());
+            int r = jo.get("result").getAsInt();
+            assertEquals(splitter.applyAsInt(r), jo.get("channel").getAsInt());
             return r;
           });
         
@@ -568,9 +568,9 @@ public abstract class PlumbingTest extends TopologyAbstractTest {
         Topology top = newTopology("testParallelBalanced");
         
         // arrange for even channels to process ~2x as many as odd channels.
-        BiFunction<TStream<Integer>,Integer,TStream<JsonObject>> pipeline = 
+        BiFunction<TStream<Integer>,Integer,TStream<JsonObject>> pipeline =
             (stream,ch) -> {
-              long delay = (ch % 2 == 0) ? 10 : 20; 
+              long delay = (ch % 2 == 0) ? 10 : 20;
               return stream.map(fakeAnalytic(ch, delay, TimeUnit.MILLISECONDS));
             };
         
@@ -587,8 +587,8 @@ public abstract class PlumbingTest extends TopologyAbstractTest {
         
         TStream<JsonObject> result = PlumbingStreams.parallelBalanced(values, width, pipeline).tag("result");
         TStream<Integer> result2 = result.map(jo -> {
-            int r = jo.getAsJsonPrimitive("result").getAsInt();
-            int ch = jo.getAsJsonPrimitive("channel").getAsInt();
+            int r = jo.get("result").getAsInt();
+            int ch = jo.get("channel").getAsInt();
             chCounts[ch].incrementAndGet();
             return r;
           });
@@ -638,7 +638,7 @@ public abstract class PlumbingTest extends TopologyAbstractTest {
 //        
 //        int width = 5;
 //        // ToIntFunction<Integer> splitter = tuple -> tuple % width;
-//        ToIntFunction<JsonObject> splitter = jo -> jo.getAsJsonPrimitive("result").getAsInt() % width;
+//        ToIntFunction<JsonObject> splitter = jo -> jo.get("result").getAsInt() % width;
 //        
 //        Integer[] resultTuples = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
 //        TStream<Integer> values = top.of(resultTuples);
@@ -653,15 +653,15 @@ public abstract class PlumbingTest extends TopologyAbstractTest {
 //        TStream<JsonObject> result = PlumbingStreams.parallel(inStream, width, splitter, pipeline).tag("result");
 //        TStream<Integer> result2 = result.map(jo -> {
 //            jo.addProperty("exitParallelMsec", System.currentTimeMillis());
-//            System.out.println("ch="+jo.getAsJsonPrimitive("channel").getAsInt()
+//            System.out.println("ch="+jo.get("channel").getAsInt()
 //                +" endPipeline-startPipeline="
-//                  +(jo.getAsJsonPrimitive("endPipelineMsec").getAsLong()
-//                    - jo.getAsJsonPrimitive("startPipelineMsec").getAsLong())
+//                  +(jo.get("endPipelineMsec").getAsLong()
+//                    - jo.get("startPipelineMsec").getAsLong())
 //                +" exitParallel-startPipeine="
-//                  +(jo.getAsJsonPrimitive("exitParallelMsec").getAsLong()
-//                      - jo.getAsJsonPrimitive("startPipelineMsec").getAsLong()));
-//            int r = jo.getAsJsonPrimitive("result").getAsInt();
-//            assertEquals(splitter.applyAsInt(jo), jo.getAsJsonPrimitive("channel").getAsInt());
+//                  +(jo.get("exitParallelMsec").getAsLong()
+//                      - jo.get("startPipelineMsec").getAsLong()));
+//            int r = jo.get("result").getAsInt();
+//            assertEquals(splitter.applyAsInt(jo), jo.get("channel").getAsInt());
 //            return r;
 //          });
 //        
