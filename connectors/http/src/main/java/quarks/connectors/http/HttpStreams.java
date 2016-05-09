@@ -45,7 +45,7 @@ public class HttpStreams {
      * 
      * Method specifically works with JsonObjects. For each JsonObject in the stream, 
      * HTTP GET request is executed on provided uri. As a result, Response is added to
-     * response TStream.
+     * the response TStream.
      * <br>
      * 
      * Sample usage:<br>
@@ -62,9 +62,9 @@ public class HttpStreams {
      *                     + t.get("b").getAsString());
      * }
      * </pre>
-     * 
-     * See HttpTest for example.
-     * 
+     * <br>
+     * See <i>HttpTest</i> for example.
+     * <br>
      * @param stream - JsonObject TStream.
      * @param clientCreator - CloseableHttpClient supplier preferably created using {@link HttpClients}
      * @param uri - URI function which returns URI string
@@ -86,15 +86,15 @@ public class HttpStreams {
      * Method specifically works with JsonObjects. For each JsonObject in the stream, 
      * HTTP POST request is executed on provided uri. Request body is filled using
      * HttpEntity provided by body function. As a result, Response is added to
-     * response TStream.<br>
+     * the response TStream.<br>
      * 
      * Sample usage:<br>
      * 
      * <pre>
      * {@code
-     *     JsonObject request1 = new JsonObject();
-     *     request1.addProperty("a", "abc");
-     *     request1.addProperty("b", "42");
+     *     JsonObject request = new JsonObject();
+     *     request.addProperty("a", "abc");
+     *     request.addProperty("b", "42");
      *     TStream<JsonObject> rc = HttpStreams.postJson(
      *         topology.collection(Arrays.asList(request1)),
      *         HttpClients::noAuthentication,
@@ -103,9 +103,9 @@ public class HttpStreams {
      *     );
      * }
      * </pre>
-     * 
+     * <br>
      * See HttpTest for example.
-     * 
+     * <br>
      * @param stream - JsonObject TStream.
      * @param clientCreator - CloseableHttpClient supplier preferably created using {@link HttpClients}
      * @param uri - URI function which returns URI string

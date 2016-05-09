@@ -181,14 +181,14 @@ public class HttpTest {
 
         final String url = "http://httpbin.org/post?";
 
-        JsonObject request1 = new JsonObject();
-        request1.addProperty("a", "abc");
-        request1.addProperty("b", "42");
+        JsonObject request = new JsonObject();
+        request.addProperty("a", "abc");
+        request.addProperty("b", 42);
 
         TStream<JsonObject> rc = HttpStreams.postJson(
-                topology.collection(Arrays.asList(request1)),
+                topology.collection(Arrays.asList(request)),
                 HttpClients::noAuthentication, t -> url,
-                t -> new ByteArrayEntity(request1.toString().getBytes()));
+                t -> new ByteArrayEntity(request.toString().getBytes()));
 
         TStream<Boolean> resStream = rc.map(j -> {
             assertTrue(j.has("request"));
@@ -199,22 +199,14 @@ public class HttpTest {
             assertTrue(res.has("status"));
             assertTrue(res.has("entity"));
 
-            assertEquals(req,
-                    res.getAsJsonObject("entity").getAsJsonObject("json"));
+            assertEquals(req, res.getAsJsonObject("entity").getAsJsonObject("json"));
             return true;
         });
 
         rc.print();
-
         Tester tester = topology.getTester();
-
-        Condition<List<Boolean>> endCondition = tester.streamContents(resStream,
-                true);
-
-        tester.complete(ep, new JsonObject(), endCondition, 10,
-                TimeUnit.SECONDS);
-
+        Condition<List<Boolean>> endCondition = tester.streamContents(resStream, true);
+        tester.complete(ep, new JsonObject(), endCondition, 10, TimeUnit.SECONDS);
         assertTrue(endCondition.getResult().toString(), endCondition.valid());
     }
-
 }
