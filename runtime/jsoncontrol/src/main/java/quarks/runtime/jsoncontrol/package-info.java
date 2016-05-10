@@ -16,11 +16,10 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 */
-package quarks.runtime.jsoncontrol;
 
 /**
  * Control service that takes a Json message and invokes
- * an action on a control service MBean.
+ * an operation on a control service MBean.
  * 
  * <H3>Operations</H3>
  * A JSON object passed to {@link quarks.runtime.jsoncontrol.JsonControlService#controlRequest(com.google.gson.JsonObject) controlRequest} with these name/value pairs is
@@ -32,4 +31,7 @@ package quarks.runtime.jsoncontrol;
  * <LI>{@code op=}<em>name</em></LI>
  * <LI>{@code arguments=}<em>optional list of arguments</em></LI>
  * </UL>
+ * 
  */
+
+package quarks.runtime.jsoncontrol;
