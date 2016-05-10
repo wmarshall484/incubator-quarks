@@ -21,6 +21,7 @@ package quarks.runtime.etiao.mbeans;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import quarks.execution.Job;
 import quarks.execution.Job.Action;
 import quarks.execution.mbeans.JobMXBean;
 import quarks.runtime.etiao.EtiaoJob;
@@ -46,13 +47,13 @@ public class EtiaoJobBean implements JobMXBean {
     }
 
     @Override
-    public State getCurrentState() {
-        return State.valueOf(job.getCurrentState().name());
+    public Job.State getCurrentState() {
+        return job.getCurrentState();
     }
 
     @Override
-    public State getNextState() {
-        return State.valueOf(job.getNextState().name());
+    public Job.State getNextState() {
+        return job.getNextState();
     }
 
     @Override
@@ -62,14 +63,15 @@ public class EtiaoJobBean implements JobMXBean {
     }
 
     @Override
-    public Health getHealth() {
-        return Health.fromString(job.getHealth().name());
+    public Job.Health getHealth() {
+        return job.getHealth();
     }
 
     @Override
     public String getLastError() {
         return job.getLastError();
     }
+
     @Override
     public void stateChange(Action action) {
         job.stateChange(action);

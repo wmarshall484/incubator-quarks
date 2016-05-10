@@ -18,7 +18,10 @@ under the License.
 */
 package quarks.execution.mbeans;
 
+
+import quarks.execution.Job;
 import quarks.execution.Job.Action;
+
 
 /**
  * Control interface for a job.
@@ -29,59 +32,6 @@ public interface JobMXBean {
      * The value is {@value} 
      */
     String TYPE = "job";
-
-    /**
-     * Enumeration for the current status of the job.
-     */
-    enum State {  
-        /** Initial state, the graph nodes are not yet initialized. */
-        CONSTRUCTED, 
-        /** All the graph nodes have been initialized. */
-        INITIALIZED,
-        /** All the graph nodes are processing data. */
-        RUNNING,
-        /** All the graph nodes are paused. */
-        PAUSED, 
-        /** All the graph nodes are closed. */
-        CLOSED;
-    }
-    
-    /**
-     * Enumeration for the current job health indicator.
-     */
-    enum Health {  
-        /** 
-         * All graph nodes in the job are healthy.
-         */
-        HEALTHY,
-        /** 
-         * The execution of at least one graph node in the job has stopped
-         * because of an abnormal condition.
-         */
-        UNHEALTHY;
-        
-        /**
-         * Converts from a string representation of a job health to the corresponding enumeration value.
-         * 
-         * @param health specifies a job health string value.
-         * 
-         * @return the corresponding {@code Health} enumeration value.
-         * 
-         * @throws IllegalArgumentException if the input string does not map to an enumeration value.
-         * @throws NullPointerException if the input value is null.
-         */
-        static public Health fromString(String health) {
-            if (health ==  null) {
-                throw new NullPointerException("health");  
-            }
-            for (Health value : Health.values()) {
-                if (value.name().equals(health)) {
-                    return value;
-                }
-            }
-            throw new IllegalArgumentException(health);
-        }
-    }
 
     /**
      * Returns the identifier of the job.
@@ -102,7 +52,7 @@ public interface JobMXBean {
      *
      * @return the current state.
      */
-    State getCurrentState();
+    Job.State getCurrentState();
 
     /**
      * Retrieves the next execution state when the job makes a state 
@@ -110,14 +60,14 @@ public interface JobMXBean {
      *
      * @return the destination state while in a state transition.
      */
-    State getNextState();
+    Job.State getNextState();
 
     /**
      * Returns the summarized health indicator of the job.  
      * 
      * @return the summarized Job health.
      */
-    Health getHealth();
+    Job.Health getHealth();
 
     /**
      * Returns the last error message caught by the current job execution.  
@@ -152,7 +102,7 @@ public interface JobMXBean {
      * @return a JSON-formatted string representing the running graph. 
      */
     String graphSnapshot();
-    
+
     /**
      * Initiates an execution state change.
      * 
