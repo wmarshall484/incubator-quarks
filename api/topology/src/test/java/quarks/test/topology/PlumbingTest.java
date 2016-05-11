@@ -1,4 +1,4 @@
-//*
+/*
 Licensed to the Apache Software Foundation (ASF) under one
 or more contributor license agreements.  See the NOTICE file
 distributed with this work for additional information
@@ -20,7 +20,6 @@ package quarks.test.topology;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
@@ -782,8 +781,8 @@ public abstract class PlumbingTest extends TopologyAbstractTest {
         assertEquals(1, samples.size());
         sample = samples.get(0);
         assertEquals(100, sample.tuple().intValue());
-        assertNotEquals(0, sample.timestamp());
-        assertNotEquals(0, sample.nanoTime());
+        assertTrue(sample.timestamp() != 0);
+        assertTrue(sample.nanoTime() != 0);
         assertEquals(0, ss.getSampleCount());
         assertEquals(0, ss.getSamples().size());
         
@@ -793,7 +792,7 @@ public abstract class PlumbingTest extends TopologyAbstractTest {
         assertEquals(1, ss.getSampleCount());
         samples = ss.getSamples();
         assertEquals(101, samples.get(0).tuple().intValue());
-        assertNotEquals(samples, savedSamples);
+        assertTrue(samples != savedSamples);
         assertEquals(0, ss.getSampleCount());
         assertEquals(0, ss.getSamples().size());
         
@@ -967,7 +966,7 @@ public abstract class PlumbingTest extends TopologyAbstractTest {
       assertNotNull(alias1Name);
       String alias2Name = StreamScopeRegistry.nameByStreamAlias("alias2");
       assertNotNull(alias2Name);
-      assertNotEquals(alias1Name, alias2Name);
+      assertFalse(alias1Name.equals(alias2Name));
       String alias1 = StreamScopeRegistry.streamAliasFromName(alias1Name);
       assertEquals("alias1", alias1);
       
@@ -975,12 +974,12 @@ public abstract class PlumbingTest extends TopologyAbstractTest {
       assertNotNull(id1Name);
       String id2Name = StreamScopeRegistry.nameByStreamId("id2");
       assertNotNull(id2Name);
-      assertNotEquals(id1Name, id2Name);
+      assertFalse(id1Name.equals(id2Name));
       String id1 = StreamScopeRegistry.streamIdFromName(id1Name);
       assertEquals("id1", id1);
 
-      assertNotEquals(StreamScopeRegistry.nameByStreamAlias("1"),
-                      StreamScopeRegistry.nameByStreamId("1"));
+      assertFalse(StreamScopeRegistry.nameByStreamAlias("1")
+          .equals(StreamScopeRegistry.nameByStreamId("1")));
       
       // ---------- register
       rgy.register(alias1Name, ss1);

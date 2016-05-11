@@ -18,6 +18,7 @@ under the License.
 */
 package quarks.oplet.plumbing;
 
+import quarks.function.Consumer;
 import quarks.oplet.functional.Peek;
 
 /**
@@ -36,7 +37,7 @@ public class StreamScope<T> extends Peek<T> {
    * Create a new instance.
    * @param streamScope the consumer function
    */
-  public StreamScope(quarks.topology.plumbing.StreamScope<T> streamScope) {
+  public StreamScope(Consumer<T> streamScope) {
     super(streamScope);
   }
     

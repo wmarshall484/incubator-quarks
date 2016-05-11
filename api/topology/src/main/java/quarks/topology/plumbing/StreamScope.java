@@ -74,7 +74,7 @@ public class StreamScope<T> implements Consumer<T> {
     /**
      * Capture time in msec since the epoch.
      * @return the timestamp
-     * @see System#currentTimeMillis();
+     * @see System#currentTimeMillis()
      */
     public long timestamp() {
       return ts;
