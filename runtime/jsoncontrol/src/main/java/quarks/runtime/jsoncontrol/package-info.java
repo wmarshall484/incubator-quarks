@@ -24,14 +24,16 @@ under the License.
  * <H3>Operations</H3>
  * A JSON object passed to {@link quarks.runtime.jsoncontrol.JsonControlService#controlRequest(com.google.gson.JsonObject) controlRequest} with these name/value pairs is
  * handled as an operation resulting in a method call to a
- * void method on a control service MBean interface.
+ * void method on a control service MBean interface. 
  * <UL>
- * <LI>{@code type=}<em>type</em></LI>
- * <LI>{@code alias=}<em>alias</em></LI>
- * <LI>{@code op=}<em>name</em></LI>
- * <LI>{@code arguments=}<em>optional list of arguments</em></LI>
+ * <LI>{@code type=}<em>type</em> - MBean type.</LI>
+ * <LI>{@code alias=}<em>alias - Alias of the MBean.</em></LI>
+ * <LI>{@code op=}<em>name</em> - Name of the operation to invoke, this is the method name on the MBean.</LI>
+ * <LI>{@code arguments=}<em>optional list of arguments</em> - Arguments passed to the operation (method).</LI>
  * </UL>
- * 
+ * The MBean must be uniquely identified through
+ * its <em>type</em> and <em>alias</em> and previously registered using 
+ * {@link quarks.execution.services.ControlService#registerControl(String, String, String, Class, Object) registerControl()}.
  */
 
 package quarks.runtime.jsoncontrol;
