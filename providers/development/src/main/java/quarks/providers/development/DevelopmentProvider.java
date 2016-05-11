@@ -30,6 +30,7 @@ import quarks.execution.Job;
 import quarks.execution.services.ControlService;
 import quarks.graph.Connector;
 import quarks.graph.Edge;
+import quarks.graph.Vertex;
 import quarks.metrics.Metrics;
 import quarks.metrics.MetricsSetup;
 import quarks.metrics.oplets.CounterOp;
@@ -38,6 +39,8 @@ import quarks.oplet.core.Peek;
 import quarks.providers.direct.DirectProvider;
 import quarks.runtime.jmxcontrol.JMXControlService;
 import quarks.topology.Topology;
+import quarks.topology.plumbing.StreamScope;
+import quarks.topology.plumbing.StreamScopeRegistry;
 
 /**
  * Provider intended for development.
@@ -78,6 +81,9 @@ public class DevelopmentProvider extends DirectProvider {
         
         getServices().addService(ControlService.class,
                 new JMXControlService(JMX_DOMAIN, new Hashtable<>()));
+        
+        getServices().addService(StreamScopeRegistry.class,
+                new StreamScopeRegistry());
 
         HttpServer server = HttpServer.getInstance();
         getServices().addService(HttpServer.class, server);   
@@ -87,6 +93,7 @@ public class DevelopmentProvider extends DirectProvider {
     @Override
     public Future<Job> submit(Topology topology, JsonObject config) {
         Metrics.counter(topology);
+        addStreamScopes(topology);
         duplicateTags(topology);
         return super.submit(topology, config);
     }
@@ -131,5 +138,35 @@ public class DevelopmentProvider extends DirectProvider {
       for (Connector<?> c : e.getTarget().getConnectors()) {
         c.tag(ta);
       }
+    }
+
+    /**
+     * Add StreamScope instances to the topology
+     * @param t the Topology
+     */
+    private void addStreamScopes(Topology t) {
+      StreamScopeRegistry rgy = (StreamScopeRegistry) 
+          t.getRuntimeServiceSupplier().get()
+            .getService(StreamScopeRegistry.class);
+      if (rgy == null)
+        return;
+
+      t.graph().peekAll( 
+          () -> {
+              StreamScope<?> streamScope = new StreamScope<>();
+              Peek<?> peekOp = new quarks.oplet.plumbing.StreamScope<>(streamScope);
+              registerStreamScope(rgy, peekOp, streamScope);
+              return peekOp;
+            },
+          (Vertex<?, ?, ?> v) -> !(v.getInstance() instanceof quarks.oplet.core.FanOut));
+    }
+    
+    private int hackCount = 0;  // TODO temp hack to enable some test development
+    private void registerStreamScope(StreamScopeRegistry rgy, Peek<?> peekOp, StreamScope<?> streamScope) {
+      hackCount++;
+      String id = "oplet-"+ hackCount;  // TODO get from peekOp's source oport  <opletId>.oport.<n>
+      String alias = "streamAlias-"+ hackCount;  //  TODO get from peekOp's source oport context
+      rgy.register(StreamScopeRegistry.nameByStreamAlias(alias), streamScope);
+      rgy.register(StreamScopeRegistry.nameByStreamId(id), streamScope);
     }
 }
