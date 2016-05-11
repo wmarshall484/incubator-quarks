@@ -39,9 +39,12 @@ import quarks.execution.services.Controls;
 
 /**
  * Control service that accepts control instructions as JSON objects.
+ * <BR>
+ * A JSON object representing a control request can be passed
+ * to {@link #controlRequest(JsonObject)} to invoke a control
+ * operation (method) on a registered MBean.
  * 
- * Currently just supports operations with no arguments as
- * a work in progress.
+ *  @see quarks.runtime.jsoncontrol Format of control request operation
  */
 public class JsonControlService implements ControlService {
     

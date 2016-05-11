@@ -63,10 +63,6 @@ import quarks.topology.services.ApplicationService;
  * </UL>
  * System applications provide this functionality:
  * <UL>
- * <LI>
- * </LI>
- * </UL>
- * <UL>
  * <LI>Single connection to the message hub using an {@code IotDevice}
  * using {@link IotDevicePubSub}.
  * Applications using this provider that want to connect
