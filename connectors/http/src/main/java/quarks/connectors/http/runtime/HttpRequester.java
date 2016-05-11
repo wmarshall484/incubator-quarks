@@ -99,6 +99,7 @@ public class HttpRequester<T,R> implements Function<T,R>{
         case HttpPut.METHOD_NAME:
             request = new HttpPut(uri);
             break;
+            
         default:
             throw new IllegalArgumentException();
         }

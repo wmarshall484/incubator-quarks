@@ -21,8 +21,11 @@ package quarks.connectors.http;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 
 import com.google.gson.JsonObject;
@@ -31,6 +34,7 @@ import quarks.connectors.http.runtime.HttpRequester;
 import quarks.function.BiFunction;
 import quarks.function.Function;
 import quarks.function.Supplier;
+import quarks.function.UnaryOperator;
 import quarks.topology.TStream;
 
 
@@ -52,6 +56,7 @@ public class HttpStreams {
      * 
      * <pre>
      * {@code
+     *     final String url = "http://httpbin.org/get?";
      *     JsonObject request1 = new JsonObject();
      *     request1.addProperty("a", "abc");
      *     request1.addProperty("b", "42");
@@ -80,6 +85,14 @@ public class HttpStreams {
             t -> HttpGet.METHOD_NAME, uri, HttpResponders.json());
     }
     
+    public static TStream<JsonObject> deleteJson(TStream<JsonObject> stream,
+            Supplier<CloseableHttpClient> clientCreator,
+            Function<JsonObject,String> uri) {
+        
+        return HttpStreams.<JsonObject,JsonObject>requests(stream, clientCreator,
+            t -> HttpDelete.METHOD_NAME, uri, HttpResponders.json());
+    }
+    
     /**
      * Make an HTTP POST request with JsonObject. <br>
      * 
@@ -92,6 +105,7 @@ public class HttpStreams {
      * 
      * <pre>
      * {@code
+     *     final String url = "http://httpbin.org/post";
      *     JsonObject request = new JsonObject();
      *     request.addProperty("a", "abc");
      *     request.addProperty("b", "42");
@@ -117,10 +131,22 @@ public class HttpStreams {
     public static TStream<JsonObject> postJson(TStream<JsonObject> stream,
             Supplier<CloseableHttpClient> clientCreator,
             Function<JsonObject, String> uri,
-            Function<JsonObject, HttpEntity> body) {
+            UnaryOperator<JsonObject> body) {
 
         return HttpStreams.<JsonObject, JsonObject> requestsWithBody(stream,
-                clientCreator, t -> HttpPost.METHOD_NAME, uri, body,
+                clientCreator, t -> HttpPost.METHOD_NAME, uri, 
+                t -> new ByteArrayEntity(body.apply(t).toString().getBytes()),
+                HttpResponders.json());
+    }
+    
+    public static TStream<JsonObject> putJson(TStream<JsonObject> stream,
+            Supplier<CloseableHttpClient> clientCreator,
+            Function<JsonObject, String> uri,
+            UnaryOperator<JsonObject> body) {
+
+        return HttpStreams.<JsonObject, JsonObject> requestsWithBody(stream,
+                clientCreator, t -> HttpPut.METHOD_NAME, uri, 
+                t -> new ByteArrayEntity(body.apply(t).toString().getBytes()),
                 HttpResponders.json());
     }
     

@@ -25,7 +25,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.ByteArrayEntity;
 import org.junit.Test;
 
@@ -64,6 +67,77 @@ public class HttpTest {
                 HttpResponders.inputOn200());
         
         Tester tester =  topology.getTester();
+        
+        Condition<List<String>> endCondition = tester.streamContents(rc, url);
+        
+        tester.complete(ep, new JsonObject(), endCondition, 10, TimeUnit.SECONDS);
+        
+        assertTrue(endCondition.valid());
+    }
+    
+    @Test
+    public void testPost() throws Exception {
+        DirectProvider ep = new DirectProvider();
+        
+        Topology topology = ep.newTopology();
+        
+        String url = "http://httpbin.org/post";
+        
+        TStream<String> rc = HttpStreams.<String, String>requestsWithBody(
+                topology.strings(url), 
+                HttpClients::noAuthentication,
+                t -> HttpPost.METHOD_NAME, 
+                t-> t, t-> new ByteArrayEntity(t.getBytes()),
+                HttpResponders.inputOn200());
+        
+        Tester tester = topology.getTester();
+        
+        Condition<List<String>> endCondition = tester.streamContents(rc, url);
+        
+        tester.complete(ep, new JsonObject(), endCondition, 10, TimeUnit.SECONDS);
+        
+        assertTrue(endCondition.valid());
+    }
+    
+    @Test
+    public void testPut() throws Exception {
+        DirectProvider ep = new DirectProvider();
+        
+        Topology topology = ep.newTopology();
+        
+        String url = "http://httpbin.org/put";
+        
+        TStream<String> rc = HttpStreams.<String, String>requestsWithBody(
+                topology.strings(url), 
+                HttpClients::noAuthentication,
+                t -> HttpPut.METHOD_NAME, 
+                t-> t, t-> new ByteArrayEntity(t.getBytes()),
+                HttpResponders.inputOn200());
+        
+        Tester tester = topology.getTester();
+        
+        Condition<List<String>> endCondition = tester.streamContents(rc, url);
+        
+        tester.complete(ep, new JsonObject(), endCondition, 10, TimeUnit.SECONDS);
+        
+        assertTrue(endCondition.valid());
+    }
+    
+    @Test
+    public void testDelete() throws Exception {
+        DirectProvider ep = new DirectProvider();
+        
+        Topology topology = ep.newTopology();
+        
+        String url = "http://httpbin.org/delete";
+        
+        TStream<String> rc = HttpStreams.<String, String>requests(
+                topology.strings(url), 
+                HttpClients::noAuthentication,
+                t -> HttpDelete.METHOD_NAME, 
+                t-> t, HttpResponders.inputOn200());
+        
+        Tester tester = topology.getTester();
         
         Condition<List<String>> endCondition = tester.streamContents(rc, url);
         
@@ -173,22 +247,104 @@ public class HttpTest {
     }
     
     @Test
+    public void testJsonDelete() throws Exception {
+        
+        DirectProvider ep = new DirectProvider();
+        
+        Topology topology = ep.newTopology();
+        
+        final String url = "http://httpbin.org/delete?";
+        
+        JsonObject request1 = new JsonObject();
+        request1.addProperty("a", "abc");
+        request1.addProperty("b", "42");
+        
+        TStream<JsonObject> rc = HttpStreams.deleteJson(
+                topology.collection(Arrays.asList(request1)),
+                HttpClients::noAuthentication,
+                t-> url + "a=" + t.get("a").getAsString() + "&b=" + t.get("b").getAsString()
+                );
+        
+        TStream<Boolean> resStream = rc.map(j -> {
+            assertTrue(j.has("request"));
+            assertTrue(j.has("response"));
+            JsonObject req = j.getAsJsonObject("request");
+            JsonObject res = j.getAsJsonObject("response");
+            
+            assertTrue(res.has("status"));
+            assertTrue(res.has("entity"));           
+            
+            assertEquals(req, res.getAsJsonObject("entity").getAsJsonObject("args"));
+            return true;
+        }
+        );
+        
+        rc.print();
+         
+        Tester tester =  topology.getTester();
+        
+        Condition<List<Boolean>> endCondition = tester.streamContents(resStream, true);
+        
+        tester.complete(ep,  new JsonObject(), endCondition, 10, TimeUnit.SECONDS);
+        
+        assertTrue(endCondition.getResult().toString(), endCondition.valid());
+    }
+    
+    @Test
     public void testJsonPost() throws Exception {
 
         DirectProvider ep = new DirectProvider();
 
         Topology topology = ep.newTopology();
 
-        final String url = "http://httpbin.org/post?";
+        final String url = "http://httpbin.org/post";
 
         JsonObject request = new JsonObject();
-        request.addProperty("a", "abc");
-        request.addProperty("b", 42);
+        request.addProperty("foo", "abc");
+        request.addProperty("bar", 42);
 
         TStream<JsonObject> rc = HttpStreams.postJson(
                 topology.collection(Arrays.asList(request)),
                 HttpClients::noAuthentication, t -> url,
-                t -> new ByteArrayEntity(request.toString().getBytes()));
+                t -> request);
+
+        TStream<Boolean> resStream = rc.map(j -> {
+            assertTrue(j.has("request"));
+            assertTrue(j.has("response"));
+            JsonObject req = j.getAsJsonObject("request");
+            JsonObject res = j.getAsJsonObject("response");
+
+            assertTrue(res.has("status"));
+            assertTrue(res.has("entity"));
+
+            assertEquals(req, res.getAsJsonObject("entity").getAsJsonObject("json"));
+            return true;
+        });
+
+        rc.print();
+        Tester tester = topology.getTester();
+        Condition<List<Boolean>> endCondition = tester.streamContents(resStream, true);
+        tester.complete(ep, new JsonObject(), endCondition, 10, TimeUnit.SECONDS);
+        assertTrue(endCondition.getResult().toString(), endCondition.valid());
+    }
+
+    @Test
+    public void testJsonPut() throws Exception {
+
+        DirectProvider ep = new DirectProvider();
+
+        Topology topology = ep.newTopology();
+
+        final String url = "http://httpbin.org/put";
+
+        JsonObject request = new JsonObject();
+        request.addProperty("foo", "abc");
+        request.addProperty("bar", 42);
+
+        TStream<JsonObject> rc = HttpStreams.putJson(
+                topology.collection(Arrays.asList(request)),
+                HttpClients::noAuthentication, t -> url,
+                t -> request);
 
         TStream<Boolean> resStream = rc.map(j -> {
             assertTrue(j.has("request"));
