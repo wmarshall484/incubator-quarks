@@ -221,11 +221,12 @@ public class IotfDevice implements IotDevice {
      * on the stream. The JSON object has these keys:
      * <UL>
      * <LI>{@code command} - Command identifier as a String</LI>
-     * <LI>{@code tsms} - IoTF Timestamp of the command in milliseconds since the 1970/1/1 epoch.</LI>
+     * <LI>{@code tsms} - Timestamp of the command in milliseconds since the 1970/1/1 epoch.</LI>
      * <LI>{@code format} - Format of the command as a String</LI>
      * <LI>{@code payload} - Payload of the command
      * <UL>
-     * <LI>If {@code format} is {@code json} then {@code payload} is JSON</LI>
+     * <LI>If {@code format} is {@code json} then {@code payload} is JSON corresponding to the
+     * command specific data.</LI>
      * <LI>Otherwise {@code payload} is String
      * </UL>
      * </LI>
@@ -252,8 +253,15 @@ public class IotfDevice implements IotDevice {
             full.addProperty("format", cmd.getFormat());
             if ("json".equals(cmd.getFormat())) {
                 JsonParser parser = new JsonParser();
-                JsonObject jsonPayload = (JsonObject) parser.parse(cmd.getPayload());
-                full.add("payload", jsonPayload);
+                final JsonObject jsonPayload = (JsonObject) parser.parse(cmd.getPayload());
+                final JsonObject cmdData;
+                if (jsonPayload.has("d")) {
+                    cmdData = jsonPayload.getAsJsonObject("d");
+                } else {
+                    // No data, create an empty object.
+                    cmdData = new JsonObject();
+                }
+                full.add("payload", cmdData);
             } else {
                 full.addProperty("payload", cmd.getPayload());
             }

@@ -24,6 +24,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.gson.JsonObject;
 
 import quarks.execution.DirectSubmitter;
@@ -47,6 +50,8 @@ import quarks.topology.services.ApplicationService;
  *
  */
 public class AppService implements ApplicationService {
+    
+    private static final Logger logger = LoggerFactory.getLogger(ApplicationService.class);
     
 	/**
 	 * Create an register an application service using the default alias {@link ApplicationService#ALIAS}.
@@ -91,6 +96,7 @@ public class AppService implements ApplicationService {
 
     @Override
     public void registerTopology(String applicationName, BiConsumer<Topology, JsonObject> builder) {
+        logger.trace("Register application name: {}", applicationName);
         applications.put(applicationName, builder);
     }
     
