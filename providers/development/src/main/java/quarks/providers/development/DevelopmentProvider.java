@@ -38,9 +38,9 @@ import quarks.oplet.core.FanOut;
 import quarks.oplet.core.Peek;
 import quarks.providers.direct.DirectProvider;
 import quarks.runtime.jmxcontrol.JMXControlService;
+import quarks.streamscope.StreamScope;
+import quarks.streamscope.StreamScopeRegistry;
 import quarks.topology.Topology;
-import quarks.topology.plumbing.StreamScope;
-import quarks.topology.plumbing.StreamScopeRegistry;
 
 /**
  * Provider intended for development.
@@ -92,8 +92,8 @@ public class DevelopmentProvider extends DirectProvider {
 
     @Override
     public Future<Job> submit(Topology topology, JsonObject config) {
-        Metrics.counter(topology);
         addStreamScopes(topology);
+        Metrics.counter(topology);
         duplicateTags(topology);
         return super.submit(topology, config);
     }
@@ -154,7 +154,7 @@ public class DevelopmentProvider extends DirectProvider {
       t.graph().peekAll( 
           () -> {
               StreamScope<?> streamScope = new StreamScope<>();
-              Peek<?> peekOp = new quarks.oplet.plumbing.StreamScope<>(streamScope);
+              Peek<?> peekOp = new quarks.streamscope.oplets.StreamScope<>(streamScope);
               registerStreamScope(rgy, peekOp, streamScope);
               return peekOp;
             },

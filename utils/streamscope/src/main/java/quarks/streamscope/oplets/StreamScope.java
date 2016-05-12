@@ -16,7 +16,7 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 */
-package quarks.oplet.plumbing;
+package quarks.streamscope.oplets;
 
 import quarks.function.Consumer;
 import quarks.oplet.functional.Peek;
