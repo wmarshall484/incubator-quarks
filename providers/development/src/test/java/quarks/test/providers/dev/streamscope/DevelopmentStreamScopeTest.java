@@ -18,8 +18,34 @@ under the License.
 */
 package quarks.test.providers.dev.streamscope;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+
+import org.junit.Test;
+
+import quarks.streamscope.StreamScopeRegistry;
 import quarks.test.providers.dev.DevelopmentTestSetup;
 import quarks.test.streamscope.StreamScopeTest;
+import quarks.topology.Topology;
 
 public class DevelopmentStreamScopeTest extends StreamScopeTest implements DevelopmentTestSetup {
+  
+  @Test
+  public void testServiceRegistered() throws Exception {
+    Topology t1 = newTopology();
+    StreamScopeRegistry rgy1 = t1.getRuntimeServiceSupplier().get()
+        .getService(StreamScopeRegistry.class);
+    assertNotNull(rgy1);
+    
+    Topology t2 = newTopology();
+    StreamScopeRegistry rgy2 = t2.getRuntimeServiceSupplier().get()
+        .getService(StreamScopeRegistry.class);
+    assertNotNull(rgy2);
+    
+    // Yikes... the registry / service is provider-wide, not topo/app/job-specific
+    // assertNotSame(rgy1, rgy2);
+    
+    assertSame(rgy1, rgy2);
+  }
+  
 }
