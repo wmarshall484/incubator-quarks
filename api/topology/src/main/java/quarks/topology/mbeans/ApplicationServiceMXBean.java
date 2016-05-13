@@ -20,6 +20,11 @@ package quarks.topology.mbeans;
 
 import quarks.topology.services.ApplicationService;
 
+/**
+ * Control MBean for the application service.
+ * 
+ * @see ApplicationService
+ */
 public interface ApplicationServiceMXBean {
     
     String TYPE = "appService";

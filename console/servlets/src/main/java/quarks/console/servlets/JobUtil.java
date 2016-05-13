@@ -35,9 +35,13 @@ import javax.management.ObjectInstance;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 final class JobUtil {
 	
 	static MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
+	private static final Logger logger = LoggerFactory.getLogger(JobUtil.class);
 
 	static String getJobsInfo(ObjectName jobObjName) {
         Set<ObjectInstance> jobInstances = mBeanServer.queryMBeans(jobObjName, null);
@@ -55,7 +59,7 @@ final class JobUtil {
 			try {
 				mBeanInfo = mBeanServer.getMBeanInfo(jobObjectName);
 			} catch (IntrospectionException | InstanceNotFoundException | ReflectionException e) {
-			    e.printStackTrace();
+			    logger.error("Exception caught while getting MBeanInfo", e);
 			}
             
             /*
@@ -78,7 +82,7 @@ final class JobUtil {
 					s.append((String)mBeanServer.getAttribute(jobObjectName, attr));
 				} catch (AttributeNotFoundException | InstanceNotFoundException 
 						| MBeanException | ReflectionException e) {
-				    e.printStackTrace();
+				    logger.error("Exception caught while accessing MBean", e);
 				}
 	    		s.append("\",\"");
 	    	}
@@ -109,7 +113,7 @@ final class JobUtil {
 			try {
 				mBeanInfo = mBeanServer.getMBeanInfo(jobObjectName);
 			} catch (IntrospectionException | InstanceNotFoundException | ReflectionException e) {
-			    e.printStackTrace();
+			    logger.error("Exception caught while getting MBeanInfo", e);
 			}
 	    	/*
 	    	 * Now get the graph for the job
@@ -122,13 +126,11 @@ final class JobUtil {
 						gSnapshot = (String) mBeanServer.invoke(jobObjectName, "graphSnapshot",null, null);
 						//System.out.println(gSnapshot);
 					} catch (InstanceNotFoundException | ReflectionException | MBeanException e) {
-					    e.printStackTrace();
+					    logger.error("Exception caught while invoking operation on MBean", e);
 					}
 	    		}
-	    		
 	    	}
 	}
 		return gSnapshot;
 	}
-	
 }
