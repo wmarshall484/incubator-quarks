@@ -59,12 +59,11 @@ public class HttpTest {
         
         String url = "http://httpbin.org/get";
         
+        TStream<String> stream = topology.strings(url);
         TStream<String> rc = HttpStreams.<String,String>requests(
-                topology.strings(url),
-                HttpClients::noAuthentication,
+                stream, HttpClients::noAuthentication,
                 t-> HttpGet.METHOD_NAME,
-                t->t,
-                HttpResponders.inputOn200());
+                t->t, HttpResponders.inputOn200());
         
         Tester tester =  topology.getTester();
         
@@ -83,9 +82,9 @@ public class HttpTest {
         
         String url = "http://httpbin.org/post";
         
+        TStream<String> stream = topology.strings(url);
         TStream<String> rc = HttpStreams.<String, String>requestsWithBody(
-                topology.strings(url), 
-                HttpClients::noAuthentication,
+                stream, HttpClients::noAuthentication,
                 t -> HttpPost.METHOD_NAME, 
                 t-> t, t-> new ByteArrayEntity(t.getBytes()),
                 HttpResponders.inputOn200());
@@ -107,9 +106,9 @@ public class HttpTest {
         
         String url = "http://httpbin.org/put";
         
+        TStream<String> stream = topology.strings(url);
         TStream<String> rc = HttpStreams.<String, String>requestsWithBody(
-                topology.strings(url), 
-                HttpClients::noAuthentication,
+                stream, HttpClients::noAuthentication,
                 t -> HttpPut.METHOD_NAME, 
                 t-> t, t-> new ByteArrayEntity(t.getBytes()),
                 HttpResponders.inputOn200());
@@ -131,9 +130,9 @@ public class HttpTest {
         
         String url = "http://httpbin.org/delete";
         
+        TStream<String> stream = topology.strings(url);
         TStream<String> rc = HttpStreams.<String, String>requests(
-                topology.strings(url), 
-                HttpClients::noAuthentication,
+                stream, HttpClients::noAuthentication,
                 t -> HttpDelete.METHOD_NAME, 
                 t-> t, HttpResponders.inputOn200());
         
@@ -155,9 +154,9 @@ public class HttpTest {
         
         String url = "http://httpbin.org/status/";
         
+        TStream<Integer> stream = topology.collection(Arrays.asList(200, 404, 202));
         TStream<Integer> rc = HttpStreams.<Integer,Integer>requests(
-                topology.collection(Arrays.asList(200, 404, 202)),
-                HttpClients::noAuthentication,
+                stream, HttpClients::noAuthentication,
                 t-> HttpGet.METHOD_NAME,
                 t-> url + Integer.toString(t),
                 (t,resp) -> resp.getStatusLine().getStatusCode());
@@ -185,9 +184,9 @@ public class HttpTest {
         
         String url = "http://httpbin.org/basic-auth/";
         
+        TStream<String> stream = topology.strings("A", "B");
         TStream<Integer> rc = HttpStreams.<String,Integer>requests(
-                topology.strings("A", "B"),
-                () -> HttpClients.basic("usA", "pwdA4"),
+                stream, () -> HttpClients.basic("usA", "pwdA4"),
                 t-> HttpGet.METHOD_NAME,
                 t-> url + "us" + t + "/pwd" + t + "4",
                 (t,resp) -> resp.getStatusLine().getStatusCode());
@@ -215,9 +214,9 @@ public class HttpTest {
         request1.addProperty("a", "abc");
         request1.addProperty("b", "42");
         
+        TStream<JsonObject> stream = topology.collection(Arrays.asList(request1));
         TStream<JsonObject> rc = HttpStreams.getJson(
-                topology.collection(Arrays.asList(request1)),
-                HttpClients::noAuthentication,
+                stream, HttpClients::noAuthentication,
                 t-> url + "a=" + t.get("a").getAsString() + "&b=" + t.get("b").getAsString()
                 );
         
@@ -255,13 +254,13 @@ public class HttpTest {
         
         final String url = "http://httpbin.org/delete?";
         
-        JsonObject request1 = new JsonObject();
-        request1.addProperty("a", "abc");
-        request1.addProperty("b", "42");
+        JsonObject request = new JsonObject();
+        request.addProperty("a", "abc");
+        request.addProperty("b", "42");
         
+        TStream<JsonObject> stream = topology.collection(Arrays.asList(request));
         TStream<JsonObject> rc = HttpStreams.deleteJson(
-                topology.collection(Arrays.asList(request1)),
-                HttpClients::noAuthentication,
+                stream, HttpClients::noAuthentication,
                 t-> url + "a=" + t.get("a").getAsString() + "&b=" + t.get("b").getAsString()
                 );
         
@@ -299,14 +298,14 @@ public class HttpTest {
 
         final String url = "http://httpbin.org/post";
 
-        JsonObject request = new JsonObject();
-        request.addProperty("foo", "abc");
-        request.addProperty("bar", 42);
+        JsonObject body = new JsonObject();
+        body.addProperty("foo", "abc");
+        body.addProperty("bar", 42);
 
+        TStream<JsonObject> stream = topology.collection(Arrays.asList(body));
         TStream<JsonObject> rc = HttpStreams.postJson(
-                topology.collection(Arrays.asList(request)),
-                HttpClients::noAuthentication, t -> url,
-                t -> request);
+                stream, HttpClients::noAuthentication, t -> url,
+                t -> body);
 
         TStream<Boolean> resStream = rc.map(j -> {
             assertTrue(j.has("request"));
@@ -337,14 +336,14 @@ public class HttpTest {
 
         final String url = "http://httpbin.org/put";
 
-        JsonObject request = new JsonObject();
-        request.addProperty("foo", "abc");
-        request.addProperty("bar", 42);
+        JsonObject body = new JsonObject();
+        body.addProperty("foo", "abc");
+        body.addProperty("bar", 42);
 
+        TStream<JsonObject> stream = topology.collection(Arrays.asList(body));
         TStream<JsonObject> rc = HttpStreams.putJson(
-                topology.collection(Arrays.asList(request)),
-                HttpClients::noAuthentication, t -> url,
-                t -> request);
+                stream, HttpClients::noAuthentication, t -> url,
+                t -> body);
 
         TStream<Boolean> resStream = rc.map(j -> {
             assertTrue(j.has("request"));
