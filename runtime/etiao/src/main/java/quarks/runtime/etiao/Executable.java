@@ -38,7 +38,9 @@ import quarks.execution.services.RuntimeServices;
 import quarks.execution.services.ServiceContainer;
 import quarks.function.BiConsumer;
 import quarks.function.Consumer;
+import quarks.graph.Graph;
 import quarks.oplet.Oplet;
+import quarks.runtime.etiao.graph.DirectGraph;
 
 /**
  * Executes and provides runtime services to the executable graph 
@@ -46,7 +48,8 @@ import quarks.oplet.Oplet;
  */
 public class Executable implements RuntimeServices {
 
-    private final EtiaoJob job;
+    private EtiaoJob job; // instantiated when topology is submitted
+    private final ServiceContainer containerServices;
     private final ThreadFactory controlThreads;
     private final BiConsumer<Object, Throwable> completionHandler;
     private final ThreadFactoryTracker userThreads;
@@ -64,21 +67,23 @@ public class Executable implements RuntimeServices {
 
     /**
      * Creates a new {@code Executable} for the specified job.
-     * @param job {@code Job} implementation controlling this {@code Executable}.
+     * @param name the name of the executable
+     * @param containerServices runtime services provided by the container
      */
-    public Executable(EtiaoJob job) {
-        this(job, null);
+    public Executable(String name, ServiceContainer containerServices) {
+        this(name, containerServices, null);
     }
 
     /**
-     * Creates a new {@code Executable} for the specified job, which uses the 
-     * provided thread factory to create new threads for executing the oplets.
+     * Creates a new {@code Executable} for the specified topology name, which uses the 
+     * given thread factory to create new threads for oplet execution.
      * 
-     * @param job {@code Job} implementation controlling this {@code Executable}
+     * @param name the name of the executable
+     * @param containerServices runtime services provided by the container
      * @param threads thread factory for executing the oplets
      */
-    public Executable(EtiaoJob job, ThreadFactory threads) {
-        this.job = job;
+    public Executable(String name, ServiceContainer containerServices,  ThreadFactory threads) {
+        this.containerServices = containerServices;
         this.controlThreads = (threads != null) ? threads : Executors.defaultThreadFactory();
         this.completionHandler = new BiConsumer<Object, Throwable>() {
             private static final long serialVersionUID = 1L;
@@ -93,6 +98,9 @@ public class Executable implements RuntimeServices {
              */
             @Override
             public void accept(Object source, Throwable t) {
+                if (job == null)
+                    throw new IllegalStateException("A job has not been instantiated");
+
                 if (t != null) {
                     Executable.this.setLastError(t);
                     job.updateHealth(t);
@@ -106,7 +114,7 @@ public class Executable implements RuntimeServices {
                 notifyCompleter();
             }  
         };
-        this.userThreads = new ThreadFactoryTracker(job.getName(), controlThreads, completionHandler);
+        this.userThreads = new ThreadFactoryTracker(name, controlThreads, completionHandler);
         this.controlScheduler = TrackingScheduledExecutor.newScheduler(controlThreads, completionHandler);
         this.userScheduler = TrackingScheduledExecutor.newScheduler(userThreads, completionHandler);
     }
@@ -136,7 +144,7 @@ public class Executable implements RuntimeServices {
         if (service != null)
             return service;
                     
-        return job.getContainerServices().getService(serviceClass);
+        return containerServices.getService(serviceClass);
     }
 
     /**
@@ -155,7 +163,7 @@ public class Executable implements RuntimeServices {
     }
 
     /**
-     * Initializes the 
+     * Initializes the invocations.
      */
     public void initialize() {
         jobServices.addService(ThreadFactory.class, getThreads());
@@ -171,7 +179,7 @@ public class Executable implements RuntimeServices {
     }
 
     /**
-     * Shutdown the user scheduler and thread factory, close all 
+     * Shuts down the user scheduler and thread factory, close all 
      * invocations, then shutdown the control scheduler.
      */
     public void close() {
@@ -255,7 +263,13 @@ public class Executable implements RuntimeServices {
     private synchronized void setLastError(Throwable lastError) {
         this.lastError = lastError;
     }
-    
+
+    public Job createJob(Graph graph, String topologyName, String jobName) {
+        this.job = new EtiaoJob((DirectGraph)graph, topologyName, jobName, 
+                containerServices);
+        return this.job;
+    }
+
     /**
      * The thread that is waiting for completion of the Executable's 
      * asynchronous work, may be null.
@@ -267,11 +281,16 @@ public class Executable implements RuntimeServices {
      * Waits for outstanding user threads or tasks.
      * 
      * @throws ExecutionException if the job execution threw an exception.  
-     *      Wraps the latest uncaught Exception thrown by a background activity.
-     * @throws InterruptedException if the current thread was interrupted while waiting
-     * @return true if the {@code Executable} has completed, false if the if the wait timed out.
+     *      Wraps the latest uncaught Exception thrown by a background 
+     *      activity.
+     * @throws InterruptedException if the current thread was interrupted 
+     *      while waiting
+     * @return true if the {@code Executable} has completed, false if the if 
+     *      the wait timed out.
      */
-    final boolean complete(long timeoutMillis) throws InterruptedException, ExecutionException {
+    final boolean complete(long timeoutMillis) 
+            throws InterruptedException, ExecutionException {
+
         long totalWait = timeoutMillis;
         if (totalWait <= 0)
             totalWait = 1000;
