@@ -294,6 +294,12 @@ public class WebSocketClientTest extends ConnectorTestBase {
     
     @Test
     public void testReconnect() throws Exception {
+        /*
+         * It's becomming apparent that the reconnect series of tests
+         * aren't reliable so skip them for ci. See jira QUARKS-122 for
+         * more info.
+         */
+        assumeTrue(!Boolean.getBoolean("quarks.build.ci"));
 
         Topology t = newTopology("testReconnect");
         System.out.println("===== "+t.getName());
@@ -333,6 +339,12 @@ public class WebSocketClientTest extends ConnectorTestBase {
     
     @Test
     public void testReconnectBytes() throws Exception {
+        /*
+         * It's becomming apparent that the reconnect series of tests
+         * aren't reliable so skip them for ci. See jira QUARKS-122 for
+         * more info.
+         */
+        assumeTrue(!Boolean.getBoolean("quarks.build.ci"));
 
         Topology t = newTopology("testReconnectBytes");
         System.out.println("===== "+t.getName());
@@ -495,6 +507,12 @@ public class WebSocketClientTest extends ConnectorTestBase {
     
      @Test
      public void testSslReconnect() throws Exception {
+         /*
+          * It's becomming apparent that the reconnect series of tests
+          * aren't reliable so skip them for ci. See jira QUARKS-122 for
+          * more info.
+          */
+         assumeTrue(!Boolean.getBoolean("quarks.build.ci"));
     
          Topology t = newTopology("testSslReconnect");
          System.out.println("===== "+t.getName());
