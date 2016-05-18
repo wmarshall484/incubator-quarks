@@ -18,6 +18,8 @@ under the License.
 */
 package quarks.test.fvt.iot;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
@@ -29,16 +31,24 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
 import quarks.apps.iot.IotDevicePubSub;
 import quarks.connectors.iot.Commands;
 import quarks.connectors.iot.IotDevice;
 import quarks.connectors.pubsub.PublishSubscribe;
+import quarks.execution.Job;
+import quarks.execution.Job.Action;
+import quarks.execution.mbeans.JobMXBean;
+import quarks.execution.services.ControlService;
 import quarks.providers.iot.IotProvider;
+import quarks.runtime.jsoncontrol.JsonControlService;
 import quarks.test.apps.iot.EchoIotDevice;
 import quarks.topology.TStream;
 import quarks.topology.Topology;
+import quarks.topology.mbeans.ApplicationServiceMXBean;
 import quarks.topology.services.ApplicationService;
 import quarks.topology.tester.Condition;
 
@@ -93,5 +103,72 @@ public class IotProviderTest {
         
         appOneChecker.get();
         assertTrue(appOnecontents.getResult().toString(), appOnecontents.valid());
+    }
+    
+    /**
+     * Basic test we can stop applications
+     */
+    @Test
+    public void testIotProviderCloseApplicationDirect() throws Exception {
+
+        IotProvider provider = new IotProvider(EchoIotDevice::new);
+        
+        assertSame(provider.getApplicationService(),
+                provider.getServices().getService(ApplicationService.class));
+
+        provider.start();
+
+        IotTestApps.registerApplications(provider);
+
+        // Create a Submit AppOne request
+        JsonObject submitAppOne = IotAppServiceTest.newSubmitRequest("AppOne");
+        
+        // Create an application that sends a device event
+        // with the submit job command, and this will be echoed
+        // back as the command that Quarks will detect and pick
+        // up to start the application.
+        Topology submitter = provider.newTopology();
+        TStream<JsonObject> cmds = submitter.of(submitAppOne);
+        IotDevice publishedDevice = IotDevicePubSub.addIotDevice(submitter);
+        publishedDevice.events(cmds, Commands.CONTROL_SERVICE, 0);
+        Job appStarter = provider.submit(submitter).get();
+        
+        // appStarter.stateChange(Action.CLOSE);
+        
+        ControlService cs = provider.getServices().getService(ControlService.class);
+        assertTrue(cs instanceof JsonControlService);
+        JsonControlService jsc = (JsonControlService) cs;
+        
+        JobMXBean jobMbean;      
+        do {
+            Thread.sleep(100);
+            jobMbean = cs.getControl(JobMXBean.TYPE, "AppOne", JobMXBean.class);
+        } while (jobMbean == null);
+        assertEquals("AppOne", jobMbean.getName());
+        
+        // Now close the job
+        JsonObject closeJob = new JsonObject();     
+        closeJob.addProperty(JsonControlService.TYPE_KEY, JobMXBean.TYPE);
+        closeJob.addProperty(JsonControlService.ALIAS_KEY, "AppOne");      
+        JsonArray args = new JsonArray();
+        args.add(new JsonPrimitive(Action.CLOSE.name()));
+        closeJob.addProperty(JsonControlService.OP_KEY, "stateChange");
+        closeJob.add(JsonControlService.ARGS_KEY, args); 
+        
+        assertEquals(Job.State.RUNNING, appStarter.getCurrentState());
+        assertEquals(Job.State.RUNNING, jobMbean.getCurrentState());
+
+        jsc.controlRequest(closeJob);
+              
+        for (int i = 0; i < 30; i++) {
+            Thread.sleep(100);
+            jobMbean = cs.getControl(JobMXBean.TYPE, "AppOne", JobMXBean.class);
+            if (jobMbean == null)
+                break;
+        }
+        
+        // QUARKS-180
+        // assertNull(jobMbean);        
+        // assertEquals(Job.State.CLOSED, appStarter.getCurrentState());
     }
 }
