@@ -55,7 +55,7 @@ public class StreamScope<T> implements Consumer<T> {
    * A captured tuple.
    * <P>
    * The Sample captures the tuple, and the system time and nanoTime
-   * that the tuple was received.
+   * when the tuple was captured.
    * </P>
    *
    * @param <T> Tuple type.
@@ -211,7 +211,7 @@ public class StreamScope<T> implements Consumer<T> {
    * Use {@link TriggerManager#setPaused(boolean)} setPaused} to re-enable capture
    * following a triggered pause.
    * </P><P>
-   * The default configuration is {@code continuous} and not paused.
+   * The default configuration is continuous (by-count==1) and not paused.
    * </P>
    */
   public static class TriggerManager<T> {
@@ -260,18 +260,14 @@ public class StreamScope<T> implements Consumer<T> {
     }
     
     /**
-     * Capture every tuple.
-     */
-    public void setContinuous() {
-      setByPredicate(Functions.alwaysTrue());
-    }
-    
-    /**
      * Capture the first and every nth tuple
      * @param count
      */
-    public void setByCount(int count) {
-      setByPredicate(newByCountPredicate(count));
+    public void setCaptureByCount(int count) {
+      if (count == 1)
+        setCaptureByPredicate(Functions.alwaysTrue());
+      else
+        setCaptureByPredicate(newByCountPredicate(count));
     }
     
     /**
@@ -281,15 +277,15 @@ public class StreamScope<T> implements Consumer<T> {
      * @param elapsed time to delay until next capture
      * @param unit {@link TimeUnit}
      */
-    public void setByTime(long elapsed, TimeUnit unit) {
-      setByPredicate(newByTimePredicate(elapsed, unit));
+    public void setCaptureByTime(long elapsed, TimeUnit unit) {
+      setCaptureByPredicate(newByTimePredicate(elapsed, unit));
     }
     
     /**
      * Capture a tuple if the {@code predicate} test of the tuple returns true.
      * @param predicate
      */
-    public void setByPredicate(Predicate<T> predicate) {
+    public void setCaptureByPredicate(Predicate<T> predicate) {
       Objects.requireNonNull(predicate, "predicate");
       this.predicate = predicate;
     }
@@ -327,6 +323,11 @@ public class StreamScope<T> implements Consumer<T> {
           return false;
         }
       };
+    }
+    
+    @Override
+    public String toString() {
+      return "paused="+paused+" pauseOnPredicate="+pauseOnPredicate+" predicate="+predicate;
     }
 
   }
@@ -409,7 +410,9 @@ public class StreamScope<T> implements Consumer<T> {
 
   @Override
   public String toString() {
-    return "isEnabled="+isEnabled+" bufferMgr="+bufferMgr();
+    return "isEnabled="+isEnabled
+        +" bufferMgr={"+bufferMgr()+"}"
+        +" triggerMgr={"+triggerMgr()+"}";
   }
 }
 

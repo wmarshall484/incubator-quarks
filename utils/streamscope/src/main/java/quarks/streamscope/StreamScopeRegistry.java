@@ -42,41 +42,74 @@ import java.util.Set;
 public class StreamScopeRegistry {
   private final Map<String, StreamScope<?>> byNameMap = new HashMap<>();
   private final Map<StreamScope<?>, List<String>> byStreamScopeMap = new HashMap<>();
+  private static final String JOB_OPLET_FMT = "j[%s].op[%s]";
+  private static final String STREAMID_FMT = JOB_OPLET_FMT+".o[%d]";
+  private static final String ID_PREFIX = "id.";
+  private static final String ALIAS_PREFIX = "alias.";
 
   public StreamScopeRegistry() {
     
   }
-  
-  /** create a registration name for a stream alias */
-  public static String nameByStreamAlias(String alias) {
-    Objects.requireNonNull(alias, "alias");
-    return "alias."+alias;
+
+  /**
+   * Make a streamId for the specified stream.
+   * @param jobId the job id (e.g., "JOB_0")
+   * @param opletId the oplet id (e.g., "OP_2")
+   * @param oport the oplet output port index (0-based)
+   * @return the streamId
+   */
+  public static String mkStreamId(String jobId, String opletId, int oport) {
+    Objects.requireNonNull(jobId, "jobId");
+    Objects.requireNonNull(opletId, "opletId");
+    if (oport < 0)
+      throw new IllegalArgumentException("oport");
+    return String.format(STREAMID_FMT, jobId, opletId, oport);
+  }
+
+  /** create a prefix of a streamId based name */
+  static String mkStreamIdNamePrefix(String jobId, String opletId) {
+    return String.format(ID_PREFIX+JOB_OPLET_FMT, jobId, opletId);
   }
   
-  /** create a registration name for a stream id */
-  public static String nameByStreamId(String id) {
-    Objects.requireNonNull(id, "id");
-    return "id."+id;
+  /** create a registration name for a stream alias */
+  public static String nameForStreamAlias(String alias) {
+    Objects.requireNonNull(alias, "alias");
+    return ALIAS_PREFIX+alias;
+  }
+  
+  /** Create a registration name for a stream id.
+   * @see #mkStreamId(String, String, int)
+   */
+  public static String nameForStreamId(String streamId) {
+    Objects.requireNonNull(streamId, "id");
+    return ID_PREFIX+streamId;
   }
   
   /** returns null if {@code name} is not a from nameByStreamAlias() */
   public static String streamAliasFromName(String name) {
     Objects.requireNonNull(name, "name");
-    if (!name.startsWith("alias."))
+    if (!name.startsWith(ALIAS_PREFIX))
       return null;
-    return name.substring("alias.".length());
+    return name.substring(ALIAS_PREFIX.length());
   }
   
   /** returns null if {@code name} is not a from nameByStreamId() */
   public static String streamIdFromName(String name) {
     Objects.requireNonNull(name, "name");
-    if (!name.startsWith("id."))
+    if (!name.startsWith(ID_PREFIX))
       return null;
-    return name.substring("id.".length());
+    return name.substring(ID_PREFIX.length());
   }
   
-  /** A single StreamScope can be registered with multiple names.
+  /** Register a StreamScope by {@code name}
+   * <P>
+   * A single StreamScope can be registered with multiple names.
+   * </P>
+   * @param name name to register with
+   * @param streamScope the StreamScope
    * @throws IllegalStateException if a registration already exists for {@code name}
+   * @see #nameForStreamId(String)
+   * @see #nameForStreamAlias(String)
    */
   public synchronized void register(String name, StreamScope<?> streamScope) {
     if (byNameMap.containsKey(name))
@@ -91,8 +124,11 @@ public class StreamScopeRegistry {
   }
   
   /**
-   * @param name
+   * Lookup a StreamScope
+   * @param name a StreamScope is registration name
    * @return the StreamScope. null if name is not registered.
+   * @see #nameForStreamId(String)
+   * @see #nameForStreamAlias(String)
    */
   public synchronized StreamScope<?> lookup(String name) {
     return byNameMap.get(name);
@@ -119,10 +155,9 @@ public class StreamScopeRegistry {
    * @see #unregister(StreamScope)
    */
   public synchronized void unregister(String name) {
-    StreamScope<?> streamScope = byNameMap.get(name);
+    StreamScope<?> streamScope = byNameMap.remove(name);
     if (streamScope == null)
       return;
-    byNameMap.remove(name);
     List<String> names = byStreamScopeMap.get(streamScope);
     names.remove(name);
     if (names.isEmpty())
@@ -139,6 +174,22 @@ public class StreamScopeRegistry {
     names = new ArrayList<>(names);
     for (String name : names)
       unregister(name);
+  }
+  
+  /** remove all name registrations of the StreamScopes for the specified oplet.
+   * no-op if no registrations for the oplet
+   */
+  synchronized void unregister(String jobId, String opletId) {
+    String prefix = mkStreamIdNamePrefix(jobId, opletId);
+    List<StreamScope<?>> toUnregister = new ArrayList<>();
+    for (String name : getNames()) {
+      if (name.startsWith(prefix)) {
+        toUnregister.add(lookup(name));
+      }
+    }
+    for (StreamScope<?> streamScope : toUnregister) {
+      unregister(streamScope);
+    }
   }
   
 }

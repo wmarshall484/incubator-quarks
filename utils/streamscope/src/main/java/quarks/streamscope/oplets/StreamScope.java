@@ -19,13 +19,18 @@ under the License.
 package quarks.streamscope.oplets;
 
 import quarks.function.Consumer;
+import quarks.oplet.OpletContext;
 import quarks.oplet.functional.Peek;
+import quarks.streamscope.StreamScopeRegistry;
 
 /**
  * A Stream "oscilloscope" oplet.
  * <P>
- * TODO remove this?  Just added to help the Console specialize its presentation
- * and/or so user can differentiate a StreamScope from any other random Peek oplet use.
+ * This class exists so that we can register a StreamScope at runtime
+ * with jobId info (lacking a Function level initialize(FuntionScope) mechanism)
+ * and so the Console can differentiate a StreamScope peek from any other
+ * random Peek oplet use.  Remove this oplet subclass if/when it's no
+ * longer needed to achieve the above.
  * </P>
  *
  * @param <T> Type of the tuple.
@@ -39,6 +44,29 @@ public class StreamScope<T> extends Peek<T> {
    */
   public StreamScope(Consumer<T> streamScope) {
     super(streamScope);
+  }
+
+  @Override
+  public void initialize(OpletContext<T, T> context) {
+    super.initialize(context);
+    registerStreamScope();
+  }
+  
+  private void registerStreamScope() {
+    StreamScopeRegistry rgy = getOpletContext().getService(StreamScopeRegistry.class);
+    
+    // see commentary in DevelopmentProvider.addStreamScopes()
+    // re TODOs for being able to register for the "origin stream/oplet".
+    
+    String jobId = getOpletContext().getJobContext().getId();
+    String opletId = getOpletContext().getId(); // TODO should be "origin oplet's" id
+    int oport = 0;  // TODO should be the origin stream's oport index
+    String streamId = StreamScopeRegistry.mkStreamId(jobId, opletId, oport);
+    
+    rgy.register(StreamScopeRegistry.nameForStreamId(streamId),
+        (quarks.streamscope.StreamScope<?>) getPeeker());
+
+    // rgy.register(StreamScopeRegistry.nameForStreamAlias(alias), streamScope);
   }
     
 }

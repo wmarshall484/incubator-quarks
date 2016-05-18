@@ -32,8 +32,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import quarks.streamscope.StreamScope;
-import quarks.streamscope.StreamScopeRegistry;
 import quarks.streamscope.StreamScope.Sample;
+import quarks.streamscope.StreamScopeRegistry;
 import quarks.test.topology.TopologyAbstractTest;
 
 @Ignore
@@ -135,7 +135,7 @@ public abstract class StreamScopeTest extends TopologyAbstractTest {
         ss.bufferMgr().setMaxRetentionCount(10);
         
         // ---------------- trigger byCount
-        ss.triggerMgr().setByCount(3);
+        ss.triggerMgr().setCaptureByCount(3);
         ss.accept(100);
         ss.accept(101);
         ss.accept(102);
@@ -149,8 +149,19 @@ public abstract class StreamScopeTest extends TopologyAbstractTest {
         assertEquals(103, samples.get(1).tuple().intValue());
         assertEquals(106, samples.get(2).tuple().intValue());
         
+        // ---------------- trigger continuous / ByCount(1)
+        ss.triggerMgr().setCaptureByCount(1);
+        ss.accept(100);
+        ss.accept(101);
+        ss.accept(102);
+        assertEquals(3, ss.getSampleCount());
+        samples = ss.getSamples();
+        assertEquals(100, samples.get(0).tuple().intValue());
+        assertEquals(101, samples.get(1).tuple().intValue());
+        assertEquals(102, samples.get(2).tuple().intValue());
+        
         // ---------------- trigger byPredicate
-        ss.triggerMgr().setByPredicate(t -> t % 2 == 0);
+        ss.triggerMgr().setCaptureByPredicate(t -> t % 2 == 0);
         ss.accept(100);
         ss.accept(101);
         ss.accept(102);
@@ -163,7 +174,7 @@ public abstract class StreamScopeTest extends TopologyAbstractTest {
         assertEquals(104, samples.get(2).tuple().intValue());
         
         // ---------------- trigger byTime
-        ss.triggerMgr().setByTime(100, TimeUnit.MILLISECONDS);
+        ss.triggerMgr().setCaptureByTime(100, TimeUnit.MILLISECONDS);
         ss.accept(100);
         ss.accept(101);
         ss.accept(102);
@@ -179,18 +190,8 @@ public abstract class StreamScopeTest extends TopologyAbstractTest {
         assertEquals(103, samples.get(1).tuple().intValue());
         assertEquals(106, samples.get(2).tuple().intValue());
         
-        // ---------------- trigger continuous
-        ss.triggerMgr().setContinuous();
-        ss.accept(100);
-        ss.accept(101);
-        ss.accept(102);
-        assertEquals(3, ss.getSampleCount());
-        samples = ss.getSamples();
-        assertEquals(100, samples.get(0).tuple().intValue());
-        assertEquals(101, samples.get(1).tuple().intValue());
-        assertEquals(102, samples.get(2).tuple().intValue());
-        
         // ---------------- trigger pause
+        ss.triggerMgr().setCaptureByCount(1);
         ss.accept(100);
         ss.accept(101);
         ss.triggerMgr().setPaused(true);
@@ -207,7 +208,7 @@ public abstract class StreamScopeTest extends TopologyAbstractTest {
         assertEquals(104, samples.get(2).tuple().intValue());
         
         // ---------------- trigger pauseOn
-        
+        ss.triggerMgr().setCaptureByCount(1);
         ss.triggerMgr().setPauseOn(t -> t == 102);
         ss.accept(100);
         ss.accept(101);
@@ -251,24 +252,33 @@ public abstract class StreamScopeTest extends TopologyAbstractTest {
       rgy.unregister(ss1);
       
       // ---------- name generation / parse functions
-      String alias1Name = StreamScopeRegistry.nameByStreamAlias("alias1");
+      String alias1Name = StreamScopeRegistry.nameForStreamAlias("alias1");
       assertNotNull(alias1Name);
-      String alias2Name = StreamScopeRegistry.nameByStreamAlias("alias2");
+      String alias2Name = StreamScopeRegistry.nameForStreamAlias("alias2");
       assertNotNull(alias2Name);
       assertFalse(alias1Name.equals(alias2Name));
       String alias1 = StreamScopeRegistry.streamAliasFromName(alias1Name);
       assertEquals("alias1", alias1);
       
-      String id1Name = StreamScopeRegistry.nameByStreamId("id1");
+      String id1Name = StreamScopeRegistry.nameForStreamId("id1");
       assertNotNull(id1Name);
-      String id2Name = StreamScopeRegistry.nameByStreamId("id2");
+      String id2Name = StreamScopeRegistry.nameForStreamId("id2");
       assertNotNull(id2Name);
       assertFalse(id1Name.equals(id2Name));
       String id1 = StreamScopeRegistry.streamIdFromName(id1Name);
       assertEquals("id1", id1);
+      
+      String streamId1 = StreamScopeRegistry.mkStreamId("JOB_1", "OP_2", 0);
+      assertNotNull(streamId1);
+      String streamId2 = StreamScopeRegistry.mkStreamId("JOB_1", "OP_2", 1);
+      assertNotNull(streamId2);
+      assertFalse(streamId1.equals(streamId2));
+      id1Name = StreamScopeRegistry.nameForStreamId(streamId1);
+      id1 = StreamScopeRegistry.streamIdFromName(id1Name);
+      assertEquals(id1, streamId1);
 
-      assertFalse(StreamScopeRegistry.nameByStreamAlias("1")
-          .equals(StreamScopeRegistry.nameByStreamId("1")));
+      assertFalse(StreamScopeRegistry.nameForStreamAlias("1")
+          .equals(StreamScopeRegistry.nameForStreamId("1")));
       
       // ---------- register
       rgy.register(alias1Name, ss1);
@@ -278,6 +288,7 @@ public abstract class StreamScopeTest extends TopologyAbstractTest {
       // ---------- lookup
       assertSame(ss1, rgy.lookup(alias1Name));
       assertSame(ss2, rgy.lookup(alias2Name));
+      assertSame(null, rgy.lookup(id1Name));
       assertSame(ss2, rgy.lookup(id2Name));
      
       // ----------- getNames
@@ -295,6 +306,7 @@ public abstract class StreamScopeTest extends TopologyAbstractTest {
       assertTrue(rgy.getStreamScopes().get(ss1).contains(alias1Name));
       assertEquals(2, rgy.getStreamScopes().get(ss2).size());
       assertTrue(rgy.getStreamScopes().get(ss2).contains(alias2Name));
+      assertFalse(rgy.getStreamScopes().get(ss2).contains(id1Name));
       assertTrue(rgy.getStreamScopes().get(ss2).contains(id2Name));
       
       // ---------- unregister
@@ -303,6 +315,7 @@ public abstract class StreamScopeTest extends TopologyAbstractTest {
       assertEquals(2, rgy.getNames().size());
       assertFalse(rgy.getNames().contains(alias1Name));
       assertFalse(rgy.getStreamScopes().keySet().contains(ss1));
+      rgy.unregister(id1Name);
       assertTrue(rgy.getStreamScopes().keySet().contains(ss2));
       
       rgy.unregister(alias2Name);
