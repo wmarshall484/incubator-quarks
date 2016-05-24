@@ -16,7 +16,8 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 */
-opletColor = {"quarks.metrics.oplets.CounterOp": "#c7c7c7", "quarks.metrics.oplets.RateMeter": "#aec7e8", "quarks.oplet.core.FanIn": "#ff7f0e",
+opletColor = {"quarks.streamscope.oplets.StreamScope": "#c7c7c7",
+        "quarks.metrics.oplets.CounterOp": "#c7c7c7", "quarks.metrics.oplets.RateMeter": "#aec7e8", "quarks.oplet.core.FanIn": "#ff7f0e",
 		"quarks.oplet.core.FanOut": "#ffbb78", "quarks.oplet.core.Peek": "#2ca02c", "quarks.oplet.core.PeriodicSource": "#98df8a", 
 		"quarks.oplet.core.Pipe": "#d62728", "quarks.oplet.core.PipeWindow": "#ff9896", "quarks.oplet.core.ProcessSource": "#9467bd", 
 		"quarks.oplet.core.Sink": "#c5b0d5", "quarks.oplet.core.Source": "#8c564b", "quarks.oplet.core.Split": "#c49c94", "quarks.oplet.core.Union" : "#1f77b4",
@@ -40,6 +41,8 @@ addValuesToEdges = function(graph, counterMetrics) {
 			if (edge.sourceId === cm.opId || edge.targetId === cm.opId) {
 				// add a value to this edge from the metric
 				edge.value = cm.value;	
+				// propagate the edge value downstream/upstream as appropriate
+				propagateEdgeValue(graph, edge, edge.sourceId === cm.opId);
 			} 
 		});
 	});
@@ -59,6 +62,48 @@ addValuesToEdges = function(graph, counterMetrics) {
 	return graph;
 };
 
+propagateEdgeValue = function(graph, edge, isDownstream) {
+    var opId = isDownstream ? edge.targetId : edge.sourceId;  
+    var vertex = findVertex(graph, opId);
+    if (isPeekish(vertex)) {
+        var edges = findEdges(graph, opId, isDownstream);
+        edges.forEach(function(e2){
+            if (!e2.value) {
+                e2.value = edge.value;
+                propagateEdgeValue(graph, e2, isDownstream);
+            }
+        });
+    }
+};
+
+isPeekish = function(vertex) {
+  var kind = vertex.invocation.kind;
+  return kind === "quarks.oplet.functional.Peek"
+      || kind === "quarks.streamscope.oplets.StreamScope";
+};
+
+findVertex = function(graph, opId) {
+  // this doesn't scale well
+  for (var i = 0; i < graph.vertices.length; i++) {
+    var vertex = graph.vertices[i];
+    if (vertex.id === opId) {
+      return vertex;
+    }
+  }
+  return null;
+};
+
+findEdges = function(graph, opId, isDownstream) {
+  var edges = [];
+  // this doesn't scale well
+  graph.edges.forEach(function(edge){
+      if (opId === (isDownstream ? edge.sourceId : edge.targetId)) {
+        edges.push(edge);
+      }
+  });
+  return edges;
+};
+
 getVertexFillColor = function(layer, data, cMetrics) {
 	if (layer === "opletColor" || layer === "static") {
 		return opletColor[data.invocation.kind];
@@ -71,6 +116,8 @@ getVertexFillColor = function(layer, data, cMetrics) {
 		var myScale = d3.scale.linear().domain([0,tupleBucketsIdx.buckets.length -1]).range(tupleColorRange);
 		if (data.invocation.kind.toUpperCase().endsWith("COUNTEROP")) {
 			return "#c7c7c7";
+        } else if (data.invocation.kind.toUpperCase().endsWith("STREAMSCOPE")) {
+            return "#c7c7c7";
 		} else {
 			return myScale(tupleBucketsIdx.bucketIdx);
 		}
