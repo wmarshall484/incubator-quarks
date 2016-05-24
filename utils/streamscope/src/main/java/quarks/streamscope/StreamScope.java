@@ -27,20 +27,27 @@ import java.util.concurrent.TimeUnit;
 import quarks.function.Consumer;
 import quarks.function.Functions;
 import quarks.function.Predicate;
-import quarks.topology.TStream;
+import quarks.streamscope.mbeans.StreamScopeRegistryMXBean;
 
 /**
  * A Stream "oscilloscope" for capturing stream tuples for analysis / debug.
  * <P>
  * A {@code StreamScope} is expected to be used as parameter to
- * {@link TStream#peek(Consumer)}.
+ * {@link quarks.streamscope.oplets.StreamScope} oplet.
  * </P><P>
  * A {@link TriggerManager} controls which tuples are captured.
  * A {@link BufferManager} controls the retention policy for captured tuples.
- * </P>
- * <P>
+ * </P><P>
+ * A {@link Sample} is created for each captured tuple containing the tuple
+ * (not copied) and capture timestamps.  Samples are retrieved using {@link #getSamples()}.
+ * </P><P>
+ * Sample capture can be enabled/disabled ({@link #setEnabled(boolean)}.
+ * It is disabled by default.  Capture can also be paused and resumed via
+ * the {@code TriggerManager}.
+ * </P><P>
  * StreamScope instances are typically registered in and located via
- * a {@link StreamScopeRegistry}.
+ * a {@link StreamScopeRegistry} runtime service 
+ * and {@link StreamScopeRegistryMXBean} runtime ControlService.
  * </P>
  * @see StreamScopeRegistry
  * @see quarks.providers.development.DevelopmentProvider DevelopmentProvider

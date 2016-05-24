@@ -73,7 +73,7 @@ public class DevelopmentProviderTest extends TopologyAbstractTest implements Dev
 
     // DevelopmentProvider inserts StreamScope oplets into the graph
     @Test
-    public void testStreaScopesEverywhere() throws Exception {
+    public void testStreamScopesEverywhere() throws Exception {
 
         Topology t = newTopology();
         TStream<String> s = t.strings("a", "b", "c");

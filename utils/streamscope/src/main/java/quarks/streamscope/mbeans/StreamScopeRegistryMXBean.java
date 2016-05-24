@@ -18,12 +18,10 @@ under the License.
 */
 package quarks.streamscope.mbeans;
 
-import quarks.streamscope.StreamScope;
-
 /**
- * A registry for Stream "oscilloscope" {@link StreamScope} instances.
+ * A registry for {@link StreamScopeMXBean} instances.
  * <P>
- * The registry contains a collection of StreamScope instances
+ * The registry contains a collection of StreamScopeMXBean instances
  * that are registered by a stream identifier.
  * </P>
  * @see quarks.providers.development.DevelopmentProvider DevelopmentProvider

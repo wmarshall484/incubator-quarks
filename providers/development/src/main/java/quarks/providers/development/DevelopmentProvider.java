@@ -30,7 +30,6 @@ import quarks.execution.Job;
 import quarks.execution.services.ControlService;
 import quarks.graph.Connector;
 import quarks.graph.Edge;
-import quarks.graph.Vertex;
 import quarks.metrics.Metrics;
 import quarks.metrics.MetricsSetup;
 import quarks.metrics.oplets.CounterOp;
@@ -38,9 +37,9 @@ import quarks.oplet.core.FanOut;
 import quarks.oplet.core.Peek;
 import quarks.providers.direct.DirectProvider;
 import quarks.runtime.jmxcontrol.JMXControlService;
-import quarks.streamscope.StreamScope;
 import quarks.streamscope.StreamScopeRegistry;
 import quarks.streamscope.StreamScopeSetup;
+import quarks.streamscope.mbeans.StreamScopeRegistryMXBean;
 import quarks.topology.Topology;
 
 /**
@@ -65,7 +64,18 @@ import quarks.topology.Topology;
  * The implementation calls {@link Metrics#counter(Topology)} to insert 
  * {@link CounterOp} oplets into each stream.
  * </LI>
+ * <LI>
+ * Instrument the topology adding {@link quarks.streamscope.oplets.StreamScope StreamScope}
+ * oplets on all the streams before submitting a topology.  
+ * See {@link StreamScopeSetup#addStreamScopes(Topology) StreamScopeSetup.addStreamscopes}.
+ * </LI>
+ * <LI>
+ * Add a {@link StreamScopeRegistry} runtime service and a
+ * {@link StreamScopeRegistryMXBean} management bean to the {@code ControlService}.
+ * See {@link StreamScopeSetup#register(quarks.execution.services.ServiceContainer) StreamScopeSetup.register}.
+ * </LI>
  * </UL>
+ * @see StreamScopeRegistry
  */
 public class DevelopmentProvider extends DirectProvider {
     
@@ -92,8 +102,8 @@ public class DevelopmentProvider extends DirectProvider {
 
     @Override
     public Future<Job> submit(Topology topology, JsonObject config) {
-        addStreamScopes(topology);
         Metrics.counter(topology);
+        StreamScopeSetup.addStreamScopes(topology);
         duplicateTags(topology);
         return super.submit(topology, config);
     }
@@ -140,47 +150,4 @@ public class DevelopmentProvider extends DirectProvider {
       }
     }
 
-    /**
-     * Add StreamScope instances to the topology
-     * @param t the Topology
-     */
-    private void addStreamScopes(Topology t) {
-      StreamScopeRegistry rgy = (StreamScopeRegistry) 
-          t.getRuntimeServiceSupplier().get()
-            .getService(StreamScopeRegistry.class);
-      if (rgy == null)
-        return;
-      
-      // N.B. at runtime, the Console will need to be able to lookup
-      // StreamScopeMXBean be streamId (see StreamScopeRegistryMXBean).
-      // Nominally, that streamId should be the jobId/opletId/oport of
-      // the stream that the StreamScope was created for - what I'll
-      // call the "origin stream". i.e., the Console shouldn't be 
-      // looking up a streamId for the StreamScopeOplet's opletId.
-      //
-      // Registration is left to the StreamScope oplet initialization processing
-      // since the jobId isn't known until that time.
-      // 
-      // As noted above we really want the StreamScope's streamId registration
-      // to be for the "origin stream".  Today the API (Graph,Vertex,Oplet)
-      // doesn't provide that information so we can't capture that as part
-      // of the StreamScope oplet's info.  The net is that for the time being
-      // a StreamScope will end up having to register itself with its opletId,
-      // not the origin oplet's id and that has implications for the Console. 
-      //
-      // We could create a peekAllFn that takes a BiFunction that receives
-      // the Vertex+oport the StreamScope is being created for but that
-      // Vertex/Oplet's opletId still isn't accessible today.
-      // (The Etaio provider maintains the opletId in its Instance object fwiw).
-      //
-      // TODO straighten this all out
-
-      t.graph().peekAll( 
-          () -> {
-              StreamScope<?> streamScope = new StreamScope<>();
-              Peek<?> peekOp = new quarks.streamscope.oplets.StreamScope<>(streamScope);
-              return peekOp;
-            },
-          (Vertex<?, ?, ?> v) -> !(v.getInstance() instanceof quarks.oplet.core.FanOut));
-    }
 }

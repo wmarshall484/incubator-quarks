@@ -47,6 +47,7 @@ public class StreamScopeRegistryBean implements StreamScopeRegistryMXBean {
   
   @Override
   public StreamScopeMXBean lookup(String jobId, String opletId, int oport) {
+    // lazy-register the mbeans
     String streamId = StreamScopeRegistry.mkStreamId(jobId, opletId, oport);
     StreamScopeMXBean mbean = cs.getControl(StreamScopeMXBean.TYPE, streamId, StreamScopeMXBean.class);
     

@@ -20,7 +20,11 @@ package quarks.streamscope;
 
 import quarks.execution.services.ControlService;
 import quarks.execution.services.ServiceContainer;
+import quarks.graph.Vertex;
+import quarks.oplet.core.Peek;
 import quarks.streamscope.mbeans.StreamScopeRegistryMXBean;
+import quarks.topology.Topology;
+import quarks.topology.TopologyProvider;
 
 /**
  * Utility helpers for StreamScope setup and management.
@@ -73,6 +77,19 @@ public class StreamScopeSetup {
     // the singleton StreamScopeSetup workaround.
     private static StreamScopeSetup setup = new StreamScopeSetup(new StreamScopeRegistry());
     
+    /**
+     * Perform the registrations needed to use the streamscope package.
+     * <P>
+     * Typically called during {@link TopologyProvider} construction.
+     * </P><P>
+     * <UL>
+     * <LI>register the StreamScopeRegistry service</LI>
+     * <LI>register a cleaner to remove job oplet StreamScope registrations</LI>
+     * <LI>register a StreamScopeRegistryMXBean with the registered ControlService</LI>
+     * </UL>
+     * </P>
+     * @param services ServiceContainer to register with.
+     */
     public static void register(ServiceContainer services) {
       setup.registerPvt(services);
     }
@@ -157,4 +174,58 @@ public class StreamScopeSetup {
 //        }
 //      }
 //    }
+
+    /**
+     * Add StreamScope instances to the topology
+     * <P>
+     * Instrument the topology by adding StreamScope peekers to the
+     * topology's streams.  At topology submission time, StreamScopes
+     * register themselves with the topology's
+     * {@link StreamScopeRegistry} runtime service.
+     * </P>
+     * 
+     * @param t the Topology.  The operation is a no-op if the topology
+     *     does not have a StreamScopeRegistry service.
+     * @see #register(ServiceContainer) register
+     */
+    public static void addStreamScopes(Topology t) {
+      StreamScopeRegistry rgy = (StreamScopeRegistry) 
+          t.getRuntimeServiceSupplier().get()
+            .getService(StreamScopeRegistry.class);
+      if (rgy == null)
+        return;
+      
+      // N.B. at runtime, the Console will need to be able to lookup
+      // StreamScopeMXBean be streamId (see StreamScopeRegistryMXBean).
+      // Nominally, that streamId should be the jobId/opletId/oport of
+      // the stream that the StreamScope was created for - what I'll
+      // call the "origin stream". i.e., the Console shouldn't be 
+      // looking up a streamId for the StreamScopeOplet's opletId.
+      //
+      // Registration is left to the StreamScope oplet initialization processing
+      // since the jobId isn't known until that time.
+      // 
+      // As noted above we really want the StreamScope's streamId registration
+      // to be for the "origin stream".  Today the API (Graph,Vertex,Oplet)
+      // doesn't provide that information so we can't capture that as part
+      // of the StreamScope oplet's info.  The net is that for the time being
+      // a StreamScope will end up having to register itself with its opletId,
+      // not the origin oplet's id and that has implications for the Console. 
+      //
+      // We could create a peekAllFn that takes a BiFunction that receives
+      // the Vertex+oport the StreamScope is being created for but that
+      // Vertex/Oplet's opletId still isn't accessible today.
+      // (The Etaio provider maintains the opletId in its Instance object fwiw).
+      //
+      // TODO straighten this all out
+
+      t.graph().peekAll( 
+          () -> {
+              StreamScope<?> streamScope = new StreamScope<>();
+              Peek<?> peekOp = new quarks.streamscope.oplets.StreamScope<>(streamScope);
+              return peekOp;
+            },
+          (Vertex<?, ?, ?> v) -> !(v.getInstance() instanceof quarks.oplet.core.FanOut));
+    }
+
 }
