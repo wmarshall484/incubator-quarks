@@ -58,6 +58,7 @@ addValuesToEdges = function(graph, counterMetrics) {
 	edges.forEach(function(edge){
 		if (!edge.value) {
 			edge.value = quartile1;
+			edge.derived = true;
 		} else if (edge.value === "0") {
 			edge.value = 0.45;
 			edge.realValue = 0;
