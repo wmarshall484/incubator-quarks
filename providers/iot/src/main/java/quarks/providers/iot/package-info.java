@@ -63,6 +63,19 @@ under the License.
  * <td colspan=5>{@code {"type":"appService","alias":"quarks","op":"submit","args":["Heartbeat",{}]}}</td>
  * </tr>
  * <tr></tr>
+ * 
+ * <tr>
+ *    <th rowspan="2">Close (stop) a running registered application</th>
+ *    <td>{@code quarksControl}</td><td>{@link quarks.execution.mbeans.JobMXBean#TYPE job}</td>
+ *    <td><em>{@code applicationName}</em></td><td>{@link quarks.execution.mbeans.JobMXBean#stateChange(quarks.execution.Job.Action) stateChange}</td>
+ *    <td>{@code ["CLOSE"]}</td>
+ *    <td>{@link quarks.execution.mbeans.JobMXBean JobMXBean}</td>
+ * </tr>
+ * </tr>
+ * <th>Sample command data</th>
+ * <td colspan=5>{@code {"type":"job","alias":"Heartbeat","op":"stateChange","args":["CLOSE"]}}</td>
+ * </tr>
+ * <tr></tr>
  * </TABLE>
  * 
  */
