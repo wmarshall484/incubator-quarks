@@ -47,6 +47,10 @@ addValuesToEdges = function(graph, counterMetrics) {
 	// and set value in equivalent edges
 	counterMetrics.forEach(function(cm){
 	    var edges = graph.edgeMap[incomingEdgesKey(cm.opId)];
+	    if (edges === undefined) {
+	       // QUARKS-20 
+	       edges = [];
+        }
 	    pushArray(edges, graph.edgeMap[outgoingEdgesKey(cm.opId)]);
         edges.forEach(function(edge){
             edge.value = cm.value;
@@ -71,7 +75,9 @@ addValuesToEdges = function(graph, counterMetrics) {
 
 // augment arr with arr2's items
 function pushArray(arr, arr2) {
-  arr.push.apply(arr, arr2);
+  if (arr2) {
+    arr.push.apply(arr, arr2);
+  }
 }
 
 // edgeMap key for edge
@@ -130,12 +136,18 @@ function makeEquivMetricEdgeMap(graph, counterMetrics) {
     var map = {};
     counterMetrics.forEach(function(cm){
         var edges = graph.edgeMap[outgoingEdgesKey(cm.opId)];
-        var edge = edges[0];
-        map[edgeKey(edge)] = collectEquivMetricEdges(graph, edge, true);
+        if (edges) {
+            // QUARKS-20 TopologyTestBasic has cm with no outgoing edges - runtime bug?
+            var edge = edges[0];
+            map[edgeKey(edge)] = collectEquivMetricEdges(graph, edge, true);
+        }
         
         var edges = graph.edgeMap[incomingEdgesKey(cm.opId)];
-        var edge = edges[0];
-        map[edgeKey(edge)] = collectEquivMetricEdges(graph, edge, false);
+        if (edges) {
+            // QUARKS-20 TopologyTestBasic has cm with no incoming edges???
+            var edge = edges[0];
+            map[edgeKey(edge)] = collectEquivMetricEdges(graph, edge, false);
+        }
     });
     
     return map;
