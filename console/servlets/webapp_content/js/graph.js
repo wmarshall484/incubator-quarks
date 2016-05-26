@@ -48,7 +48,7 @@ addValuesToEdges = function(graph, counterMetrics) {
 	counterMetrics.forEach(function(cm){
 	    var edges = graph.edgeMap[incomingEdgesKey(cm.opId)];
 	    if (edges === undefined) {
-	       // QUARKS-20 
+            // QUARKS-20 TopologyTestBasic has cm with no incoming edges???
 	       edges = [];
         }
 	    pushArray(edges, graph.edgeMap[outgoingEdgesKey(cm.opId)]);
@@ -135,9 +135,10 @@ function makeVertexMap(vertices) {
 function makeEquivMetricEdgeMap(graph, counterMetrics) {
     var map = {};
     counterMetrics.forEach(function(cm){
+        // N.B. a non-injected cm (e.g., a RateMeter or CounterOp)
+        // may be present at the end of a flow - with no outgoing edges
         var edges = graph.edgeMap[outgoingEdgesKey(cm.opId)];
         if (edges) {
-            // QUARKS-20 TopologyTestBasic has cm with no outgoing edges - runtime bug?
             var edge = edges[0];
             map[edgeKey(edge)] = collectEquivMetricEdges(graph, edge, true);
         }
@@ -154,14 +155,14 @@ function makeEquivMetricEdgeMap(graph, counterMetrics) {
 }
 
 // traverse downstream/upstream from "edge" collecting "equivalent" edges.
-// Traverses through peek ops.
+// Traverses through non-counter-metric peek ops.
 // Also includes a FanOut oplet's outputs when traversing downstream
 // because the runtime doesn't add CounterOps to them.
 // requires graph.edgeMap, graph.vertexMap
 function collectEquivMetricEdges(graph, edge, isDownstream) {
     var equivEdges = [];
     var vertex = graph.vertexMap[isDownstream ? edge.targetId : edge.sourceId];
-    if (isaPeek(vertex)) {
+    if (shouldTraverseVertex(vertex)) {
         var key = isDownstream ? outgoingEdgesKey(vertex.id) : incomingEdgesKey(vertex.id);
         var edges = graph.edgeMap[key];
         pushArray(equivEdges, edges);
@@ -185,13 +186,19 @@ function setEquivalentMetricEdges(graph, metricEdge) {
     });
 }
 
-function isaPeek(vertex) {
+function shouldTraverseVertex(vertex) {
   // TODO need an oplet tag or something to generalize this
   var kind = vertex.invocation.kind;
   return kind === "quarks.streamscope.oplets.StreamScope"
       || kind === "quarks.oplet.functional.Peek"
-      || kind === "quarks.metrics.oplet.RateMeter"
-      || kind === "quarks.metrics.oplet.CounterOp";
+      // the following metric oplets are returned as "counter metrics" hence
+      // have their own counter metric value (a contiguous set of them
+      // should nominally have the same value)
+      // || kind === "quarks.metrics.oplet.RateMeter"
+      // || kind === "quarks.metrics.oplet.CounterOp"
+      // || kind === "quarks.metrics.oplet.a-Histogram-Op"
+      // || kind === "quarks.metrics.oplet.a-Timer-Op"
+      ;
 }
 
 getVertexFillColor = function(layer, data, cMetrics) {
