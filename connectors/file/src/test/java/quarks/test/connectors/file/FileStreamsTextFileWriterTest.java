@@ -271,6 +271,85 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
 
     @Test
     public void testOneFileCreated() throws Exception {
+        testOneFileCreated(stdLines);
+    }
+
+    @Test
+    public void testManyFiles() throws Exception {
+        testManyFiles(stdLines);
+    }
+
+    @Test
+    public void testManyFilesSlow() throws Exception {
+        testManyFilesSlow(stdLines);
+    }
+
+    @Test
+    public void testRetainCntBased() throws Exception {
+        testRetainCntBased(stdLines);
+    }
+
+    @Test
+    public void testRetainAggSizeBased() throws Exception {
+        testRetainAggSizeBased(stdLines, str);
+    }
+
+    @Test
+    public void testRetainAgeBased() throws Exception {
+        testRetainAgeBased(stdLines);
+    }
+
+    @Test
+    public void testFlushImplicit() throws Exception {
+        testFlushImplicit(stdLines);
+    }
+
+    @Test
+    public void testFlushCntBased() throws Exception {
+        testFlushCntBased(stdLines);
+    }
+
+    @Test
+    public void testFlushTimeBased() throws Exception {
+        testFlushTimeBased(stdLines);
+    }
+
+    @Test
+    public void testFlushTupleBased() throws Exception {
+        testFlushTupleBased(stdLines);
+    }
+
+    @Test
+    public void testCycleCntBased() throws Exception {
+        testCycleCntBased(stdLines);
+    }
+
+    @Test
+    public void testCycleSizeBased() throws Exception {
+        testCycleSizeBased(stdLines);
+    }
+
+    @Test
+    public void testCycleTimeBased() throws Exception {
+        testCycleTimeBased(stdLines);
+    }
+
+    @Test
+    public void testCycleTupleBased() throws Exception {
+        testCycleTupleBased(stdLines);
+    }
+
+    @Test
+    public void testAllTimeBased() throws Exception {
+        testAllTimeBased(stdLines);
+    }
+
+    @Test
+    public void testWriterWatcherReader() throws Exception {
+        testWriterWatcherReader(stdLines);
+    }
+
+    public void testOneFileCreated(String[] stdLines) throws Exception {
         // all lines into a single (the first) file
         Topology t = newTopology("testOneFileCreated");
         
@@ -294,8 +373,7 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
         assertNotNull(sink);
     }
 
-    @Test
-    public void testManyFiles() throws Exception {
+    public void testManyFiles(String[] stdLines) throws Exception {
         Topology t = newTopology("testManyFiles");
         
         // establish a base path
@@ -322,8 +400,7 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
         completeAndValidateWriter(t, TMO_SEC, basePath, expResults);
     }
 
-    @Test
-    public void testManyFilesSlow() throws Exception {
+    public void testManyFilesSlow(String[] stdLines) throws Exception {
         Topology t = newTopology("testManyFilesSlow");
         
         // establish a base path
@@ -352,8 +429,7 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
                 basePath, expResults);
     }
 
-    @Test
-    public void testRetainCntBased() throws Exception {
+    public void testRetainCntBased(String[] stdLines) throws Exception {
         // more lines than configured retained numFiles; only keep the last numFiles
         Topology t = newTopology("testRetainCntBased");
         
@@ -382,21 +458,14 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
         completeAndValidateWriter(t, TMO_SEC, basePath, expResults);
     }
 
-    @Test
-    public void testRetainAggSizeBased() throws Exception {
+    public void testRetainAggSizeBased(String[] stdLines, String str) throws Exception {
         // more aggsize than configured; only keep aggsize worth
         Topology t = newTopology("testRetainAggSizeBased");
         
         // establish a base path
         Path basePath = createTempFile("test1", "txt", new String[0]);
         
-        String str = "123456789";
-        String[] lines = new String[] {
-                "1-"+str,
-                "2-"+str,
-                "3-"+str,
-                "4-"+str
-        };
+        String[] lines = stdLines;
         
         // build expected results
         // net one tuple per file
@@ -419,8 +488,7 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
         completeAndValidateWriter(t, TMO_SEC, basePath, expResults);
     }
 
-    @Test
-    public void testRetainAgeBased() throws Exception {
+    public void testRetainAgeBased(String[] stdLines) throws Exception {
         Topology t = newTopology("testRetainAgeBased");
         
         // establish a base path
@@ -466,8 +534,7 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
                 basePath, expResults);
     }
 
-    @Test
-    public void testFlushImplicit() throws Exception {
+    public void testFlushImplicit(String[] stdLines) throws Exception {
         Topology t = newTopology("testFlushImplicit");
         
         // establish a base path
@@ -491,8 +558,7 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
         completeAndValidateWriter(t, TMO_SEC, basePath, expResults);
     }
 
-    @Test
-    public void testFlushCntBased() throws Exception {
+    public void testFlushCntBased(String[] stdLines) throws Exception {
         Topology t = newTopology("testFlushCntBased");
         
         // establish a base path
@@ -516,8 +582,7 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
         completeAndValidateWriter(t, TMO_SEC, basePath, expResults);
     }
 
-    @Test
-    public void testFlushTimeBased() throws Exception {
+    public void testFlushTimeBased(String[] stdLines) throws Exception {
         Topology t = newTopology("testFlushTimeBased");
         
         // establish a base path
@@ -546,8 +611,7 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
                 basePath, expResults);
     }
 
-    @Test
-    public void testFlushTupleBased() throws Exception {
+    public void testFlushTupleBased(String[] stdLines) throws Exception {
         Topology t = newTopology("testFlushTupleBased");
         
         // establish a base path
@@ -572,8 +636,7 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
         completeAndValidateWriter(t, TMO_SEC, basePath, expResults);
     }
 
-    @Test
-    public void testCycleCntBased() throws Exception {
+    public void testCycleCntBased(String[] stdLines) throws Exception {
         Topology t = newTopology("testCycleCntBased");
         
         // establish a base path
@@ -601,8 +664,7 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
         completeAndValidateWriter(t, TMO_SEC, basePath, expResults);
     }
 
-    @Test
-    public void testCycleSizeBased() throws Exception {
+    public void testCycleSizeBased(String[] stdLines) throws Exception {
         Topology t = newTopology("testCycleSizeBased");
         
         // establish a base path
@@ -627,8 +689,7 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
         completeAndValidateWriter(t, TMO_SEC, basePath, expResults);
     }
 
-    @Test
-    public void testCycleTimeBased() throws Exception {
+    public void testCycleTimeBased(String[] stdLines) throws Exception {
         Topology t = newTopology("testCycleTimeBased");
         
         // establish a base path
@@ -659,8 +720,7 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
                 basePath, expResults);
     }
 
-    @Test
-    public void testCycleTupleBased() throws Exception {
+    public void testCycleTupleBased(String[] stdLines) throws Exception {
         Topology t = newTopology("testCycleTupleBased");
         
         // establish a base path
@@ -686,8 +746,7 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
         completeAndValidateWriter(t, TMO_SEC, basePath, expResults);
     }
 
-    @Test
-    public void testAllTimeBased() throws Exception {
+    public void testAllTimeBased(String[] stdLines) throws Exception {
         // exercise case with multiple timer based policies
         Topology t = newTopology("testAllTimeBased");
         
@@ -715,8 +774,7 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
         completeAndValidateWriter(t, TMO_SEC, basePath, expResults);
     }
 
-    @Test
-    public void testWriterWatcherReader() throws Exception {
+    public void testWriterWatcherReader(String[] stdLines) throws Exception {
         // verify all the pieces work together
         Topology t = newTopology("testWriterWatcherReader");
         

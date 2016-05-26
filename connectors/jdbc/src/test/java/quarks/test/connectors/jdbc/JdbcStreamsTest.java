@@ -78,7 +78,7 @@ public class JdbcStreamsTest  extends ConnectorTestBase {
         }
     }
     
-    private static class Person {
+    static class Person {
         int id;
         String firstName;
         String lastName;
@@ -97,7 +97,7 @@ public class JdbcStreamsTest  extends ConnectorTestBase {
         }
     }
     
-    private static class PersonId {
+    static class PersonId {
         int id;
         PersonId(int id) {
             this.id = id;
@@ -186,7 +186,7 @@ public class JdbcStreamsTest  extends ConnectorTestBase {
         }
     }
     
-    private void populatePersonsTable() throws Exception {
+    private void populatePersonsTable(List<Person> personList) throws Exception {
         truncatePersonsTable();
         DataSource ds = getDataSource(DB_NAME);
         try(Connection cn = connect(ds)) {
@@ -236,9 +236,48 @@ public class JdbcStreamsTest  extends ConnectorTestBase {
 
     @Test
     public void testBasicRead() throws Exception {
-        Topology t = newTopology("testBasicRead");
+        testBasicRead(personList, personIdList);
+    }
+
+    @Test
+    public void testBasicRead2() throws Exception {
+        testBasicRead2(personList, personIdList);
+    }
+
+    @Test
+    public void testBasicWrite() throws Exception {
+        testBasicWrite(personList, personIdList);
+    }
+
+    @Test
+    public void testBasicWrite2() throws Exception {
+        testBasicWrite2(personList, personIdList);
+    }
+
+    @Test
+    public void testBadConnectFn() throws Exception {
+        testBadConnectFn(personList, personIdList);
+    }
+
+    @Test
+    public void testBadSQL() throws Exception {
+        testBadSQL(personList, personIdList);
+    }
+
+    @Test
+    public void testBadSetParams() throws Exception {
+        testBadSetParams(personList, personIdList);
+    }
+
+    @Test
+    public void testBadResultHandler() throws Exception {
+        testBadResultHandler(personList, personIdList);
+    }
+
+    public void testBasicRead(List<Person> personList, List<PersonId> personIdList) throws Exception {
+        Topology t = this.newTopology("testBasicRead");
         
-        populatePersonsTable();
+        populatePersonsTable(personList);
         List<String> expected = expectedPersons(person->true, personList);
 
         JdbcStreams db = new JdbcStreams(t,
@@ -254,13 +293,12 @@ public class JdbcStreamsTest  extends ConnectorTestBase {
         completeAndValidate("", t, rcvd, SEC_TIMEOUT, expected.toArray(new String[0]));
     }
 
-    @Test
-    public void testBasicRead2() throws Exception {
+    public void testBasicRead2(List<Person> personList, List<PersonId> personIdList) throws Exception {
         Topology t = newTopology("testBasicRead2");
         // same as testBasic but use the explicit PreparedStatement forms
         // of executeStatement().
         
-        populatePersonsTable();
+        populatePersonsTable(personList);
         List<String> expected = expectedPersons(person->true, personList);
 
         JdbcStreams db = new JdbcStreams(t,
@@ -292,8 +330,7 @@ public class JdbcStreamsTest  extends ConnectorTestBase {
         completeAndValidate("", t, rcvd, SEC_TIMEOUT, expected.toArray(new String[0]));
     }
     
-    @Test
-    public void testBasicWrite() throws Exception {
+    public void testBasicWrite(List<Person> personList, List<PersonId> personIdList) throws Exception {
         Topology t = newTopology("testBasicWrite");
         
         truncatePersonsTable();
@@ -326,8 +363,7 @@ public class JdbcStreamsTest  extends ConnectorTestBase {
         completeAndValidate("", t, rcvd, SEC_TIMEOUT, expected.toArray(new String[0]));
     }
     
-    @Test
-    public void testBasicWrite2() throws Exception {
+    public void testBasicWrite2(List<Person> personList, List<PersonId> personIdList) throws Exception {
         Topology t = newTopology("testBasicWrite2");
         // same as testBasic but use the explicit PreparedStatement forms
         // of executeStatement().
@@ -363,8 +399,7 @@ public class JdbcStreamsTest  extends ConnectorTestBase {
         completeAndValidate("", t, rcvd, SEC_TIMEOUT, expected.toArray(new String[0]));
     }
     
-    @Test
-    public void testBadConnectFn() throws Exception {
+    public void testBadConnectFn(List<Person> personList, List<PersonId> personIdList) throws Exception {
         Topology t = newTopology("testBadConnectFn");
         // connFn is only called for initial connect or reconnect
         // following certain failures.
@@ -376,7 +411,7 @@ public class JdbcStreamsTest  extends ConnectorTestBase {
         // right before it?), so that we can verify the conn is closed and
         // then reconnected
         
-        populatePersonsTable();
+        populatePersonsTable(personList);
         List<String> expected = expectedPersons(p->true, personList.subList(1, personList.size()));
         int expectedExcCnt = personList.size() - expected.size();
 
@@ -420,15 +455,14 @@ public class JdbcStreamsTest  extends ConnectorTestBase {
         assertEquals("executionExcCnt", expectedExcCnt, executionExcCnt.get());
     }
         
-    @Test
-    public void testBadSQL() throws Exception {
+    public void testBadSQL(List<Person> personList, List<PersonId> personIdList) throws Exception {
         Topology t = newTopology("testBadSQL");
         // the statement is nominally "retrieved" only once, not per-tuple.
         // hence, there's not much sense in trying to simulate it
         // getting called unsuccessfully, then successfully, etc.
         // however, verify the result handler gets called appropriately.
         
-        populatePersonsTable();
+        populatePersonsTable(personList);
         List<String> expected = Collections.emptyList();
         int expectedExcCnt = personList.size() - expected.size();
 
@@ -466,12 +500,11 @@ public class JdbcStreamsTest  extends ConnectorTestBase {
         assertEquals("executionExcCnt", expectedExcCnt, executionExcCnt.get());
     }
     
-    @Test
-    public void testBadSetParams() throws Exception {
+    public void testBadSetParams(List<Person> personList, List<PersonId> personIdList) throws Exception {
         Topology t = newTopology("testBadSetParams");
         // exercise and validate  behavior with transient parameter setter failures
         
-        populatePersonsTable();
+        populatePersonsTable(personList);
         List<String> expected = expectedPersons(newOddIdPredicate(), personList);
         int expectedExcCnt = personList.size() - expected.size();
 
@@ -512,12 +545,11 @@ public class JdbcStreamsTest  extends ConnectorTestBase {
         assertEquals("executionExcCnt", expectedExcCnt, executionExcCnt.get());
     }
     
-    @Test
-    public void testBadResultHandler() throws Exception {
+    public void testBadResultHandler(List<Person> personList, List<PersonId> personIdList) throws Exception {
         Topology t = newTopology("testBadResultHandler");
         // exercise and validate behavior with transient result handler failures
         
-        populatePersonsTable();
+        populatePersonsTable(personList);
         List<String> expected = expectedPersons(newOddIdPredicate(), personList);
         int expectedExcCnt = personList.size() - expected.size();
 

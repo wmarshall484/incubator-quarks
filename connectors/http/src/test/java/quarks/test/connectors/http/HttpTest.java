@@ -126,9 +126,16 @@ public class HttpTest {
         assertTrue(endCondition.getResult().toString(), endCondition.valid());
     }
     
-    
     @Test
     public void testJsonGet() throws Exception {
+        JsonObject request = new JsonObject();
+        request.addProperty("a", "abc");
+        request.addProperty("b", "42");
+
+        testJsonGet(request);
+    }
+
+    public void testJsonGet(JsonObject request) throws Exception {
         
         DirectProvider ep = new DirectProvider();
         
@@ -136,12 +143,8 @@ public class HttpTest {
         
         final String url = "http://httpbin.org/get?";
         
-        JsonObject request1 = new JsonObject();
-        request1.addProperty("a", "abc");
-        request1.addProperty("b", "42");
-        
         TStream<JsonObject> rc = HttpStreams.getJson(
-                topology.collection(Arrays.asList(request1)),
+                topology.collection(Arrays.asList(request)),
                 HttpClients::noAuthentication,
                 t-> url + "a=" + t.get("a").getAsString() + "&b=" + t.get("b").getAsString()
                 );

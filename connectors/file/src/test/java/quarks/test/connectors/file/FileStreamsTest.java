@@ -188,6 +188,20 @@ public class FileStreamsTest extends TopologyAbstractTest implements DirectTestS
 
     @Test
     public void testTextFileReader() throws Exception {
+        testTextFileReader(stdLines);
+    }
+
+    @Test
+    public void testTextFileReaderProblemPaths() throws Exception {
+        testTextFileReaderProblemPaths(stdLines);
+    }
+
+    @Test
+    public void testTextFileReaderPrePost() throws Exception {
+        testTextFileReaderPrePost(stdLines);
+    }
+
+    public void testTextFileReader(String[] stdLines) throws Exception {
         Topology t = newTopology("testTextFileReader");
         
         String[] lines = stdLines;
@@ -213,8 +227,7 @@ public class FileStreamsTest extends TopologyAbstractTest implements DirectTestS
         }
     }
 
-    @Test
-    public void testTextFileReaderProblemPaths() throws Exception {
+    public void testTextFileReaderProblemPaths(String[] stdLines) throws Exception {
         Topology t = newTopology("testTextFileReaderProblemPaths");
         
         String[] lines = stdLines;
@@ -245,8 +258,7 @@ public class FileStreamsTest extends TopologyAbstractTest implements DirectTestS
         }
     }
 
-    @Test
-    public void testTextFileReaderPrePost() throws Exception {
+    public void testTextFileReaderPrePost(String[] stdLines) throws Exception {
         Topology t = newTopology("testTextFileReaderPrePost");
         
         String[] lines = stdLines;

@@ -43,6 +43,8 @@ public class KafkaStreamsTestManual extends ConnectorTestBase {
     private static final int SEC_TIMEOUT = 10;
     private final String BASE_GROUP_ID = "kafkaStreamsTestGroupId";
     private final String uniq = simpleTS();
+    private final String msg1 = "Hello";
+    private final String msg2 = "Are you there?";
     
     private String[] getKafkaTopics() {
         String csvTopics = System.getProperty("quarks.test.connectors.kafka.csvTopics", "testTopic1,testTopic2");
@@ -96,12 +98,36 @@ public class KafkaStreamsTestManual extends ConnectorTestBase {
     }
 
     @Test
-    public void testSimple() throws Exception {
+    public void testGlobalSimple() throws Exception {
+        testSimple(msg1, msg2);
+    }
+
+    @Test
+    public void testGlobalWithKey() throws Exception {
+        testWithKey(msg1, msg2);
+    }
+
+    @Test
+    public void testGlobalPubSubBytes() throws Exception {
+        testPubSubBytes(msg1, msg2);
+    }
+
+    @Test
+    public void testGlobalMultiPub() throws Exception {
+        testMultiPub(msg1, msg2);
+    }
+
+    @Test(expected=IllegalStateException.class)
+    public void testGlobalMultiSubNeg() throws Exception {
+        testMultiSubNeg(msg1, msg2);
+    }
+
+    public void testSimple(String msg1, String msg2) throws Exception {
         Topology t = newTopology("testSimple");
         MsgGenerator mgen = new MsgGenerator(t.getName());
         String topic = getKafkaTopics()[0];
         String groupId = newGroupId(t.getName());
-        List<String> msgs = createMsgs(mgen, topic);
+        List<String> msgs = createMsgs(mgen, topic, msg1, msg2);
         
         TStream<String> s = PlumbingStreams.blockingOneShotDelay(
                         t.collection(msgs), PUB_DELAY_MSEC, TimeUnit.MILLISECONDS);
@@ -123,13 +149,12 @@ public class KafkaStreamsTestManual extends ConnectorTestBase {
         assertNotNull(sink);
     }
 
-    @Test
-    public void testWithKey() throws Exception {
+    public void testWithKey(String msg1, String msg2) throws Exception {
         Topology t = newTopology("testWithKey");
         MsgGenerator mgen = new MsgGenerator(t.getName());
         String topic = getKafkaTopics()[0];
         String groupId = newGroupId(t.getName());
-        List<String> msgs = createMsgs(mgen, topic);
+        List<String> msgs = createMsgs(mgen, topic, msg1, msg2);
         List<Rec> recs = new ArrayList<>();
         int i = 0;
         for (String msg : msgs) {
@@ -168,13 +193,12 @@ public class KafkaStreamsTestManual extends ConnectorTestBase {
         completeAndValidate("", t, rcvd, mgen, SEC_TIMEOUT, expected.toArray(new String[0]));
     }
 
-    @Test
-    public void testPubSubBytes() throws Exception {
+    public void testPubSubBytes(String msg1, String msg2) throws Exception {
         Topology t = newTopology("testPubSubBytes");
         MsgGenerator mgen = new MsgGenerator(t.getName());
         String topic = getKafkaTopics()[0];
         String groupId = newGroupId(t.getName());
-        List<String> msgs = createMsgs(mgen, topic);
+        List<String> msgs = createMsgs(mgen, topic, msg1, msg2);
         List<Rec> recs = new ArrayList<>();
         int i = 0;
         for (String msg : msgs) {
@@ -212,15 +236,14 @@ public class KafkaStreamsTestManual extends ConnectorTestBase {
         completeAndValidate("", t, rcvd, mgen, SEC_TIMEOUT, expected.toArray(new String[0]));
     }
 
-    @Test
-    public void testMultiPub() throws Exception {
+    public void testMultiPub(String msg1, String msg2) throws Exception {
         Topology t = newTopology("testMultiPub");
         MsgGenerator mgen = new MsgGenerator(t.getName());
         String topic1 = getKafkaTopics()[0];
         String topic2 = getKafkaTopics()[1];
         String groupId = newGroupId(t.getName());
-        List<String> msgs1 = createMsgs(mgen, topic1);
-        List<String> msgs2 = createMsgs(mgen, topic2);
+        List<String> msgs1 = createMsgs(mgen, topic1, msg1, msg2);
+        List<String> msgs2 = createMsgs(mgen, topic2, msg1, msg2);
         List<String> msgs = new ArrayList<>(msgs1);
         msgs.addAll(msgs2);
         
@@ -253,15 +276,14 @@ public class KafkaStreamsTestManual extends ConnectorTestBase {
         assertNotSame(sink1, sink2);
     }
 
-    @Test(expected=IllegalStateException.class)
-    public void testMultiSubNeg() throws Exception {
+    public void testMultiSubNeg(String msg1, String msg2) throws Exception {
         Topology t = newTopology("testMultiSubNeg");
         MsgGenerator mgen = new MsgGenerator(t.getName());
         String topic1 = getKafkaTopics()[0];
         String topic2 = getKafkaTopics()[1];
         String groupId = newGroupId(t.getName());
-        List<String> msgs1 = createMsgs(mgen, topic1);
-        List<String> msgs2 = createMsgs(mgen, topic2);
+        List<String> msgs1 = createMsgs(mgen, topic1, msg1, msg2);
+        List<String> msgs2 = createMsgs(mgen, topic2, msg1, msg2);
         
         // Multiple subscribe() on a single connection.
         // Currently, w/Kafka0.8.2.2, we only support a single
