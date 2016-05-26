@@ -18,38 +18,19 @@ under the License.
 */
 package quarks.test.connectors.kafka;
 
-import org.junit.Test;
-
 /**
  * KafkaStreams connector globalization tests.
  */
 public class KafkaStreamsGlobalTestManual extends KafkaStreamsTestManual {
-    private final String globalMsg1 = "你好";
-    private final String globalMsg2 = "你在嗎";
+    private static final String globalMsg1 = "你好";
+    private static final String globalMsg2 = "你在嗎";
 
-    @Test
-    public void testGlobalSimple() throws Exception {
-        super.testSimple(globalMsg1, globalMsg2);
+    public String getMsg1() {
+        return globalMsg1;
     }
 
-    @Test
-    public void testGlobalWithKey() throws Exception {
-        super.testWithKey(globalMsg1, globalMsg2);
-    }
-
-    @Test
-    public void testGlobalPubSubBytes() throws Exception {
-        super.testPubSubBytes(globalMsg1, globalMsg2);
-    }
-
-    @Test
-    public void testGlobalMultiPub() throws Exception {
-        super.testMultiPub(globalMsg1, globalMsg2);
-    }
-
-    @Test(expected=IllegalStateException.class)
-    public void testGlobalMultiSubNeg() throws Exception {
-        super.testMultiSubNeg(globalMsg1, globalMsg2);
+    public String getMsg2() {
+        return globalMsg2;
     }
 
 }

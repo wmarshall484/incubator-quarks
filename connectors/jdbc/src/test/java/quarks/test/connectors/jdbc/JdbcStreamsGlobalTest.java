@@ -20,7 +20,6 @@ package quarks.test.connectors.jdbc;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.Test;
 
 /**
  * JdbcStreams connector globalization tests.
@@ -51,44 +50,12 @@ public class JdbcStreamsGlobalTest extends JdbcStreamsTest {
         }
     }
 
-    @Test
-    public void testGlobalBasicRead() throws Exception {
-        super.testBasicRead(globalPersonList, globalPersonIdList);
+    public List<Person> getPersonList() {
+        return globalPersonList;
     }
 
-    @Test
-    public void testGlobalBasicRead2() throws Exception {
-        super.testBasicRead2(globalPersonList, globalPersonIdList);
-    }
-
-    @Test
-    public void testGlobalBasicWrite() throws Exception {
-        super.testBasicWrite(globalPersonList, globalPersonIdList);
-    }
-
-    @Test
-    public void testGlobalBasicWrite2() throws Exception {
-        super.testBasicWrite2(globalPersonList, globalPersonIdList);
-    }
-
-    @Test
-    public void testGlobalBadConnectFn() throws Exception {
-        super.testBadConnectFn(globalPersonList, globalPersonIdList);
-    }
-
-    @Test
-    public void testGlobalBadSQL() throws Exception {
-        super.testBadSQL(globalPersonList, globalPersonIdList);
-    }
-
-    @Test
-    public void testGlobalBadSetParams() throws Exception {
-        super.testBadSetParams(globalPersonList, globalPersonIdList);
-    }
-
-    @Test
-    public void testGlobalBadResultHandler() throws Exception {
-        super.testBadResultHandler(globalPersonList, globalPersonIdList);
+    public List<PersonId> getPersonIdList() {
+        return globalPersonIdList;
     }
 
 }

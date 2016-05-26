@@ -18,8 +18,6 @@ under the License.
 */
 package quarks.test.connectors.pubsub;
 
-import org.junit.Test;
-
 /**
  * PubSub connector globalization tests.
  */
@@ -27,24 +25,8 @@ public class PubSubGlobalTest extends PubSubTest {
 
     private final String[] globalStrs = new String[] { "四", "五", "六" };
 
-    /**
-     * Test without a pub-sub service so no
-     * cross job connections will be made.
-     * @throws Exception
-     */
-    @Test
-    public void testGlobalNoService() throws Exception {
-        super.testNoService(globalStrs);
-    }
-
-    @Test(timeout=10000)
-    public void testStdProviderServiceSingleSubscriber() throws Exception {
-        super.testProviderServiceSingleSubscriber(globalStrs);
-    }
-
-    @Test(timeout=10000)
-    public void testStdProviderServiceMultipleSubscriber() throws Exception {
-        super.testProviderServiceMultipleSubscriber(globalStrs);
+    public String[] getStrs() {
+        return globalStrs;
     }
 
 }

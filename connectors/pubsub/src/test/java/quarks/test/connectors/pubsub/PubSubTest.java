@@ -40,19 +40,8 @@ public class PubSubTest {
 
     private final String[] strs = new String[] { "A", "B", "C" };
 
-    @Test
-    public void testNoService() throws Exception {
-        testNoService(strs);
-    }
-
-    @Test(timeout=10000)
-    public void testProviderServiceSingleSubscriber() throws Exception {
-        testProviderServiceSingleSubscriber(strs);
-    }
-
-    @Test(timeout=10000)
-    public void testProviderServiceMultipleSubscriber() throws Exception {
-        testProviderServiceMultipleSubscriber(strs);
+    public String[] getStrs() {
+        return strs;
     }
 
     /**
@@ -60,10 +49,11 @@ public class PubSubTest {
      * cross job connections will be made.
      * @throws Exception
      */
-    public void testNoService(String[] strs) throws Exception {
+    @Test
+    public void testNoService() throws Exception {
         DirectProvider dp = new DirectProvider();
 
-        TStream<String> publishedStream = createPublisher(dp, "t1", String.class, strs);
+        TStream<String> publishedStream = createPublisher(dp, "t1", String.class, getStrs());
         Tester testPub = publishedStream.topology().getTester();
         Condition<Long> tcPub = testPub.tupleCount(publishedStream, 3);
 
@@ -95,18 +85,19 @@ public class PubSubTest {
         return PublishSubscribe.subscribe(subscriber, topic, streamType);     
     }
 
-    public void testProviderServiceSingleSubscriber(String[] strs) throws Exception {
+    @Test(timeout=10000)
+    public void testProviderServiceSingleSubscriber() throws Exception {
         DirectProvider dp = new DirectProvider();
 
         dp.getServices().addService(PublishSubscribeService.class, new ProviderPubSub());
 
-        TStream<String> publishedStream = createPublisher(dp, "t1", String.class, strs);
+        TStream<String> publishedStream = createPublisher(dp, "t1", String.class, getStrs());
         Tester testPub = publishedStream.topology().getTester();
-        Condition<List<String>> tcPub = testPub.streamContents(publishedStream, strs);
+        Condition<List<String>> tcPub = testPub.streamContents(publishedStream, getStrs());
 
         TStream<String> subscribedStream = createSubscriber(dp, "t1", String.class);
         Tester testSub = subscribedStream.topology().getTester();
-        Condition<List<String>> tcSub = testSub.streamContents(subscribedStream, strs); // Expect all tuples
+        Condition<List<String>> tcSub = testSub.streamContents(subscribedStream, getStrs()); // Expect all tuples
 
         Job js = dp.submit(subscribedStream.topology()).get();
         // Give the subscriber a chance to setup.
@@ -125,26 +116,27 @@ public class PubSubTest {
         jp.stateChange(Action.CLOSE);
     }
     
-    public void testProviderServiceMultipleSubscriber(String[] strs) throws Exception {
+    @Test(timeout=10000)
+    public void testProviderServiceMultipleSubscriber() throws Exception {
         DirectProvider dp = new DirectProvider();
 
         dp.getServices().addService(PublishSubscribeService.class, new ProviderPubSub());
 
-        TStream<String> publishedStream = createPublisher(dp, "t1", String.class, strs);
+        TStream<String> publishedStream = createPublisher(dp, "t1", String.class, getStrs());
         Tester testPub = publishedStream.topology().getTester();
-        Condition<List<String>> tcPub = testPub.streamContents(publishedStream, strs);
+        Condition<List<String>> tcPub = testPub.streamContents(publishedStream, getStrs());
         
         TStream<String> subscribedStream1 = createSubscriber(dp, "t1", String.class);
         Tester testSub1 = subscribedStream1.topology().getTester();
-        Condition<List<String>> tcSub1 = testSub1.streamContents(subscribedStream1, strs);
+        Condition<List<String>> tcSub1 = testSub1.streamContents(subscribedStream1, getStrs());
         
         TStream<String> subscribedStream2 = createSubscriber(dp, "t1", String.class);
         Tester testSub2 = subscribedStream2.topology().getTester();
-        Condition<List<String>> tcSub2 = testSub2.streamContents(subscribedStream2, strs);
+        Condition<List<String>> tcSub2 = testSub2.streamContents(subscribedStream2, getStrs());
         
         TStream<String> subscribedStream3 = createSubscriber(dp, "t1", String.class);
         Tester testSub3 = subscribedStream3.topology().getTester();
-        Condition<List<String>> tcSub3 = testSub3.streamContents(subscribedStream3, strs);
+        Condition<List<String>> tcSub3 = testSub3.streamContents(subscribedStream3, getStrs());
 
         
         Job js1 = dp.submit(subscribedStream1.topology()).get();

@@ -107,6 +107,14 @@ public class JdbcStreamsTest  extends ConnectorTestBase {
         }
     }
 
+    public List<Person> getPersonList() {
+        return personList;
+    }
+
+    public List<PersonId> getPersonIdList() {
+        return personIdList;
+    }
+
     DataSource getDerbyEmbeddedDataSource(String database) throws Exception
     {
         // Avoid a compile-time dependency to the jdbc driver.
@@ -236,56 +244,17 @@ public class JdbcStreamsTest  extends ConnectorTestBase {
 
     @Test
     public void testBasicRead() throws Exception {
-        testBasicRead(personList, personIdList);
-    }
-
-    @Test
-    public void testBasicRead2() throws Exception {
-        testBasicRead2(personList, personIdList);
-    }
-
-    @Test
-    public void testBasicWrite() throws Exception {
-        testBasicWrite(personList, personIdList);
-    }
-
-    @Test
-    public void testBasicWrite2() throws Exception {
-        testBasicWrite2(personList, personIdList);
-    }
-
-    @Test
-    public void testBadConnectFn() throws Exception {
-        testBadConnectFn(personList, personIdList);
-    }
-
-    @Test
-    public void testBadSQL() throws Exception {
-        testBadSQL(personList, personIdList);
-    }
-
-    @Test
-    public void testBadSetParams() throws Exception {
-        testBadSetParams(personList, personIdList);
-    }
-
-    @Test
-    public void testBadResultHandler() throws Exception {
-        testBadResultHandler(personList, personIdList);
-    }
-
-    public void testBasicRead(List<Person> personList, List<PersonId> personIdList) throws Exception {
         Topology t = this.newTopology("testBasicRead");
         
-        populatePersonsTable(personList);
-        List<String> expected = expectedPersons(person->true, personList);
+        populatePersonsTable(getPersonList());
+        List<String> expected = expectedPersons(person->true, getPersonList());
 
         JdbcStreams db = new JdbcStreams(t,
                 () -> getDataSource(DB_NAME),
                 dataSource -> connect(dataSource));
 
         // Create a stream of Person from a stream of ids
-        TStream<Person> rcvdPerson = readPersonsTable(t, db, personIdList, 0/*msec*/);
+        TStream<Person> rcvdPerson = readPersonsTable(t, db, getPersonIdList(), 0/*msec*/);
         TStream<String> rcvd = rcvdPerson.map(person -> person.toString());
         
         rcvd.sink(tuple -> System.out.println(
@@ -293,13 +262,14 @@ public class JdbcStreamsTest  extends ConnectorTestBase {
         completeAndValidate("", t, rcvd, SEC_TIMEOUT, expected.toArray(new String[0]));
     }
 
-    public void testBasicRead2(List<Person> personList, List<PersonId> personIdList) throws Exception {
+    @Test
+    public void testBasicRead2() throws Exception {
         Topology t = newTopology("testBasicRead2");
         // same as testBasic but use the explicit PreparedStatement forms
         // of executeStatement().
         
-        populatePersonsTable(personList);
-        List<String> expected = expectedPersons(person->true, personList);
+        populatePersonsTable(getPersonList());
+        List<String> expected = expectedPersons(person->true, getPersonList());
 
         JdbcStreams db = new JdbcStreams(t,
                 () -> getDataSource(DB_NAME),
@@ -308,7 +278,7 @@ public class JdbcStreamsTest  extends ConnectorTestBase {
         // Create a stream of Person from a stream of ids
         // Delay so this runs after populating the db above
         TStream<PersonId> personIds =  PlumbingStreams.blockingOneShotDelay(
-                t.collection(personIdList), 3, TimeUnit.SECONDS);
+                t.collection(getPersonIdList()), 3, TimeUnit.SECONDS);
         TStream<Person> rcvdPerson = db.executeStatement(personIds,
                 (cn) -> cn.prepareStatement("SELECT id, firstname, lastname, gender, age"
                         + " FROM persons WHERE id = ?"),
@@ -330,18 +300,19 @@ public class JdbcStreamsTest  extends ConnectorTestBase {
         completeAndValidate("", t, rcvd, SEC_TIMEOUT, expected.toArray(new String[0]));
     }
     
-    public void testBasicWrite(List<Person> personList, List<PersonId> personIdList) throws Exception {
+    @Test
+    public void testBasicWrite() throws Exception {
         Topology t = newTopology("testBasicWrite");
         
         truncatePersonsTable();
-        List<String> expected = expectedPersons(person->true, personList);
+        List<String> expected = expectedPersons(person->true, getPersonList());
 
         JdbcStreams db = new JdbcStreams(t,
                 () -> getDataSource(DB_NAME),
                 dataSource -> connect(dataSource));
         
         // Add stream of Person to the db
-        TStream<Person> s = t.collection(personList);
+        TStream<Person> s = t.collection(getPersonList());
         TSink<Person> sink = db.executeStatement(s,
                 () -> "INSERT INTO persons VALUES(?,?,?,?,?)",
                 (tuple,stmt) -> {
@@ -355,7 +326,7 @@ public class JdbcStreamsTest  extends ConnectorTestBase {
         assertNotNull(sink);
         
         // Use the same code as testBasicRead to verify the write worked.
-        TStream<Person> rcvdPerson = readPersonsTable(t, db, personIdList, 3000/*msec*/);
+        TStream<Person> rcvdPerson = readPersonsTable(t, db, getPersonIdList(), 3000/*msec*/);
         TStream<String> rcvd = rcvdPerson.map(person -> person.toString());
         
         rcvd.sink(tuple -> System.out.println(
@@ -363,20 +334,21 @@ public class JdbcStreamsTest  extends ConnectorTestBase {
         completeAndValidate("", t, rcvd, SEC_TIMEOUT, expected.toArray(new String[0]));
     }
     
-    public void testBasicWrite2(List<Person> personList, List<PersonId> personIdList) throws Exception {
+    @Test
+    public void testBasicWrite2() throws Exception {
         Topology t = newTopology("testBasicWrite2");
         // same as testBasic but use the explicit PreparedStatement forms
         // of executeStatement().
         
         truncatePersonsTable();
-        List<String> expected = expectedPersons(person->true, personList);
+        List<String> expected = expectedPersons(person->true, getPersonList());
 
         JdbcStreams db = new JdbcStreams(t,
                 () -> getDataSource(DB_NAME),
                 dataSource -> connect(dataSource));
         
         // Add stream of Person to the db
-        TStream<Person> s = t.collection(personList);
+        TStream<Person> s = t.collection(getPersonList());
         TSink<Person> sink = db.executeStatement(s,
                 (cn) -> cn.prepareStatement("INSERT into PERSONS values(?,?,?,?,?)"),
                 (tuple,stmt) -> {
@@ -391,7 +363,7 @@ public class JdbcStreamsTest  extends ConnectorTestBase {
         assertNotNull(sink);
         
         // Use the same code as testBasicRead to verify the write worked.
-        TStream<Person> rcvdPerson = readPersonsTable(t, db, personIdList, 3000/*msec*/);
+        TStream<Person> rcvdPerson = readPersonsTable(t, db, getPersonIdList(), 3000/*msec*/);
         TStream<String> rcvd = rcvdPerson.map(person -> person.toString());
         
         rcvd.sink(tuple -> System.out.println(
@@ -399,7 +371,8 @@ public class JdbcStreamsTest  extends ConnectorTestBase {
         completeAndValidate("", t, rcvd, SEC_TIMEOUT, expected.toArray(new String[0]));
     }
     
-    public void testBadConnectFn(List<Person> personList, List<PersonId> personIdList) throws Exception {
+    @Test
+    public void testBadConnectFn() throws Exception {
         Topology t = newTopology("testBadConnectFn");
         // connFn is only called for initial connect or reconnect
         // following certain failures.
@@ -411,9 +384,9 @@ public class JdbcStreamsTest  extends ConnectorTestBase {
         // right before it?), so that we can verify the conn is closed and
         // then reconnected
         
-        populatePersonsTable(personList);
-        List<String> expected = expectedPersons(p->true, personList.subList(1, personList.size()));
-        int expectedExcCnt = personList.size() - expected.size();
+        populatePersonsTable(getPersonList());
+        List<String> expected = expectedPersons(p->true, getPersonList().subList(1, getPersonList().size()));
+        int expectedExcCnt = getPersonList().size() - expected.size();
 
         AtomicInteger connFnCnt = new AtomicInteger();
         JdbcStreams db = new JdbcStreams(t,
@@ -427,7 +400,7 @@ public class JdbcStreamsTest  extends ConnectorTestBase {
 
         // Create a stream of Person from a stream of ids
         AtomicInteger executionExcCnt = new AtomicInteger();
-        TStream<PersonId> personIds = t.collection(personIdList);
+        TStream<PersonId> personIds = t.collection(getPersonIdList());
         TStream<Person> rcvdPerson = db.executeStatement(personIds,
                 () -> "SELECT id, firstname, lastname, gender, age"
                         + " FROM persons WHERE id = ?",
@@ -454,17 +427,18 @@ public class JdbcStreamsTest  extends ConnectorTestBase {
         completeAndValidate("", t, rcvd, SEC_TIMEOUT, expected.toArray(new String[0]));
         assertEquals("executionExcCnt", expectedExcCnt, executionExcCnt.get());
     }
-        
-    public void testBadSQL(List<Person> personList, List<PersonId> personIdList) throws Exception {
+    
+    @Test
+    public void testBadSQL() throws Exception {
         Topology t = newTopology("testBadSQL");
         // the statement is nominally "retrieved" only once, not per-tuple.
         // hence, there's not much sense in trying to simulate it
         // getting called unsuccessfully, then successfully, etc.
         // however, verify the result handler gets called appropriately.
         
-        populatePersonsTable(personList);
+        populatePersonsTable(getPersonList());
         List<String> expected = Collections.emptyList();
-        int expectedExcCnt = personList.size() - expected.size();
+        int expectedExcCnt = getPersonList().size() - expected.size();
 
         JdbcStreams db = new JdbcStreams(t,
                 () -> getDataSource(DB_NAME),
@@ -472,7 +446,7 @@ public class JdbcStreamsTest  extends ConnectorTestBase {
 
         // Create a stream of Person from a stream of ids
         AtomicInteger executionExcCnt = new AtomicInteger();
-        TStream<PersonId> personIds = t.collection(personIdList);
+        TStream<PersonId> personIds = t.collection(getPersonIdList());
         TStream<Person> rcvdPerson = db.executeStatement(personIds,
                 () -> "SELECT id, firstname, lastname, gender, age"
                         + " FROM persons WHERE BOGUS_XYZZY id = ?",
@@ -500,13 +474,14 @@ public class JdbcStreamsTest  extends ConnectorTestBase {
         assertEquals("executionExcCnt", expectedExcCnt, executionExcCnt.get());
     }
     
-    public void testBadSetParams(List<Person> personList, List<PersonId> personIdList) throws Exception {
+    @Test
+    public void testBadSetParams() throws Exception {
         Topology t = newTopology("testBadSetParams");
         // exercise and validate  behavior with transient parameter setter failures
         
-        populatePersonsTable(personList);
-        List<String> expected = expectedPersons(newOddIdPredicate(), personList);
-        int expectedExcCnt = personList.size() - expected.size();
+        populatePersonsTable(getPersonList());
+        List<String> expected = expectedPersons(newOddIdPredicate(), getPersonList());
+        int expectedExcCnt = getPersonList().size() - expected.size();
 
         JdbcStreams db = new JdbcStreams(t,
                 () -> getDataSource(DB_NAME),
@@ -514,7 +489,7 @@ public class JdbcStreamsTest  extends ConnectorTestBase {
 
         // Create a stream of Person from a stream of ids
         AtomicInteger executionExcCnt = new AtomicInteger();
-        TStream<PersonId> personIds = t.collection(personIdList);
+        TStream<PersonId> personIds = t.collection(getPersonIdList());
         TStream<Person> rcvdPerson = db.executeStatement(personIds,
                 () -> "SELECT id, firstname, lastname, gender, age"
                         + " FROM persons WHERE id = ?",
@@ -545,13 +520,14 @@ public class JdbcStreamsTest  extends ConnectorTestBase {
         assertEquals("executionExcCnt", expectedExcCnt, executionExcCnt.get());
     }
     
-    public void testBadResultHandler(List<Person> personList, List<PersonId> personIdList) throws Exception {
+    @Test
+    public void testBadResultHandler() throws Exception {
         Topology t = newTopology("testBadResultHandler");
         // exercise and validate behavior with transient result handler failures
         
-        populatePersonsTable(personList);
-        List<String> expected = expectedPersons(newOddIdPredicate(), personList);
-        int expectedExcCnt = personList.size() - expected.size();
+        populatePersonsTable(getPersonList());
+        List<String> expected = expectedPersons(newOddIdPredicate(), getPersonList());
+        int expectedExcCnt = getPersonList().size() - expected.size();
 
         JdbcStreams db = new JdbcStreams(t,
                 () -> getDataSource(DB_NAME),
@@ -559,7 +535,7 @@ public class JdbcStreamsTest  extends ConnectorTestBase {
 
         // Create a stream of Person from a stream of ids
         AtomicInteger executionExcCnt = new AtomicInteger();
-        TStream<PersonId> personIds = t.collection(personIdList);
+        TStream<PersonId> personIds = t.collection(getPersonIdList());
         TStream<Person> rcvdPerson = db.executeStatement(personIds,
                 () -> "SELECT id, firstname, lastname, gender, age"
                         + " FROM persons WHERE id = ?",

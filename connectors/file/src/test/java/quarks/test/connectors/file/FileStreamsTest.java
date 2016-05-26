@@ -58,6 +58,10 @@ public class FileStreamsTest extends TopologyAbstractTest implements DirectTestS
             "But make allowance for their doubting too;"                
     };
 
+    public String[] getLines() {
+        return stdLines;
+    }
+
     /**
      * Test that directory watcher creates the correct output.
      */
@@ -188,23 +192,9 @@ public class FileStreamsTest extends TopologyAbstractTest implements DirectTestS
 
     @Test
     public void testTextFileReader() throws Exception {
-        testTextFileReader(stdLines);
-    }
-
-    @Test
-    public void testTextFileReaderProblemPaths() throws Exception {
-        testTextFileReaderProblemPaths(stdLines);
-    }
-
-    @Test
-    public void testTextFileReaderPrePost() throws Exception {
-        testTextFileReaderPrePost(stdLines);
-    }
-
-    public void testTextFileReader(String[] stdLines) throws Exception {
         Topology t = newTopology("testTextFileReader");
         
-        String[] lines = stdLines;
+        String[] lines = getLines();
         String[] ucLines = Stream.of(lines)
                 .map(line -> line.toUpperCase())
                 .toArray(String[]::new);
@@ -227,10 +217,11 @@ public class FileStreamsTest extends TopologyAbstractTest implements DirectTestS
         }
     }
 
-    public void testTextFileReaderProblemPaths(String[] stdLines) throws Exception {
+    @Test
+    public void testTextFileReaderProblemPaths() throws Exception {
         Topology t = newTopology("testTextFileReaderProblemPaths");
         
-        String[] lines = stdLines;
+        String[] lines = getLines();
         String[] ucLines = Stream.of(lines)
                 .map(line -> line.toUpperCase())
                 .toArray(String[]::new);
@@ -258,10 +249,11 @@ public class FileStreamsTest extends TopologyAbstractTest implements DirectTestS
         }
     }
 
-    public void testTextFileReaderPrePost(String[] stdLines) throws Exception {
+    @Test
+    public void testTextFileReaderPrePost() throws Exception {
         Topology t = newTopology("testTextFileReaderPrePost");
         
-        String[] lines = stdLines;
+        String[] lines = getLines();
         String[] ucLines = Stream.of(lines)
                 .map(line -> line.toUpperCase())
                 .toArray(String[]::new);

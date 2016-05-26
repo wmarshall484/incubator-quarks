@@ -18,31 +18,18 @@ under the License.
 */
 package quarks.test.connectors.file;
 
-import org.junit.Test;
-
 /**
  * FileStreams connector globalization tests.
  */
 public class FileStreamsGlobalTest extends FileStreamsTest {
 
-    String[] globalLines = new String[] {
+    private static final String[] globalLines = new String[] {
             "學而時習之",
             "不亦說乎"
     };
 
-    @Test
-    public void testGlobalTextFileReader() throws Exception {
-        super.testTextFileReader(globalLines);
-    }
-
-    @Test
-    public void testGlobalTextFileReaderProblemPaths() throws Exception {
-        super.testTextFileReaderProblemPaths(globalLines);
-    }
-
-    @Test
-    public void testGlobalTextFileReaderPrePost() throws Exception {
-        super.testTextFileReaderPrePost(globalLines);
+    public String[] getLines() {
+        return globalLines;
     }
 
 }

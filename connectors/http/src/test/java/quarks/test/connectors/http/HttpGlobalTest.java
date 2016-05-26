@@ -18,25 +18,22 @@ under the License.
 */
 package quarks.test.connectors.http;
 
-import org.junit.Test;
-
-import com.google.gson.JsonObject;
-
 /**
  * This globalization test goes against http://httpbin.org
  * a freely available web-server for testing requests.
  *
  */
-public class HttpGlobalTest {
+public class HttpGlobalTest extends HttpTest {
 
-    @Test
-    public void testGlobalJsonGet() throws Exception {
-        JsonObject request = new JsonObject();
-        request.addProperty("a", "字母");
-        request.addProperty("b", "四十二");
+    private static final String globalProp1 = "字母";
+    private static final String globalProp2 = "四十二";
 
-        HttpTest ht = new HttpTest();
-        ht.testJsonGet(request);
+    public String getProp1() {
+        return globalProp1;
+    }
+
+    public String getProp2() {
+        return globalProp2;
     }
 
 }

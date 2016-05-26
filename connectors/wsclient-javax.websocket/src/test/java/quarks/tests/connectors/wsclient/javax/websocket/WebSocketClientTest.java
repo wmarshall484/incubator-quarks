@@ -58,6 +58,22 @@ public class WebSocketClientTest extends ConnectorTestBase {
     private final static String str3 = "three-post-reconnect";
     private final static String str4 = "four";
     
+    public String getStr1() {
+        return str1;
+    }
+
+    public String getStr2() {
+        return str2;
+    }
+
+    public String getStr3() {
+        return str3;
+    }
+
+    public String getStr4() {
+        return str4;
+    }
+
     @After
     public void cleanup() {
         if (wsServer != null)
@@ -131,99 +147,6 @@ public class WebSocketClientTest extends ConnectorTestBase {
 
     @Test
     public void testBasicStaticStuff() {
-        testBasicStaticStuff(str1, str2);
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void testTooManySendersNeg() {
-        testTooManySendersNeg(str1, str2);
-    }
-
-    @Test
-    public void testJson() throws Exception {
-        testJson(str1, str2);
-    }
-
-    @Test
-    public void testString() throws Exception {
-        testString(str1, str2);
-    }
-
-    @Test
-    public void testBytes() throws Exception {
-        testBytes(str1, str2);
-    }
-
-    @Test
-    public void testReconnect() throws Exception {
-        testReconnect(str1, str2, str3, str4);
-    }
-
-    @Test
-    public void testReconnectBytes() throws Exception {
-        testReconnectBytes(str1, str2, str3, str4);
-    }
-
-    @Test
-    public void testSslClientAuthSystemProperty() throws Exception {
-        testSslClientAuthSystemProperty(str1, str2);
-    }
-
-    @Test
-    public void testSsl() throws Exception {
-        testSsl(str1, str2);
-    }
-
-    @Test
-    public void testSslReconnect() throws Exception {
-        testSslReconnect(str1, str2, str3, str4);
-    }
-
-    @Test
-    public void testSslNeg() throws Exception {
-        testSslNeg(str1, str2);
-    }
-
-    @Test
-    public void testSslClientAuth() throws Exception {
-        testSslClientAuth(str1, str2);
-    }
-
-    @Test
-    public void testSslClientAuthDefault() throws Exception {
-        testSslClientAuthDefault(str1, str2);
-    }
-
-    @Test
-    public void testSslClientAuthMy2ndCertNeg() throws Exception {
-        testSslClientAuthMy2ndCertNeg(str1, str2);
-    }
-
-    @Test
-    public void testSslClientAuthMy3rdCert() throws Exception {
-        testSslClientAuthMy3rdCert(str1, str2);
-    }
-
-    @Test
-    public void testSslClientAuthNeg() throws Exception {
-        testSslClientAuthNeg(str1, str2);
-    }
-
-    @Test
-    public void testPublicServer() throws Exception {
-        testPublicServer(str1, str2);
-    }
-
-    @Test
-    public void testSslPublicServer() throws Exception {
-        testSslPublicServer(str1, str2);
-    }
-
-    public void testSslPublicServerBadTrustStoreSystemPropertyNeg() throws Exception {
-        testSslPublicServerBadTrustStoreSystemPropertyNeg(str1, str2);
-    }
-
-    public void testBasicStaticStuff(String str1, String str2) {
         Topology t = newTopology("testBasicStaticStuff");
 
         Properties config = getConfig();
@@ -232,14 +155,14 @@ public class WebSocketClientTest extends ConnectorTestBase {
         TStream<String> s1 = wsClient1.receiveString();
         assertNotNull("s1", s1);
         
-        TSink<String> sink1 = wsClient1.sendString(t.strings(str1, str2));
+        TSink<String> sink1 = wsClient1.sendString(t.strings(getStr1(), getStr2()));
         assertNotNull("sink1", sink1);
         
         WebSocketClient wsClient2 = new Jsr356WebSocketClient(t, config);
         TStream<String> s2 = wsClient2.receiveString();
         assertNotSame("s1 s2", s1, s2);
         
-        TSink<String> sink2 = wsClient2.sendString(t.strings(str1, str2));
+        TSink<String> sink2 = wsClient2.sendString(t.strings(getStr1(), getStr2()));
         assertNotSame("sink1 sink2", sink1, sink2);        
     }
     
@@ -295,10 +218,11 @@ public class WebSocketClientTest extends ConnectorTestBase {
         new Jsr356WebSocketClient(t, config);
     }
     
-    public void testTooManySendersNeg(String str1, String str2) {
+    @Test(expected = IllegalStateException.class)
+    public void testTooManySendersNeg() {
         Topology t = newTopology("testTooManySendersNeg");
-        TStream<String> s1 = t.strings(str1, str2);
-        TStream<String> s2 = t.strings(str1, str2);
+        TStream<String> s1 = t.strings(getStr1(), getStr2());
+        TStream<String> s2 = t.strings(getStr1(), getStr2());
 
         Properties config = getConfig();
         WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
@@ -318,7 +242,8 @@ public class WebSocketClientTest extends ConnectorTestBase {
         TStream<String> s2 = wsClient.receiveString(); // should throw
     }
     
-    public void testJson(String str1, String str2) throws Exception {
+    @Test
+    public void testJson() throws Exception {
         Topology t = newTopology("testJson");
         System.out.println("===== "+t.getName());
         
@@ -328,8 +253,8 @@ public class WebSocketClientTest extends ConnectorTestBase {
         WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
         
         String[] expected = new String[] {
-                "{\"id\":\"" + str1 + "\",\"value\":27}",
-                "{\"id\":\"" + str2 + "\",\"value\":13}"
+                "{\"id\":\"" + getStr1() + "\",\"value\":27}",
+                "{\"id\":\"" + getStr2() + "\",\"value\":13}"
         };
         
         TStream<JsonObject> s = t.strings(expected)
@@ -343,7 +268,8 @@ public class WebSocketClientTest extends ConnectorTestBase {
         completeAndValidate("", t, rcvd, SEC_TMO, expected);
     }
     
-    public void testString(String str1, String str2) throws Exception {
+    @Test
+    public void testString() throws Exception {
         Topology t = newTopology("testString");
         System.out.println("===== "+t.getName());
         
@@ -352,7 +278,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
         Properties config = getConfig();
         WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
         
-        String[] expected = new String[] { str1, str2 };
+        String[] expected = new String[] { getStr1(), getStr2() };
         
         TStream<String> s = t.strings(expected);
         s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);
@@ -363,7 +289,8 @@ public class WebSocketClientTest extends ConnectorTestBase {
         completeAndValidate("", t, rcvd, SEC_TMO, expected);
     }
     
-    public void testBytes(String str1, String str2) throws Exception {
+    @Test
+    public void testBytes() throws Exception {
         Topology t = newTopology("testBytes");
         System.out.println("===== "+t.getName());
 
@@ -372,7 +299,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
         Properties config = getConfig();
         WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
         
-        String[] expected = new String[] { str1, str2 };
+        String[] expected = new String[] { getStr1(), getStr2() };
         
         TStream<byte[]> s = t.strings(expected)
                                 .map(tup -> tup.getBytes());
@@ -385,7 +312,8 @@ public class WebSocketClientTest extends ConnectorTestBase {
         completeAndValidate("", t, rcvd, SEC_TMO, expected);
     }
     
-    public void testReconnect(String str1, String str2, String str3, String str4) throws Exception {
+    @Test
+    public void testReconnect() throws Exception {
         /*
          * It's becomming apparent that the reconnect series of tests
          * aren't reliable so skip them for ci. See jira QUARKS-122 for
@@ -401,7 +329,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
         Properties config = getConfig();
         WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
         
-        String[] expected = new String[] { str1, str2, str3, str4 };
+        String[] expected = new String[] { getStr1(), getStr2(), getStr3(), getStr4() };
         
         TStream<String> s = t.strings(expected);
         s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);
@@ -429,7 +357,8 @@ public class WebSocketClientTest extends ConnectorTestBase {
         completeAndValidate("", t, rcvd, SEC_TMO + 10, expected);
     }
     
-    public void testReconnectBytes(String str1, String str2, String str3, String str4) throws Exception {
+    @Test
+    public void testReconnectBytes() throws Exception {
         /*
          * It's becomming apparent that the reconnect series of tests
          * aren't reliable so skip them for ci. See jira QUARKS-122 for
@@ -445,7 +374,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
         Properties config = getConfig();
         WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
         
-        String[] expected = new String[] { str1, str2, str3, str4 };
+        String[] expected = new String[] { getStr1(), getStr2(), getStr3(), getStr4() };
         
         TStream<byte[]> s = t.strings(expected).map(tup -> tup.getBytes());
         s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);
@@ -522,7 +451,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
             
             WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
             
-            String[] expected = new String[] { str1, str2 };
+            String[] expected = new String[] { getStr1(), getStr2() };
             
             TStream<String> s = t.strings(expected);
             s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);
@@ -537,7 +466,8 @@ public class WebSocketClientTest extends ConnectorTestBase {
         }
     }
     
-    public void testSslClientAuthSystemProperty(String str1, String str2) throws Exception {
+    @Test
+    public void testSslClientAuthSystemProperty() throws Exception {
         Topology t = newTopology("testSslClientAuthSystemProperty");
         System.out.println("===== "+t.getName());
         
@@ -555,7 +485,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
             
             WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
             
-            String[] expected = new String[] { str1, str2 };
+            String[] expected = new String[] { getStr1(), getStr2() };
             
             TStream<String> s = t.strings(expected);
             s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);
@@ -570,7 +500,8 @@ public class WebSocketClientTest extends ConnectorTestBase {
         }
     }
     
-    public void testSsl(String str1, String str2) throws Exception {
+    @Test
+    public void testSsl() throws Exception {
 
         Topology t = newTopology("testSsl");
         System.out.println("===== "+t.getName());
@@ -583,7 +514,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
         
         WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
         
-        String[] expected = new String[] { str1, str2 };
+        String[] expected = new String[] { getStr1(), getStr2() };
         
         TStream<String> s = t.strings(expected);
         s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);
@@ -594,7 +525,8 @@ public class WebSocketClientTest extends ConnectorTestBase {
         completeAndValidate("", t, rcvd, SEC_TMO, expected);
     }
     
-     public void testSslReconnect(String str1, String str2, String str3, String str4) throws Exception {
+     @Test
+     public void testSslReconnect() throws Exception {
          /*
           * It's becomming apparent that the reconnect series of tests
           * aren't reliable so skip them for ci. See jira QUARKS-122 for
@@ -610,7 +542,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
          Properties config = getWssConfig();
          WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
          
-         String[] expected = new String[] { str1, str2, str3, str4 };
+         String[] expected = new String[] { getStr1(), getStr2(), getStr3(), getStr4() };
          
          TStream<String> s = t.strings(expected);
          s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);
@@ -637,7 +569,8 @@ public class WebSocketClientTest extends ConnectorTestBase {
          completeAndValidate("", t, rcvd, SEC_TMO + 10, expected);
      }
     
-    public void testSslNeg(String str1, String str2) throws Exception {
+    @Test
+    public void testSslNeg() throws Exception {
 
         Topology t = newTopology("testSslNeg");
         System.out.println("===== "+t.getName());
@@ -656,7 +589,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
         
         WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
         
-        String[] expected = new String[] { str1, str2 };
+        String[] expected = new String[] { getStr1(), getStr2() };
         
         TStream<String> s = t.strings(expected);
         s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);
@@ -667,7 +600,8 @@ public class WebSocketClientTest extends ConnectorTestBase {
         completeAndValidate("", t, rcvd, SEC_TMO, new String[0]);  //rcv nothing
     }
     
-    public void testSslClientAuth(String str1, String str2) throws Exception {
+    @Test
+    public void testSslClientAuth() throws Exception {
 
         Topology t = newTopology("testSslClientAuth");
         System.out.println("===== "+t.getName());
@@ -680,7 +614,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
         
         WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
         
-        String[] expected = new String[] { str1, str2 };
+        String[] expected = new String[] { getStr1(), getStr2() };
         
         TStream<String> s = t.strings(expected);
         s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);
@@ -691,7 +625,8 @@ public class WebSocketClientTest extends ConnectorTestBase {
         completeAndValidate("", t, rcvd, SEC_TMO, expected);
     }
     
-    public void testSslClientAuthDefault(String str1, String str2) throws Exception {
+    @Test
+    public void testSslClientAuthDefault() throws Exception {
 
         Topology t = newTopology("testSslClientAuthDefault");
         System.out.println("===== "+t.getName());
@@ -706,7 +641,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
         
         WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
         
-        String[] expected = new String[] { str1, str2 };
+        String[] expected = new String[] { getStr1(), getStr2() };
         
         TStream<String> s = t.strings(expected);
         s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);
@@ -717,7 +652,8 @@ public class WebSocketClientTest extends ConnectorTestBase {
         completeAndValidate("", t, rcvd, SEC_TMO, expected);
     }
     
-    public void testSslClientAuthMy2ndCertNeg(String str1, String str2) throws Exception {
+    @Test
+    public void testSslClientAuthMy2ndCertNeg() throws Exception {
 
         Topology t = newTopology("testSslClientAuthMy2ndCertNeg");
         System.out.println("===== "+t.getName());
@@ -732,7 +668,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
         
         WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
         
-        String[] expected = new String[] { str1, str2 };
+        String[] expected = new String[] { getStr1(), getStr2() };
         
         TStream<String> s = t.strings(expected);
         s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);
@@ -743,7 +679,8 @@ public class WebSocketClientTest extends ConnectorTestBase {
         completeAndValidate("", t, rcvd, SEC_TMO, new String[0]); // rcv nothing
     }
     
-    public void testSslClientAuthMy3rdCert(String str1, String str2) throws Exception {
+    @Test
+    public void testSslClientAuthMy3rdCert() throws Exception {
 
         Topology t = newTopology("testSslClientAuthMy3rdCert");
         System.out.println("===== "+t.getName());
@@ -758,7 +695,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
         
         WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
         
-        String[] expected = new String[] { str1, str2 };
+        String[] expected = new String[] { getStr1(), getStr2() };
         
         TStream<String> s = t.strings(expected);
         s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);
@@ -769,7 +706,8 @@ public class WebSocketClientTest extends ConnectorTestBase {
         completeAndValidate("", t, rcvd, SEC_TMO, expected);
     }
     
-    public void testSslClientAuthNeg(String str1, String str2) throws Exception {
+    @Test
+    public void testSslClientAuthNeg() throws Exception {
 
         Topology t = newTopology("testSslClientAuthNeg");
         System.out.println("===== "+t.getName());
@@ -788,7 +726,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
         
         WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
         
-        String[] expected = new String[] { str1, str2 };
+        String[] expected = new String[] { getStr1(), getStr2() };
         
         TStream<String> s = t.strings(expected);
         s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);
@@ -817,7 +755,8 @@ public class WebSocketClientTest extends ConnectorTestBase {
         }
     }
     
-    public void testPublicServer(String str1, String str2) throws Exception {
+    @Test
+    public void testPublicServer() throws Exception {
         Topology t = newTopology("testPublicServer");
         System.out.println("===== "+t.getName());
         
@@ -831,7 +770,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
         
         WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
         
-        String[] expected = new String[] { str1, str2 };
+        String[] expected = new String[] { getStr1(), getStr2() };
         
         TStream<String> s = t.strings(expected);
         s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);
@@ -842,7 +781,8 @@ public class WebSocketClientTest extends ConnectorTestBase {
         completeAndValidate("", t, rcvd, SEC_TMO, expected);
     }
     
-    public void testSslPublicServer(String str1, String str2) throws Exception {
+    @Test
+    public void testSslPublicServer() throws Exception {
         Topology t = newTopology("testSslPublicServer");
         System.out.println("===== "+t.getName());
         
@@ -862,7 +802,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
         
         WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
         
-        String[] expected = new String[] { str1, str2 };
+        String[] expected = new String[] { getStr1(), getStr2() };
         
         TStream<String> s = t.strings(expected);
         s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);
@@ -873,7 +813,8 @@ public class WebSocketClientTest extends ConnectorTestBase {
         completeAndValidate("", t, rcvd, SEC_TMO, expected);
     }
     
-    public void testSslPublicServerBadTrustStoreSystemPropertyNeg(String str1, String str2) throws Exception {
+    @Test
+    public void testSslPublicServerBadTrustStoreSystemPropertyNeg() throws Exception {
         Topology t = newTopology("testSslPublicServerBadTrustStoreSystemPropertyNeg");
         System.out.println("===== "+t.getName());
         
@@ -899,7 +840,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
             
             WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
             
-            String[] expected = new String[] { str1, str2 };
+            String[] expected = new String[] { getStr1(), getStr2() };
             
             TStream<String> s = t.strings(expected);
             s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);

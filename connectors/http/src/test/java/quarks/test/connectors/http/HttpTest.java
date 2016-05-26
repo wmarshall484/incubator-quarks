@@ -46,6 +46,17 @@ import quarks.topology.tester.Tester;
  */
 public class HttpTest {
 
+    private static final String prop1 = "abc";
+    private static final String prop2 = "42";
+
+    public String getProp1() {
+        return prop1;
+    }
+
+    public String getProp2() {
+        return prop2;
+    }
+
     @Test
     public void testGet() throws Exception {
         
@@ -129,8 +140,8 @@ public class HttpTest {
     @Test
     public void testJsonGet() throws Exception {
         JsonObject request = new JsonObject();
-        request.addProperty("a", "abc");
-        request.addProperty("b", "42");
+        request.addProperty("a", getProp1());
+        request.addProperty("b", getProp2());
 
         testJsonGet(request);
     }
