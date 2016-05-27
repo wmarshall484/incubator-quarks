@@ -404,7 +404,7 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
         // net one tuple per file
         List<List<String>> expResults = buildExpResults(lines, tuple -> true);
         // agg size only enough for last two lines
-        long aggregateFileSize = 2 * (("1-"+getStr()).length() + 1/*eol*/);
+        long aggregateFileSize = 2 * (("1-"+getStr()).getBytes().length + 1/*eol*/);
         expResults.remove(0);
         expResults.remove(0);
         assertEquals(2, expResults.size());
