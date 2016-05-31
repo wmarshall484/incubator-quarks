@@ -50,6 +50,17 @@ import quarks.topology.tester.Tester;
  */
 public class HttpTest {
 
+    private static final String prop1 = "abc";
+    private static final String prop2 = "42";
+
+    public String getProp1() {
+        return prop1;
+    }
+
+    public String getProp2() {
+        return prop2;
+    }
+
     @Test
     public void testGet() throws Exception {
         
@@ -59,11 +70,12 @@ public class HttpTest {
         
         String url = "http://httpbin.org/get";
         
-        TStream<String> stream = topology.strings(url);
         TStream<String> rc = HttpStreams.<String,String>requests(
-                stream, HttpClients::noAuthentication,
+                topology.strings(url),
+                HttpClients::noAuthentication,
                 t-> HttpGet.METHOD_NAME,
-                t->t, HttpResponders.inputOn200());
+                t->t,
+                HttpResponders.inputOn200());
         
         Tester tester =  topology.getTester();
         
@@ -154,9 +166,9 @@ public class HttpTest {
         
         String url = "http://httpbin.org/status/";
         
-        TStream<Integer> stream = topology.collection(Arrays.asList(200, 404, 202));
         TStream<Integer> rc = HttpStreams.<Integer,Integer>requests(
-                stream, HttpClients::noAuthentication,
+                topology.collection(Arrays.asList(200, 404, 202)),
+                HttpClients::noAuthentication,
                 t-> HttpGet.METHOD_NAME,
                 t-> url + Integer.toString(t),
                 (t,resp) -> resp.getStatusLine().getStatusCode());
@@ -184,9 +196,9 @@ public class HttpTest {
         
         String url = "http://httpbin.org/basic-auth/";
         
-        TStream<String> stream = topology.strings("A", "B");
         TStream<Integer> rc = HttpStreams.<String,Integer>requests(
-                stream, () -> HttpClients.basic("usA", "pwdA4"),
+                topology.strings("A", "B"),
+                () -> HttpClients.basic("usA", "pwdA4"),
                 t-> HttpGet.METHOD_NAME,
                 t-> url + "us" + t + "/pwd" + t + "4",
                 (t,resp) -> resp.getStatusLine().getStatusCode());
@@ -200,9 +212,16 @@ public class HttpTest {
         assertTrue(endCondition.getResult().toString(), endCondition.valid());
     }
     
-    
     @Test
     public void testJsonGet() throws Exception {
+        JsonObject request = new JsonObject();
+        request.addProperty("a", getProp1());
+        request.addProperty("b", getProp2());
+
+        testJsonGet(request);
+    }
+
+    public void testJsonGet(JsonObject request) throws Exception {
         
         DirectProvider ep = new DirectProvider();
         
@@ -210,13 +229,9 @@ public class HttpTest {
         
         final String url = "http://httpbin.org/get?";
         
-        JsonObject request1 = new JsonObject();
-        request1.addProperty("a", "abc");
-        request1.addProperty("b", "42");
-        
-        TStream<JsonObject> stream = topology.collection(Arrays.asList(request1));
         TStream<JsonObject> rc = HttpStreams.getJson(
-                stream, HttpClients::noAuthentication,
+                topology.collection(Arrays.asList(request)),
+                HttpClients::noAuthentication,
                 t-> url + "a=" + t.get("a").getAsString() + "&b=" + t.get("b").getAsString()
                 );
         

@@ -72,6 +72,14 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
     
     private int TMO_SEC = 2;
 
+    public String getStr() {
+        return str;
+    }
+
+    public String[] getLines() {
+        return stdLines;
+    }
+
     @Test
     public void testFlushConfig() throws Exception {
         FileWriterFlushConfig<String> cfg;
@@ -277,7 +285,7 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
         // establish a base path
         Path basePath = createTempFile("test1", "txt", new String[0]);
         
-        String[] lines = stdLines;
+        String[] lines = getLines();
 
         // build expected results
         // net all in one, the first, file
@@ -301,7 +309,7 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
         // establish a base path
         Path basePath = createTempFile("test1", "txt", new String[0]);
         
-        String[] lines = stdLines;
+        String[] lines = getLines();
 
         // build expected results
         // net one tuples per file
@@ -329,7 +337,7 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
         // establish a base path
         Path basePath = createTempFile("test1", "txt", new String[0]);
         
-        String[] lines = stdLines;
+        String[] lines = getLines();
 
         // build expected results
         // net one tuples per file
@@ -360,7 +368,7 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
         // establish a base path
         Path basePath = createTempFile("test1", "txt", new String[0]);
         
-        String[] lines = stdLines;
+        String[] lines = getLines();
         
         // build expected results
         // net one tuples per file
@@ -390,19 +398,13 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
         // establish a base path
         Path basePath = createTempFile("test1", "txt", new String[0]);
         
-        String str = "123456789";
-        String[] lines = new String[] {
-                "1-"+str,
-                "2-"+str,
-                "3-"+str,
-                "4-"+str
-        };
+        String[] lines = getLines();
         
         // build expected results
         // net one tuple per file
         List<List<String>> expResults = buildExpResults(lines, tuple -> true);
         // agg size only enough for last two lines
-        long aggregateFileSize = 2 * (("1-"+str).length() + 1/*eol*/);
+        long aggregateFileSize = 2 * (("1-"+getStr()).getBytes().length + 1/*eol*/);
         expResults.remove(0);
         expResults.remove(0);
         assertEquals(2, expResults.size());
@@ -426,7 +428,7 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
         // establish a base path
         Path basePath = createTempFile("test1", "txt", new String[0]);
         
-        String[] lines = stdLines;
+        String[] lines = getLines();
         
         // build expected results
         int keepCnt = 2;  // only keep the last n files with throttling, age,
@@ -473,7 +475,7 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
         // establish a base path
         Path basePath = createTempFile("test1", "txt", new String[0]);
         
-        String[] lines = stdLines;
+        String[] lines = getLines();
 
         // build expected results
         // net all in one, the first, file
@@ -498,7 +500,7 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
         // establish a base path
         Path basePath = createTempFile("test1", "txt", new String[0]);
         
-        String[] lines = stdLines;
+        String[] lines = getLines();
 
         // build expected results
         // net all in one, the first, file
@@ -523,7 +525,7 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
         // establish a base path
         Path basePath = createTempFile("test1", "txt", new String[0]);
         
-        String[] lines = stdLines;
+        String[] lines = getLines();
 
         // build expected results
         // net all in one, the first, file
@@ -553,7 +555,7 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
         // establish a base path
         Path basePath = createTempFile("test1", "txt", new String[0]);
         
-        String[] lines = stdLines;
+        String[] lines = getLines();
 
         // build expected results
         // net all in one, the first, file
@@ -579,7 +581,7 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
         // establish a base path
         Path basePath = createTempFile("test1", "txt", new String[0]);
         
-        String[] lines = stdLines;
+        String[] lines = getLines();
         
         // build expected results
         // net two tuples per file
@@ -608,7 +610,7 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
         // establish a base path
         Path basePath = createTempFile("test1", "txt", new String[0]);
         
-        String[] lines = stdLines;
+        String[] lines = getLines();
         
         // build expected results
         // net one tuple per file 
@@ -634,7 +636,7 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
         // establish a base path
         Path basePath = createTempFile("test1", "txt", new String[0]);
         
-        String[] lines = stdLines;
+        String[] lines = getLines();
         
         // build expected results
         // net one tuple per file with 250msec cycle config and 1 throttle
@@ -666,7 +668,7 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
         // establish a base path
         Path basePath = createTempFile("test1", "txt", new String[0]);
         
-        String[] lines = stdLines;
+        String[] lines = getLines();
 
         // build expected results
         // a tuple based config / predicate.  in this case should end up with 3 files.
@@ -694,7 +696,7 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
         // establish a base path
         Path basePath = createTempFile("test1", "txt", new String[0]);
         
-        String[] lines = stdLines;
+        String[] lines = getLines();
         
         // build expected results
         // keep all given age and TMO_SEC
@@ -724,7 +726,7 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
         Path dir = Files.createTempDirectory(testDirPrefix);
         Path basePath = dir.resolve("writerCreated");
         
-        String[] lines = stdLines;
+        String[] lines = getLines();
 
         System.out.println("########## "+t.getName());
         

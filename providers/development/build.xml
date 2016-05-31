@@ -27,12 +27,14 @@
     <pathelement location="${quarks.lib}/quarks.providers.direct.jar" />
     <pathelement location="${quarks.console}/server/lib/quarks.console.server.jar" />
     <pathelement location="${quarks.utils}/metrics/lib/quarks.utils.metrics.jar" />
+    <pathelement location="${quarks.utils}/streamscope/lib/quarks.utils.streamscope.jar" />
     <pathelement location="${lib}/quarks.runtime.jmxcontrol.jar" />
   </path>
 
   <path id="test.compile.classpath">
     <pathelement location="${jar}" />
     <pathelement location="../../api/topology/test.classes" />
+    <pathelement location="../../utils/streamscope/test.classes" />
     <path refid="compile.classpath"/>
   </path>
 

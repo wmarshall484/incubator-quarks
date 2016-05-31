@@ -41,6 +41,12 @@ var resetAll = function(bNew) {
 	}
 };
 
+var isRect = function(kind) {
+    var k = kind.toUpperCase();
+    return k.endsWith("COUNTEROP")
+          || k.endsWith("STREAMSCOPE");
+};
+
 d3.select("#jobs")
 .on("change", function() {
   tagsArray = [];
@@ -573,7 +579,7 @@ var renderGraph = function(jobId, counterMetrics, bIsNewJob) {
       .on("drag", dragmove));
       
       node.append(function(d) {
-    	  if (d.invocation.kind.toUpperCase().endsWith("COUNTEROP")) {
+        	if (isRect(d.invocation.kind)) {
     			return document.createElementNS(d3.ns.prefix.svg, 'rect');
     		} else {
     			return document.createElementNS(d3.ns.prefix.svg, 'circle');
