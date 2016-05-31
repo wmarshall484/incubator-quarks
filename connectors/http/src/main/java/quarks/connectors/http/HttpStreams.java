@@ -157,7 +157,7 @@ public class HttpStreams {
      * 
      *     TStream<JsonObject> stream = topology.collection(Arrays.asList(body));
      *     TStream<JsonObject> rc = HttpStreams.postJson(stream,
-     *             HttpClients::noAuthentication, t -> url, t -> body);
+     *             HttpClients::noAuthentication, t -> url, t -> t);
      * }
      * </pre>
      * 
@@ -167,7 +167,7 @@ public class HttpStreams {
      * @param stream - JsonObject TStream.
      * @param clientCreator - CloseableHttpClient supplier preferably created using {@link HttpClients}
      * @param uri - URI function which returns URI string
-     * @param body - Function that returns HttpEntity which will be set as a body for the request.
+     * @param body - Function that returns JsonObject which will be set as a body for the request.
      * @return TStream of JsonObject which contains responses of POST requests
      * 
      * @see HttpStreams#requestsWithBody(TStream, Supplier, Function, Function, Function, BiFunction)
@@ -205,7 +205,7 @@ public class HttpStreams {
      * 
      *     TStream<JsonObject> stream = topology.collection(Arrays.asList(body));
      *     TStream<JsonObject> rc = HttpStreams.putJson(stream,
-     *             HttpClients::noAuthentication, t -> url, t -> body);
+     *             HttpClients::noAuthentication, t -> url, t -> t);
      * }
      * </pre>
      * 
@@ -215,7 +215,7 @@ public class HttpStreams {
      * @param stream - JsonObject TStream.
      * @param clientCreator - CloseableHttpClient supplier preferably created using {@link HttpClients}
      * @param uri - URI function which returns URI string
-     * @param body - Function that returns HttpEntity which will be set as a body for the request.
+     * @param body - Function that returns JsonObject which will be set as a body for the request.
      * @return TStream of JsonObject which contains responses of PUT requests
      * 
      * @see HttpStreams#requestsWithBody(TStream, Supplier, Function, Function, Function, BiFunction)
@@ -224,7 +224,6 @@ public class HttpStreams {
             Supplier<CloseableHttpClient> clientCreator,
             Function<JsonObject, String> uri,
             UnaryOperator<JsonObject> body) {
-
         return HttpStreams.<JsonObject, JsonObject> requestsWithBody(stream,
                 clientCreator, t -> HttpPut.METHOD_NAME, uri, 
                 t -> new ByteArrayEntity(body.apply(t).toString().getBytes()),

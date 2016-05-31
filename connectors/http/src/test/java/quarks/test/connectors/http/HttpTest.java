@@ -270,8 +270,8 @@ public class HttpTest {
         final String url = "http://httpbin.org/delete?";
         
         JsonObject request = new JsonObject();
-        request.addProperty("a", "abc");
-        request.addProperty("b", "42");
+        request.addProperty("a", getProp1());
+        request.addProperty("b", getProp2());
         
         TStream<JsonObject> stream = topology.collection(Arrays.asList(request));
         TStream<JsonObject> rc = HttpStreams.deleteJson(
@@ -314,14 +314,13 @@ public class HttpTest {
         final String url = "http://httpbin.org/post";
 
         JsonObject body = new JsonObject();
-        body.addProperty("foo", "abc");
-        body.addProperty("bar", 42);
+        body.addProperty("foo", getProp1());
+        body.addProperty("bar", getProp2());
 
         TStream<JsonObject> stream = topology.collection(Arrays.asList(body));
         TStream<JsonObject> rc = HttpStreams.postJson(
                 stream, HttpClients::noAuthentication, t -> url,
-                t -> body);
-
+                t -> t);
         TStream<Boolean> resStream = rc.map(j -> {
             assertTrue(j.has("request"));
             assertTrue(j.has("response"));
@@ -352,14 +351,13 @@ public class HttpTest {
         final String url = "http://httpbin.org/put";
 
         JsonObject body = new JsonObject();
-        body.addProperty("foo", "abc");
-        body.addProperty("bar", 42);
+        body.addProperty("foo", getProp1());
+        body.addProperty("bar", getProp2());
 
         TStream<JsonObject> stream = topology.collection(Arrays.asList(body));
         TStream<JsonObject> rc = HttpStreams.putJson(
                 stream, HttpClients::noAuthentication, t -> url,
-                t -> body);
-
+                t -> t);
         TStream<Boolean> resStream = rc.map(j -> {
             assertTrue(j.has("request"));
             assertTrue(j.has("response"));
