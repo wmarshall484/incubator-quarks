@@ -9,6 +9,11 @@ d3.legend = function(g, chartSvg, pItems, legendTitle) {
     var items = {};
     var svg = !chartSvg ? d3.select(g.property("nearestViewportElement")) : chartSvg;
     var isTupleFlowLegend = false;
+    var isRect = function(d) {
+        var k = d.key.toUpperCase();
+        return k.startsWith("COUNTEROP")
+             || k.startsWith("STREAMSCOPE");
+        };
         
     var	legendPadding = g.attr("data-style-padding") || 5,
         lTitleItems = g.selectAll(".legend-title-items").data([true]),
@@ -53,6 +58,14 @@ d3.legend = function(g, chartSvg, pItems, legendTitle) {
     else  {
 	    items = d3.entries(items).sort(
 	    		function(a,b) {
+	    		    // rect before circle - graphic positioning code below
+	    		    var ra = isRect(a);
+	    		    var rb = isRect(b);
+	    		    if (ra && !rb) {
+	    		      return -1;
+	    		    } else if (!ra && rb) {
+	    		      return 1;
+	    		    }
 	    			if (a.key < b.key) {
 	    				return -1;
 	    			} else if (a.key > b.key) {
@@ -100,13 +113,14 @@ d3.legend = function(g, chartSvg, pItems, legendTitle) {
     		})
     		.enter()
     		.append(function(d) {
-    			if (d.key.toUpperCase().startsWith("COUNTEROP")) {
+    		    if (isRect(d)) {
     	  			return document.createElementNS(d3.ns.prefix.svg, 'rect');
     	  		} else {
     	  			return document.createElementNS(d3.ns.prefix.svg, 'circle');
     	  		}
     		});
 
+        // rects before circles
     	var count = 0;
     	li.selectAll("rect")
     	.attr("x", -3)

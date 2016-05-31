@@ -31,10 +31,10 @@ import quarks.topology.Topology;
 
 public class ConnectorTestBase extends TopologyAbstractTest implements DirectTestSetup {
     
-    public static List<String> createMsgs(MsgGenerator mgen, String topic) {
+    public static List<String> createMsgs(MsgGenerator mgen, String topic, String msg1, String msg2) {
         List<String> msgs = new ArrayList<>();
-        msgs.add(mgen.create(topic, "Hello"));
-        msgs.add(mgen.create(topic, "Are you there?"));
+        msgs.add(mgen.create(topic, msg1));
+        msgs.add(mgen.create(topic, msg2));
         return msgs;
     }
 

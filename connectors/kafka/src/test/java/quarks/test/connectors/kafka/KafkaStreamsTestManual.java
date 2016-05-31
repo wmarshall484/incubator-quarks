@@ -43,7 +43,17 @@ public class KafkaStreamsTestManual extends ConnectorTestBase {
     private static final int SEC_TIMEOUT = 10;
     private final String BASE_GROUP_ID = "kafkaStreamsTestGroupId";
     private final String uniq = simpleTS();
+    private final String msg1 = "Hello";
+    private final String msg2 = "Are you there?";
     
+    public String getMsg1() {
+        return msg1;
+    }
+
+    public String getMsg2() {
+        return msg2;
+    }
+
     private String[] getKafkaTopics() {
         String csvTopics = System.getProperty("quarks.test.connectors.kafka.csvTopics", "testTopic1,testTopic2");
         String[] topics = csvTopics.split(",");
@@ -101,7 +111,7 @@ public class KafkaStreamsTestManual extends ConnectorTestBase {
         MsgGenerator mgen = new MsgGenerator(t.getName());
         String topic = getKafkaTopics()[0];
         String groupId = newGroupId(t.getName());
-        List<String> msgs = createMsgs(mgen, topic);
+        List<String> msgs = createMsgs(mgen, topic, getMsg1(), getMsg2());
         
         TStream<String> s = PlumbingStreams.blockingOneShotDelay(
                         t.collection(msgs), PUB_DELAY_MSEC, TimeUnit.MILLISECONDS);
@@ -129,7 +139,7 @@ public class KafkaStreamsTestManual extends ConnectorTestBase {
         MsgGenerator mgen = new MsgGenerator(t.getName());
         String topic = getKafkaTopics()[0];
         String groupId = newGroupId(t.getName());
-        List<String> msgs = createMsgs(mgen, topic);
+        List<String> msgs = createMsgs(mgen, topic, getMsg1(), getMsg2());
         List<Rec> recs = new ArrayList<>();
         int i = 0;
         for (String msg : msgs) {
@@ -174,7 +184,7 @@ public class KafkaStreamsTestManual extends ConnectorTestBase {
         MsgGenerator mgen = new MsgGenerator(t.getName());
         String topic = getKafkaTopics()[0];
         String groupId = newGroupId(t.getName());
-        List<String> msgs = createMsgs(mgen, topic);
+        List<String> msgs = createMsgs(mgen, topic, getMsg1(), getMsg2());
         List<Rec> recs = new ArrayList<>();
         int i = 0;
         for (String msg : msgs) {
@@ -219,8 +229,8 @@ public class KafkaStreamsTestManual extends ConnectorTestBase {
         String topic1 = getKafkaTopics()[0];
         String topic2 = getKafkaTopics()[1];
         String groupId = newGroupId(t.getName());
-        List<String> msgs1 = createMsgs(mgen, topic1);
-        List<String> msgs2 = createMsgs(mgen, topic2);
+        List<String> msgs1 = createMsgs(mgen, topic1, getMsg1(), getMsg2());
+        List<String> msgs2 = createMsgs(mgen, topic2, getMsg1(), getMsg2());
         List<String> msgs = new ArrayList<>(msgs1);
         msgs.addAll(msgs2);
         
@@ -260,8 +270,8 @@ public class KafkaStreamsTestManual extends ConnectorTestBase {
         String topic1 = getKafkaTopics()[0];
         String topic2 = getKafkaTopics()[1];
         String groupId = newGroupId(t.getName());
-        List<String> msgs1 = createMsgs(mgen, topic1);
-        List<String> msgs2 = createMsgs(mgen, topic2);
+        List<String> msgs1 = createMsgs(mgen, topic1, getMsg1(), getMsg2());
+        List<String> msgs2 = createMsgs(mgen, topic2, getMsg1(), getMsg2());
         
         // Multiple subscribe() on a single connection.
         // Currently, w/Kafka0.8.2.2, we only support a single

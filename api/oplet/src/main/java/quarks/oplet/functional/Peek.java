@@ -41,6 +41,10 @@ public class Peek<T> extends quarks.oplet.core.Peek<T> {
     public Peek(Consumer<T> peeker) {
         this.peeker = peeker;
     }
+    
+    protected Consumer<T> getPeeker() {
+      return peeker;
+    }
 
     @Override
     protected void peek(T tuple) {

@@ -37,6 +37,9 @@ import quarks.oplet.core.FanOut;
 import quarks.oplet.core.Peek;
 import quarks.providers.direct.DirectProvider;
 import quarks.runtime.jmxcontrol.JMXControlService;
+import quarks.streamscope.StreamScopeRegistry;
+import quarks.streamscope.StreamScopeSetup;
+import quarks.streamscope.mbeans.StreamScopeRegistryMXBean;
 import quarks.topology.Topology;
 
 /**
@@ -61,7 +64,18 @@ import quarks.topology.Topology;
  * The implementation calls {@link Metrics#counter(Topology)} to insert 
  * {@link CounterOp} oplets into each stream.
  * </LI>
+ * <LI>
+ * Instrument the topology adding {@link quarks.streamscope.oplets.StreamScope StreamScope}
+ * oplets on all the streams before submitting a topology.  
+ * See {@link StreamScopeSetup#addStreamScopes(Topology) StreamScopeSetup.addStreamscopes}.
+ * </LI>
+ * <LI>
+ * Add a {@link StreamScopeRegistry} runtime service and a
+ * {@link StreamScopeRegistryMXBean} management bean to the {@code ControlService}.
+ * See {@link StreamScopeSetup#register(quarks.execution.services.ServiceContainer) StreamScopeSetup.register}.
+ * </LI>
  * </UL>
+ * @see StreamScopeRegistry
  */
 public class DevelopmentProvider extends DirectProvider {
     
@@ -78,6 +92,8 @@ public class DevelopmentProvider extends DirectProvider {
         
         getServices().addService(ControlService.class,
                 new JMXControlService(JMX_DOMAIN, new Hashtable<>()));
+        
+        StreamScopeSetup.register(getServices());
 
         HttpServer server = HttpServer.getInstance();
         getServices().addService(HttpServer.class, server);   
@@ -87,6 +103,7 @@ public class DevelopmentProvider extends DirectProvider {
     @Override
     public Future<Job> submit(Topology topology, JsonObject config) {
         Metrics.counter(topology);
+        StreamScopeSetup.addStreamScopes(topology);
         duplicateTags(topology);
         return super.submit(topology, config);
     }
@@ -132,4 +149,5 @@ public class DevelopmentProvider extends DirectProvider {
         c.tag(ta);
       }
     }
+
 }

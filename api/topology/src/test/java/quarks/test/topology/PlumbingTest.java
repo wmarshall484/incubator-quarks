@@ -743,4 +743,5 @@ public abstract class PlumbingTest extends TopologyAbstractTest {
         assertTrue("valid:" + contents.getResult(), contents.valid());
         assertTrue("valid:" + resultAvailablePermits, resultAvailablePermits.equals(arrayResult));
     }
+
 }

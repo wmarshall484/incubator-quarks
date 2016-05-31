@@ -44,7 +44,7 @@ public class EtiaoJob extends AbstractGraphJob implements JobContext {
     private final DirectGraph graph;
     private final String id;
     private final String topologyName;
-    private String name;
+    private final String name;
     private final ServiceContainer containerServices;
     private final JobRegistryService jobs;
 
@@ -56,12 +56,14 @@ public class EtiaoJob extends AbstractGraphJob implements JobContext {
      * 
      * @param graph graph representation of the topology
      * @param topologyName name of the topology
+     * @param jobName name of the Job
      * @param container service container
      */
-    public EtiaoJob(DirectGraph graph, String topologyName, ServiceContainer container) {
+    EtiaoJob(DirectGraph graph, String topologyName, String jobName, ServiceContainer container) {
         this.graph = graph;
         this.id = ID_PREFIX + String.valueOf(jobID.getAndIncrement());
         this.topologyName = topologyName;
+        this.name = jobName;
         this.containerServices = container;
 
         ControlService cs = container.getService(ControlService.class);
@@ -76,7 +78,7 @@ public class EtiaoJob extends AbstractGraphJob implements JobContext {
     /**
      * {@inheritDoc}
      * <P>
-     * If a job name is not specified at submit time, this implementation 
+     * If a job name is not specified, this implementation 
      * creates a job name with the following format: {@code topologyName_jobId}.
      * </P>
      */
@@ -195,11 +197,6 @@ public class EtiaoJob extends AbstractGraphJob implements JobContext {
         return graph;
     }
 
-    public void setName(String name) {
-        this.name = name;
-        updateRegistry();
-    }
-    
     private void updateRegistry() {
         if (jobs != null)
             jobs.updateJob(this);
