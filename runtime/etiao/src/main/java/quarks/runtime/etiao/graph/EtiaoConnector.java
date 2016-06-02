@@ -34,19 +34,23 @@ class EtiaoConnector<P> implements Connector<P> {
 	/**
 	 * The original port for this connector.
 	 */
-	@SuppressWarnings("unused")
     private final ExecutableVertex<?, ?, P> originalVertex;
 	@SuppressWarnings("unused")
     private final int originalPort;
 	private String alias;
 
 	/**
-	 * The active port for this connector. active is different to original when
-	 * a peek has been inserted.
+	 * The active port for this connector - where to add a peek or the 1st connect() target. 
+	 * active is different from original when
+	 * a peek has been inserted.  See commentary in peek().
 	 */
 	private ExecutableVertex<?, ?, P> activeVertex;
 	private int activePort;
 
+	/* The connector's (non-peek) target. When connected this refers to
+	 * the 1st connect() target or a connect() injected FanOut.
+	 * See commentary in peek().
+	 */
 	private Target<P> target;
 
 	/**
@@ -72,6 +76,7 @@ class EtiaoConnector<P> implements Connector<P> {
 
     @Override
     public boolean isConnected() {
+    // See Connector.isConnected() doc for semantics
 		return target != null;
     }
 
@@ -133,13 +138,45 @@ class EtiaoConnector<P> implements Connector<P> {
 
     @Override
     public <N extends Peek<P>> Connector<P> peek(N oplet) {
+        /*
+			   * See Connector.peek() method/class doc for semantics.
+				 * A peek is added at the activeVertex/port and
+				 * then becomes the new activeVertex/port.
+         * 
+         * Adding a peek must not change whether or not the
+         * "primary" connector "is connected" / has a target.
+				 * The new peek does not become the "target".
+         * 
+         * The net is a peekConnector's target is always null
+				 * and its activeVertex is always its originalVertex.
+         */
         ExecutableVertex<N, P, P> peekVertex = graph().insert(oplet, 1, 1);
 
         // Have the output of the peek take over the connections of the current output.
         EtiaoConnector<P> peekConnector = peekVertex.getConnectors().get(0);
 
-        if (isConnected())
+        if (isConnected()) {
+            // N.B. "take" is designed for normal (non-peek) use - it fully
+            // dissociates "other" from its connected target and then fully
+            // associates the connector with the target.  Perfect when
+            // doing something like injecting a FanOut.
+            // 
+            // However, for injecting a peek, peekConnector incorrectly
+            // ends up inheriting "this"'s target and "this" is no longer
+            // "connected" to the target as it should / must be.
+          
             peekConnector.take(this);
+            
+            // put the target back the way it must be
+            target = peekConnector.target;
+            peekConnector.target = null;
+        }
+        
+        // Connect to the new peek from our active vertex and
+        // extend the activeVertex to be the new peek.
+        //
+        // DO NOT change this connector's target - it remains connected or not
+        // independent of peeks.
         
         Target<P> target = new Target<P>(peekVertex, 0);
         activeVertex.connect(activePort, target, newEdge(target));
