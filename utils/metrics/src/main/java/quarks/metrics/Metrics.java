@@ -18,7 +18,7 @@ under the License.
 */
 package quarks.metrics;
 
-import quarks.graph.Vertex;
+import quarks.function.Functions;
 import quarks.metrics.oplets.CounterOp;
 import quarks.metrics.oplets.RateMeter;
 import quarks.topology.TStream;
@@ -63,15 +63,14 @@ public class Metrics {
      * <li>If a chain a Peek oplets is followed by a FanOut, a metric oplet is 
      * inserted between the last Peek and the FanOut oplet.</li>
      * </ul>
-     * The implementation is not idempotent: previously inserted metric oplets
-     * are treated as regular graph vertices.  Calling the method twice 
+     * The implementation is not idempotent: Calling the method twice 
      * will insert a new set of metric oplets into the graph.
      * @param t
      *            The topology
+     * @see quarks.graph.Graph#peekAll(quarks.function.Supplier, quarks.function.Predicate) Graph.peekAll()
      */
     public static void counter(Topology t) {
-        t.graph().peekAll( 
-                () -> new CounterOp<>(),
-                (Vertex<?, ?, ?> v) -> !(v.getInstance() instanceof quarks.oplet.core.FanOut));
+        // peekAll() embodies the above exclusion semantics
+        t.graph().peekAll(() -> new CounterOp<>(), Functions.alwaysTrue());
     }
 }

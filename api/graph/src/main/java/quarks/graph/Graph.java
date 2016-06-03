@@ -77,13 +77,13 @@ public interface Graph {
     /**
      * Insert Peek oplets returned by the specified {@code Supplier} into 
      * the outputs of all of the oplets which satisfy the specified 
-     * {@code Predicate}.
+     * {@code Predicate} and where the output's {@link Connector#isConnected()}
+     * is true.
      * 
      * @param supplier
      *            Function which provides a Peek oplet to insert
      * @param select
-     *            Predicate to determine determines whether a Peek oplet will
-     *            be inserted on the outputs of the vertex passed as parameter
+     *            Vertex selection Predicate
      */
     void peekAll(Supplier<? extends Peek<?>> supplier, Predicate<Vertex<?, ?, ?>> select);
 

@@ -194,6 +194,7 @@ public class Invocation<T extends Oplet<I, O>, I, O> implements AutoCloseable {
         oplet.close();
     }
     
+    /** For debug. Contents subject to change. */
     @Override
     public String toString() {
       return "{"

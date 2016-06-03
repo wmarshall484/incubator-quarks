@@ -59,7 +59,7 @@ class EtiaoConnector<P> implements Connector<P> {
     /** where to add the next peek and 1st connect() op */
     EtiaoConnector<P> activeConnector;
     
-    /** the non-peek or FanOut connect() added target */
+    /** the connect() added non-peek or FanOut target */
     Target<P> connectTarget;
     
     /** FanOut when the connector has >1 connect() added targets */
@@ -74,6 +74,7 @@ class EtiaoConnector<P> implements Connector<P> {
       return "{" 
           // avoid activeConnector.toString() recursion
           + " activeConnector=<" + activeConnector.oport + "," + activeConnector.vertex + ">"
+          + " primaryConnector=<" + primaryConnector.oport + "," + primaryConnector.vertex + ">"
           + " connectTarget=" + connectTarget
           + " fanOutVertex=" + fanOutVertex
           + " alias=" + alias
@@ -149,7 +150,7 @@ class EtiaoConnector<P> implements Connector<P> {
     ExecutableVertex<N, P, P> peekVertex = newInternalVertex(oplet, 1, 1);
     EtiaoConnector<P> peekConnector = peekVertex.getConnectors().get(0);
 
-    // The peek takes over the connection to connected target(s).
+    // The peek takes over the connection to connect() added target(s).
     if (isConnected()) {
       peekConnector.takeTarget();
     }
@@ -178,7 +179,7 @@ class EtiaoConnector<P> implements Connector<P> {
   }
 
   /**
-   * Disconnect the connected target(s)
+   * Disconnect the connect() added target(s)
    * @return the target
    */
   private Target<P> disconnectTarget() {
@@ -193,7 +194,7 @@ class EtiaoConnector<P> implements Connector<P> {
   }
 
   /**
-   * Take activeConnector's connection to the connected target(s).
+   * Take activeConnector's connection to the connect() added target(s).
    */
   private void takeTarget() {
     state.connectTarget = connectDirect(disconnectTarget());
