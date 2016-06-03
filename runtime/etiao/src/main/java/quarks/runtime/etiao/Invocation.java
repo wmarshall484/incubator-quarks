@@ -193,4 +193,12 @@ public class Invocation<T extends Oplet<I, O>, I, O> implements AutoCloseable {
     public void close() throws Exception {
         oplet.close();
     }
+    
+    @Override
+    public String toString() {
+      return "{"
+          + "id=" + getId()
+          + " oplet=" + oplet.getClass().getSimpleName()
+          + "}";
+    }
 }
