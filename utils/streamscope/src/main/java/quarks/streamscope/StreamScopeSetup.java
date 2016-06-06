@@ -20,8 +20,7 @@ package quarks.streamscope;
 
 import quarks.execution.services.ControlService;
 import quarks.execution.services.ServiceContainer;
-import quarks.graph.Vertex;
-import quarks.oplet.core.Peek;
+import quarks.function.Functions;
 import quarks.streamscope.mbeans.StreamScopeRegistryMXBean;
 import quarks.topology.Topology;
 import quarks.topology.TopologyProvider;
@@ -187,6 +186,7 @@ public class StreamScopeSetup {
      * @param t the Topology.  The operation is a no-op if the topology
      *     does not have a StreamScopeRegistry service.
      * @see #register(ServiceContainer) register
+     * @see quarks.graph.Graph#peekAll(quarks.function.Supplier, quarks.function.Predicate) Graph.peekAll()
      */
     public static void addStreamScopes(Topology t) {
       StreamScopeRegistry rgy = (StreamScopeRegistry) 
@@ -220,12 +220,8 @@ public class StreamScopeSetup {
       // TODO straighten this all out
 
       t.graph().peekAll( 
-          () -> {
-              StreamScope<?> streamScope = new StreamScope<>();
-              Peek<?> peekOp = new quarks.streamscope.oplets.StreamScope<>(streamScope);
-              return peekOp;
-            },
-          (Vertex<?, ?, ?> v) -> !(v.getInstance() instanceof quarks.oplet.core.FanOut));
+          () -> { return new quarks.streamscope.oplets.StreamScope<>(new StreamScope<>()); },
+          Functions.alwaysTrue());
     }
 
 }

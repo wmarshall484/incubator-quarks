@@ -82,7 +82,7 @@ public interface Connector<T> {
     void connect(Vertex<?, T, ?> target, int inputPort);
     
 	/**
-	 * Is my output port connected to any input port.
+	 * Was connect() called on this connector?
 	 * 
 	 * @return true if connected
 	 */
