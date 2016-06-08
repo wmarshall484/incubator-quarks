@@ -1,0 +1,9 @@
+dependencies {
+  compile project(':providers:direct')
+  compile project(':console:server')
+  compile project(':utils:metrics')
+  compile project(':utils:streamscope')
+  compile project(':runtime:jmxcontrol')
+}
+
+addCompileTestDependencies ':api:topology', ':utils:streamscope'

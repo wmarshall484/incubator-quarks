@@ -1,0 +1,10 @@
+dependencies {
+  compile project(':providers:direct')
+  compile project(':runtime:jsoncontrol')
+  compile project(':runtime:appservice')
+  compile project(':connectors:iot')
+  compile project(':connectors:pubsub')
+  compile project(':apps:iot')
+}
+
+addCompileTestDependencies ':api:topology'

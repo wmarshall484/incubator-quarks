@@ -1,0 +1,9 @@
+dependencies {
+  compile project(':api:topology')
+  compile 'org.apache.kafka:kafka_2.10:0.8.2.2'
+  compile 'org.apache.kafka:kafka-clients:0.8.2.2'
+  compile ext_classpath
+  testCompile project(':providers:direct')
+}
+
+addCompileTestDependencies ':api:topology', ':providers:direct', ':connectors:common'

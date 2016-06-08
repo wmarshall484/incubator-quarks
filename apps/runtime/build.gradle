@@ -1,0 +1,7 @@
+dependencies {
+  compile project(':api:topology')
+  compile project(':runtime:jobregistry')
+  compile project(':runtime:appservice')
+  testCompile project(':providers:direct')
+  testCompile project(':runtime:jmxcontrol')
+}

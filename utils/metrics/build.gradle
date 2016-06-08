@@ -1,0 +1,6 @@
+dependencies {
+  compile project(':api:topology')
+  compile ext_classpath
+}
+
+addCompileTestDependencies ':api:topology'

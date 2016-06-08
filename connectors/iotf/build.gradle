@@ -1,0 +1,9 @@
+dependencies {
+  compile project(':api:topology')
+  compile project(':connectors:iot')
+  compile 'com.ibm.messaging:watson-iot:0.1.1'
+  compile ext_classpath
+  testCompile project(':providers:direct')
+}
+
+addCompileTestDependencies ':api:topology', ':providers:direct'

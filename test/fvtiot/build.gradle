@@ -1,0 +1,8 @@
+dependencies {
+  compile project(':providers:iot')
+  compile project(':runtime:appservice')
+  compile project(':runtime:jsoncontrol')
+  compile ext_classpath
+}
+
+addCompileTestDependencies ':apps:iot'

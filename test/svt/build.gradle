@@ -1,0 +1,6 @@
+dependencies {
+  compile project(':providers:development')
+  compile project(':samples:apps')
+  compile project(':connectors:iotf')
+  compile ext_classpath
+}

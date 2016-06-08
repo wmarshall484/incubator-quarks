@@ -1,0 +1,23 @@
+distsDirName = 'webapps'
+
+plugins.apply 'war'
+
+dependencies {
+  providedCompile 'javax.servlet:javax.servlet-api:3.1.0'
+  providedCompile project(':utils:streamscope')
+  providedCompile ext_classpath
+}
+
+war {
+  configure jarOptions
+  destinationDir = project.distsDir
+  archiveName 'console.war'
+  from file('webapp_content/html')
+  into('resources') {
+    from file('webapp_content/resources')
+  }
+  into('js') {
+    from file('webapp_content/js')
+  }
+  webXml = file('webapp_content/WEB-INF/console.xml')
+}

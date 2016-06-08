@@ -1,0 +1,6 @@
+dependencies {
+  compile project(':api:function')
+  compile project(':api:execution')
+  compile project(':api:window')
+  compile ext_classpath
+}

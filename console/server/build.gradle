@@ -1,0 +1,11 @@
+dependencies {
+  compile 'org.eclipse.jetty:jetty-http:9.3.6.v20151106'
+  compile 'org.eclipse.jetty:jetty-io:9.3.6.v20151106'
+  compile 'org.eclipse.jetty:jetty-security:9.3.6.v20151106'
+  compile 'org.eclipse.jetty:jetty-server:9.3.6.v20151106'
+  compile 'org.eclipse.jetty:jetty-servlet:9.3.6.v20151106'
+  compile 'org.eclipse.jetty:jetty-util:9.3.6.v20151106'
+  compile 'org.eclipse.jetty:jetty-webapp:9.3.6.v20151106'
+  compile 'org.eclipse.jetty:jetty-xml:9.3.6.v20151106'
+  compile ext_classpath
+}
