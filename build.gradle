@@ -70,6 +70,7 @@ subprojects {
 
   test {
     include '**/*Test.class'
+    systemProperty 'quarks.test.top.dir.file.path', rootProject.projectDir
     testLogging {
       exceptionFormat 'full'
     }
