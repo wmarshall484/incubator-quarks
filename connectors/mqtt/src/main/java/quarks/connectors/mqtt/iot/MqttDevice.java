@@ -132,7 +132,7 @@ public class MqttDevice implements IotDevice {
      * 
      * @param topology topology to add the connector to.
      * @param properties connector properties.  Properties beyond those
-     *        noted above are ignored.
+     *        noted in the Device properties section above are ignored.
      * @param mqttConfig base MQTT configuration. may be null.
      */
     public MqttDevice(Topology topology, Properties properties, MqttConfig mqttConfig) {

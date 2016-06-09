@@ -30,9 +30,9 @@ package quarks.execution;
  * <table border=1 cellpadding=3 cellspacing=1>
  * <caption>Summary of configuration properties</caption>
  * <tr>
- *    <td align=center><b>Attribute name</b></td>
- *    <td align=center><b>Type</b></td>
- *    <td align=center><b>Description</b></td>
+ *    <th align=center><b>Attribute name</b></th>
+ *    <th align=center><b>Type</b></th>
+ *    <th align=center><b>Description</b></th>
  *  </tr>
  * <tr>
  *    <td>{@link #JOB_NAME jobName}</td>

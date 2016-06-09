@@ -43,7 +43,7 @@ import quarks.topology.TopologyElement;
  * Currently, only streams that are instances of
  * {@code TStream<String>} can have conditions or handlers attached.
  * <P>
- * A {@code Tester} modifies its {@link Topology} to achieve the above.
+ * A {@code Tester} modifies its {@link Topology} to achieve the above purpose.
  * </P>
  */
 public interface Tester extends TopologyElement {

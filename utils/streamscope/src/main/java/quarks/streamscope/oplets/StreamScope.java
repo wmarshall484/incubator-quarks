@@ -30,7 +30,7 @@ import quarks.streamscope.StreamScopeRegistry;
  * with jobId info (lacking a Function level initialize(FuntionScope) mechanism)
  * and so the Console can differentiate a StreamScope peek from any other
  * random Peek oplet use.  Remove this oplet subclass if/when it's no
- * longer needed to achieve the above.
+ * longer needed to achieve the above purpose.
  * </P>
  *
  * @param <T> Type of the tuple.
