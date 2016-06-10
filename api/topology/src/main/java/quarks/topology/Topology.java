@@ -37,6 +37,7 @@ import quarks.topology.tester.Tester;
  * {@link #poll(Supplier, long, TimeUnit) poll}, 
  * {@link #strings(String...) strings}.
  * 
+ * See <a href="doc-files/sources.html">Quarks Source Streams</a>.
  */
 public interface Topology extends TopologyElement {
 
