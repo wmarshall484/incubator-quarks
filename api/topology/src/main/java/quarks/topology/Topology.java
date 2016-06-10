@@ -36,8 +36,9 @@ import quarks.topology.tester.Tester;
  * streams, such as {@link #source(Supplier) source},
  * {@link #poll(Supplier, long, TimeUnit) poll}, 
  * {@link #strings(String...) strings}.
- * 
+ * <P>
  * See <a href="doc-files/sources.html">Quarks Source Streams</a>.
+ * </P>
  */
 public interface Topology extends TopologyElement {
 
@@ -113,7 +114,7 @@ public interface Topology extends TopologyElement {
      *     String alias = pollStream.getAlias();
      *     PeriodMXBean control = cs.getControl(TStream.TYPE, alias, PeriodMXBean.class);
      *     control.setPoll(period, unit);
-     *  }
+     * }
      * }</pre>
      *
      * @param <T> Tuple type

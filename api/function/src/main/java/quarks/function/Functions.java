@@ -69,8 +69,8 @@ public class Functions {
      * Returns a constant function that returns zero (0).
      * This is identical to {@link #zero()} but is more
      * readable when applied as a key function.
-      * @param <T> tuple type
-    * @return Constant function that returns zero (0).
+     * @param <T> tuple type
+     * @return Constant function that returns zero (0).
      */
     public static <T> Function<T,Integer> unpartitioned() {
         return zero();

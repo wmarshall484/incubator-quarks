@@ -45,7 +45,8 @@ under the License.
  * including arbitrary control mbeans registered by applications.
  * 
  * <H4>Provider operations</H4>
- * <TABLE border="1" summary="">
+ * <TABLE border="1">
+ * <caption>Device Commands</caption>
  * <tr>
  *     <th>Operation</th><th>Command identifier</th>
  *     <th>Type</th><th>Alias</th><th>Method</th><th>Arguments</th>

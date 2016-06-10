@@ -96,7 +96,7 @@ public class StreamScopeRegistry {
   
   /** Extract the stream alias from a name
    * @param name the name 
-   * @return null if {@code name} is not a from nameByStreamAlias()
+   * @return null if {@code name} is not from nameByStreamAlias()
    */
   public static String streamAliasFromName(String name) {
     Objects.requireNonNull(name, "name");
@@ -107,7 +107,7 @@ public class StreamScopeRegistry {
   
   /** Extract the streamId from the name.
    * @param name the name 
-   * @return null if {@code name} is not a from nameByStreamId()
+   * @return null if {@code name} is not from nameByStreamId()
    */
   public static String streamIdFromName(String name) {
     Objects.requireNonNull(name, "name");

@@ -164,7 +164,7 @@ public interface Window<T, K, L extends List<T>>{
      * for example:
      * <br>
      * <pre>{@code
-     * Map&ltK, Partitions<U, K, ?>> partitions = window.getPartitions();
+     * Map<K, Partitions<U, K, ?>> partitions = window.getPartitions();
      * synchronized(partitions){
      *  // operations with partition
      * }
