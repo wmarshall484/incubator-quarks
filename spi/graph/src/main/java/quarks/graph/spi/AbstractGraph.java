@@ -33,6 +33,8 @@ import quarks.oplet.core.Source;
 /**
  * A skeletal implementation of the {@link Graph} interface,
  * to minimize the effort required to implement the interface.
+ * 
+ * @param <G> unnecessary?
  */
 public abstract class AbstractGraph<G> implements Graph {
  

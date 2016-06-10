@@ -58,7 +58,6 @@ under the License.
  *    <td><em>{@code [applicationName, config]}</em></td>
  *    <td>{@link quarks.topology.mbeans.ApplicationServiceMXBean ApplicationServiceMXBean}</td>
  * </tr>
- * </tr>
  * <th>Sample command data</th>
  * <td colspan=5>{@code {"type":"appService","alias":"quarks","op":"submit","args":["Heartbeat",{}]}}</td>
  * </tr>
@@ -70,7 +69,6 @@ under the License.
  *    <td><em>{@code applicationName}</em></td><td>{@link quarks.execution.mbeans.JobMXBean#stateChange(quarks.execution.Job.Action) stateChange}</td>
  *    <td>{@code ["CLOSE"]}</td>
  *    <td>{@link quarks.execution.mbeans.JobMXBean JobMXBean}</td>
- * </tr>
  * </tr>
  * <th>Sample command data</th>
  * <td colspan=5>{@code {"type":"job","alias":"Heartbeat","op":"stateChange","args":["CLOSE"]}}</td>

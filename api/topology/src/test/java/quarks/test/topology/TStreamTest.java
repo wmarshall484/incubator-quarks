@@ -286,6 +286,7 @@ public abstract class TStreamTest extends TopologyAbstractTest {
 
     /**
      * Test split() with no drops.
+     * @throws Exception on failure
      */
     @Test
     public void testSplit() throws Exception {
@@ -311,6 +312,7 @@ public abstract class TStreamTest extends TopologyAbstractTest {
 
     /**
      * Test split() with drops.
+     * @throws Exception on failure
      */
     @Test
     public void testSplitWithDrops() throws Exception {
@@ -352,6 +354,7 @@ public abstract class TStreamTest extends TopologyAbstractTest {
 
     /**
      * Test split() zero outputs
+     * @throws Exception on failure
      */
     @Test(expected = IllegalArgumentException.class)
     public void testSplitWithZeroOutputs() throws Exception {
@@ -360,6 +363,7 @@ public abstract class TStreamTest extends TopologyAbstractTest {
 
     /**
      * Test split() negative outputs
+     * @throws Exception on failure
      */
     @Test(expected = IllegalArgumentException.class)
     public void testSplitWithNegativeOutputs() throws Exception {
@@ -382,6 +386,7 @@ public abstract class TStreamTest extends TopologyAbstractTest {
 
     /**
      * Test split(enum) with integer type enum.
+     * @throws Exception on failure
      */
     @Test
     public void testSplitWithEnum() throws Exception {
@@ -424,6 +429,7 @@ public abstract class TStreamTest extends TopologyAbstractTest {
 
     /**
      * Test split(enum) with integer type enum.
+     * @throws Exception on failure
      */
     @Test(expected = IllegalArgumentException.class)
     public void testSplitWithEnumForZeroSizeClass() throws Exception {
@@ -704,6 +710,7 @@ public abstract class TStreamTest extends TopologyAbstractTest {
     
     /**
      * Submit multiple jobs concurrently using ProcessSource.
+     * @throws Exception on failure
      */
     @Test
     public void testMultiTopology() throws Exception {
@@ -726,6 +733,7 @@ public abstract class TStreamTest extends TopologyAbstractTest {
 
     /**
      * Submit multiple jobs concurrently using ProcessSource.
+     * @throws Exception on failure
      */
     @Test
     public void testMultiTopologyWithError() throws Exception {
@@ -750,6 +758,7 @@ public abstract class TStreamTest extends TopologyAbstractTest {
     
     /**
      * Submit multiple jobs concurrently using PeriodicSource.
+     * @throws Exception on failure
      */
     @Test
     public void testMultiTopologyPollWithError() throws Exception {

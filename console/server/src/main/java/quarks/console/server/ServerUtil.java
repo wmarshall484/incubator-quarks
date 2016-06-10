@@ -96,6 +96,7 @@ public class ServerUtil {
     
     /**
      * Looks for the absolute file path of the name of the warFileName argument when running from Eclipse
+     * @param pDomain the ProtectionDomain to use to get the source's location
      * @param warFileName the name of the war file to find the absolute path to
      * @return the absolute path to the warFileName argument as a String
      */

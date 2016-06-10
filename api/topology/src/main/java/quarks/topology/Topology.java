@@ -58,6 +58,7 @@ public interface Topology extends TopologyElement {
      * If {@code data} implements {@link AutoCloseable}, its {@code close()}
      * method will be called when the topology's execution is terminated.
      * 
+     * @param <T> Tuple type
      * @param data
      *            Function that produces that data for the stream.
      * @return New stream containing the tuples from the iterator returned by
@@ -74,6 +75,7 @@ public interface Topology extends TopologyElement {
      * If {@code data} implements {@link AutoCloseable}, its {@code close()}
      * method will be called when the topology's execution is terminated.
      * 
+     * @param <T> Tuple type
      * @param data
      *            Supplier of the tuples.
      * @return New stream containing the tuples from calls to {@code data.get()}
@@ -99,6 +101,7 @@ public interface Topology extends TopologyElement {
      * The {@code PeriodMXBean} is registered with the {@link ControlService}
      * with type {@link TStream#TYPE} and the stream's alias.  
      * e.g.,
+     * </p>
      * <pre>{@code
      * Topology t = ...
      * TStream<Integer> stream = t.poll(...).alias("myStreamControlAlias");
@@ -109,10 +112,10 @@ public interface Topology extends TopologyElement {
      *     String alias = pollStream.getAlias();
      *     PeriodMXBean control = cs.getControl(TStream.TYPE, alias, PeriodMXBean.class);
      *     control.setPoll(period, unit);
-     * }
+     *  }
      * }</pre>
-     * </p>
-     * 
+     *
+     * @param <T> Tuple type
      * @param data
      *            Function that produces that data for the stream.
      * @param period
@@ -144,6 +147,7 @@ public interface Topology extends TopologyElement {
      * method will be called when the topology's execution is terminated.
      * </P>
      * 
+     * @param <T> Tuple type
      * @param eventSetup handler to receive the {@code eventSubmitter}
      * @return New stream containing the tuples added by {@code eventSubmitter.accept(t)}.
      * 
@@ -162,6 +166,7 @@ public interface Topology extends TopologyElement {
     
     /**
      * Declare a stream of objects.
+     * @param <T> Tuple type
      * @param values Values that will be present on the stream.
      * @return Stream containing all values in {@code values}.
      */
@@ -171,6 +176,7 @@ public interface Topology extends TopologyElement {
     /**
      * Declare a stream of constants from a collection.
      * The returned stream will contain all the tuples in {@code tuples}.
+     * @param <T> Tuple type
      * @param tuples Tuples that will be present on the stream.
      * @return Stream containing all values in {@code tuples}.
      */
