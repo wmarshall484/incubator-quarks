@@ -58,8 +58,13 @@ public class FileStreamsTest extends TopologyAbstractTest implements DirectTestS
             "But make allowance for their doubting too;"                
     };
 
+    public String[] getLines() {
+        return stdLines;
+    }
+
     /**
      * Test that directory watcher creates the correct output.
+     * @throws Exception on failure
      */
     @Test
     public void testDirectoryWatcherOrder() throws Exception {
@@ -190,7 +195,7 @@ public class FileStreamsTest extends TopologyAbstractTest implements DirectTestS
     public void testTextFileReader() throws Exception {
         Topology t = newTopology("testTextFileReader");
         
-        String[] lines = stdLines;
+        String[] lines = getLines();
         String[] ucLines = Stream.of(lines)
                 .map(line -> line.toUpperCase())
                 .toArray(String[]::new);
@@ -217,7 +222,7 @@ public class FileStreamsTest extends TopologyAbstractTest implements DirectTestS
     public void testTextFileReaderProblemPaths() throws Exception {
         Topology t = newTopology("testTextFileReaderProblemPaths");
         
-        String[] lines = stdLines;
+        String[] lines = getLines();
         String[] ucLines = Stream.of(lines)
                 .map(line -> line.toUpperCase())
                 .toArray(String[]::new);
@@ -249,7 +254,7 @@ public class FileStreamsTest extends TopologyAbstractTest implements DirectTestS
     public void testTextFileReaderPrePost() throws Exception {
         Topology t = newTopology("testTextFileReaderPrePost");
         
-        String[] lines = stdLines;
+        String[] lines = getLines();
         String[] ucLines = Stream.of(lines)
                 .map(line -> line.toUpperCase())
                 .toArray(String[]::new);

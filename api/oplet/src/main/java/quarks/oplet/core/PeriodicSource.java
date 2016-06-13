@@ -49,6 +49,10 @@ public abstract class PeriodicSource<T> extends Source<T> implements Runnable, P
     @Override
     public synchronized void start() {
         ControlService cs = getOpletContext().getService(ControlService.class);
+        // TODO BUG HERE: the control alias needs to be unique across the
+        // entire provider instance (multiple topologies) because the ControlService
+        // is provider-wide, not topology specific.
+        // Scope it with just the jobId.  What's going to unregister this control?
         if (cs != null)
             cs.registerControl(TSTREAM_TYPE, getOpletContext().uniquify(getClass().getSimpleName()), 
                     getAlias(), PeriodMXBean.class, this);

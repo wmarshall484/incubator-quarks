@@ -80,7 +80,17 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
     private static final String TEST_USERNAME = "testUserName";
     private static final String TEST_PASSWORD = "testUserNamePw";
     protected final Map<String,String> authInfo = new HashMap<>();
+    private final String msg1 = "Hello";
+    private final String msg2 = "Are you there?";
     
+    public String getMsg1() {
+        return msg1;
+    }
+
+    public String getMsg2() {
+        return msg2;
+    }
+
     @Before
     public void setupAuthInfo() {
         authInfo.clear();
@@ -180,7 +190,7 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
     protected String getSslClientAuthServerURI() {
         return "ssl://localhost:8884";
     }
-    
+
     @Test
     public void testStringPublish() throws Exception {
         Topology top = newTopology("testStringPublish");
@@ -189,7 +199,7 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
         boolean retain = false;
         String clientId = newClientId(top.getName());
         String topic = getMqttTopics()[0];
-        List<String> msgs = createMsgs(mgen, topic);
+        List<String> msgs = createMsgs(mgen, topic, getMsg1(), getMsg2());
         
         TStream<String> s = PlumbingStreams.blockingOneShotDelay(
                 top.collection(msgs), PUB_DELAY_MSEC, TimeUnit.MILLISECONDS);
@@ -215,7 +225,7 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
         int qos = 0;
         boolean retain = false;
         String topic = getMqttTopics()[0];
-        List<String> msgs = createMsgs(mgen, topic);
+        List<String> msgs = createMsgs(mgen, topic, getMsg1(), getMsg2());
         
         TStream<String> s = PlumbingStreams.blockingOneShotDelay(
                 top.collection(msgs), PUB_DELAY_MSEC, TimeUnit.MILLISECONDS);
@@ -238,7 +248,7 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
         boolean retain = false;
         String clientId = newClientId(top.getName());
         String topic = getMqttTopics()[0];
-        List<String> msgs = createMsgs(mgen, topic);
+        List<String> msgs = createMsgs(mgen, topic, getMsg1(), getMsg2());
         
         TStream<String> s = PlumbingStreams.blockingOneShotDelay(
                 top.collection(msgs), PUB_DELAY_MSEC, TimeUnit.MILLISECONDS);
@@ -256,7 +266,7 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
 
         completeAndValidate(clientId, top, rcvd, mgen, SEC_TIMEOUT, msgs.toArray(new String[0]));
     }
-    
+
     @Test
     public void testQoS2() throws Exception {
         Topology top = newTopology("testQoS2");
@@ -265,7 +275,7 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
         boolean retain = false;
         String clientId = newClientId(top.getName());
         String topic = getMqttTopics()[0];
-        List<String> msgs = createMsgs(mgen, topic);
+        List<String> msgs = createMsgs(mgen, topic, getMsg1(), getMsg2());
         
         TStream<String> s = PlumbingStreams.blockingOneShotDelay(
                 top.collection(msgs), PUB_DELAY_MSEC, TimeUnit.MILLISECONDS);
@@ -296,7 +306,7 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
         // avoid mucking up other test subscribers expecting UTF-8 string payloads
         // and use a different topic
         String topic = getMqttTopics()[0] + "-Generic";
-        List<String> msgs = createMsgs(mgen, topic);
+        List<String> msgs = createMsgs(mgen, topic, getMsg1(), getMsg2());
         List<String> expMsgsAsStr = 
                 msgs
                 .stream()
@@ -336,7 +346,7 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
         String pubClientId = newClientId(top.getName())+"_pub";
         String subClientId = newClientId(top.getName())+"_sub";
         String topic = getMqttTopics()[0];
-        List<String> msgs = createMsgs(mgen, topic);
+        List<String> msgs = createMsgs(mgen, topic, getMsg1(), getMsg2());
         
         TStream<String> s = PlumbingStreams.blockingOneShotDelay(
                 top.collection(msgs), PUB_DELAY_MSEC, TimeUnit.MILLISECONDS);
@@ -363,8 +373,8 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
         String clientId = newClientId(top.getName());
         String topic1 = getMqttTopics()[0];
         String topic2 = getMqttTopics()[1];
-        List<String> msgs1 = createMsgs(mgen, topic1);
-        List<String> msgs2 = createMsgs(mgen, topic2);
+        List<String> msgs1 = createMsgs(mgen, topic1, getMsg1(), getMsg2());
+        List<String> msgs2 = createMsgs(mgen, topic2, getMsg1(), getMsg2());
         // create an interleaved list
         List<Msg> msgs = new ArrayList<>();
         for (int i = 0; i < msgs1.size(); i++) {
@@ -429,8 +439,8 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
         String topic1 = getMqttTopics()[0] + "/1";
         String topic2 = getMqttTopics()[0] + "/2";
         String topics = getMqttTopics()[0] + "/+";
-        List<String> msgs1 = createMsgs(mgen, topic1);
-        List<String> msgs2 = createMsgs(mgen, topic2);
+        List<String> msgs1 = createMsgs(mgen, topic1, getMsg1(), getMsg2());
+        List<String> msgs2 = createMsgs(mgen, topic2, getMsg1(), getMsg2());
         List<String> msgs = new ArrayList<>();
         msgs.addAll(msgs1);
         msgs.addAll(msgs2);
@@ -476,7 +486,7 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
         boolean retain = false;
         String clientId = newClientId(top.getName());
         String topic = getMqttTopics()[0];
-        List<String> msgs = createMsgs(mgen, topic);
+        List<String> msgs = createMsgs(mgen, topic, getMsg1(), getMsg2());
         
         TStream<String> s = PlumbingStreams.blockingOneShotDelay(
                 top.collection(msgs), PUB_DELAY_MSEC, TimeUnit.MILLISECONDS);
@@ -540,7 +550,7 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
         System.out.println("=============== setup complete");
         
         // verify the next connect/subscribe [doesn't] sees the retain and then new msgs
-        List<String> msgs = createMsgs(mgen, topic);
+        List<String> msgs = createMsgs(mgen, topic, getMsg1(), getMsg2());
         List<String> expMsgsAsStr = 
                 msgs
                 .stream()
@@ -566,7 +576,6 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
         completeAndValidate(clientId, top, rcvdAsStr, mgen, SEC_TIMEOUT, expMsgsAsStr.toArray(new String[0]));
     }
 
-
     @Test
     public void testRetainedTrue() throws Exception {
         Topology top = newTopology("testRetainedTrue");
@@ -583,7 +592,7 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
         System.out.println("=============== setup complete");
         
         // verify the next connect/subscribe [doesn't] sees the retain and then new msgs
-        List<String> msgs = createMsgs(mgen, topic);
+        List<String> msgs = createMsgs(mgen, topic, getMsg1(), getMsg2());
         List<String> expMsgsAsStr = 
                 msgs
                 .stream()
@@ -825,7 +834,7 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
         boolean retain = false;
         String clientId = newClientId(top.getName());
         String topic = getMqttTopics()[0];
-        List<String> msgs = createMsgs(mgen, topic);
+        List<String> msgs = createMsgs(mgen, topic, getMsg1(), getMsg2());
         
         TStream<String> s = PlumbingStreams.blockingOneShotDelay(
                 top.collection(msgs), PUB_DELAY_MSEC, TimeUnit.MILLISECONDS);
@@ -851,7 +860,7 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
         boolean retain = false;
         String clientId = newClientId(top.getName());
         String topic = getMqttTopics()[0];
-        List<String> msgs = createMsgs(mgen, topic);
+        List<String> msgs = createMsgs(mgen, topic, getMsg1(), getMsg2());
         
         TStream<String> s = PlumbingStreams.blockingOneShotDelay(
                 top.collection(msgs), PUB_DELAY_MSEC, TimeUnit.MILLISECONDS);
@@ -878,7 +887,7 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
         String pubClientId = newClientId(top.getName()+"_pub");
         String subClientId = newClientId(top.getName()+"_sub");
         String topic = getMqttTopics()[0];
-        List<String> msgs = createMsgs(mgen, topic);
+        List<String> msgs = createMsgs(mgen, topic, getMsg1(), getMsg2());
 
         // Exercise idle timeouts.  We won't have any direct
         // evidence that an idle disconnect/reconnect happen
@@ -918,7 +927,7 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
         String pubClientId = newClientId(top.getName()+"_pub");
         String subClientId = newClientId(top.getName()+"_sub");
         String topic = getMqttTopics()[0];
-        List<String> msgs = createMsgs(mgen, topic);
+        List<String> msgs = createMsgs(mgen, topic, getMsg1(), getMsg2());
 
         // Exercise idle timeouts.  We won't have any direct
         // evidence that an idle disconnect/reconnect happen
@@ -953,7 +962,7 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
         String pubClientId = newClientId(top.getName()+"_pub");
         String subClientId = newClientId(top.getName()+"_sub");
         String topic = getMqttTopics()[0];
-        List<String> msgs = createMsgs(mgen, topic);
+        List<String> msgs = createMsgs(mgen, topic, getMsg1(), getMsg2());
 
         // Exercise connection retry by first specifying
         // a bogus server url then a good one.
@@ -1005,7 +1014,7 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
         String pubClientId = newClientId(top.getName()+"_pub");
         String subClientId = newClientId(top.getName()+"_sub");
         String topic = getMqttTopics()[0];
-        List<String> msgs = createMsgs(mgen, topic);
+        List<String> msgs = createMsgs(mgen, topic, getMsg1(), getMsg2());
 
         // Exercise connection retry by first specifying
         // a bogus server url then a good one.
@@ -1064,7 +1073,7 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
         boolean retain = false;
         String clientId = newClientId(top.getName());
         String topic = getMqttTopics()[0];
-        List<String> msgs = createMsgs(mgen, topic);
+        List<String> msgs = createMsgs(mgen, topic, getMsg1(), getMsg2());
         List<String> expectMsgs = new ArrayList<>(msgs);
         expectMsgs.remove(0); // should only lose the 1st tuple
         
@@ -1106,7 +1115,7 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
         boolean retain = false;
         String clientId = newClientId(top.getName());
         String topic = getMqttTopics()[0];
-        List<String> msgs = createMsgs(mgen, topic);
+        List<String> msgs = createMsgs(mgen, topic, getMsg1(), getMsg2());
         List<String> expectMsgs = new ArrayList<>(msgs);
         expectMsgs.remove(0); // should only lose the 1st tuple
         
@@ -1151,7 +1160,7 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
         boolean retain = false;
         String clientId = newClientId(top.getName());
         String topic = getMqttTopics()[0];
-        List<String> msgs = createMsgs(mgen, topic);
+        List<String> msgs = createMsgs(mgen, topic, getMsg1(), getMsg2());
         
         TStream<String> s = PlumbingStreams.blockingOneShotDelay(
                 top.collection(msgs), PUB_DELAY_MSEC, TimeUnit.MILLISECONDS);
@@ -1181,7 +1190,7 @@ public class MqttStreamsTestManual extends ConnectorTestBase {
         boolean retain = false;
         String clientId = newClientId(top.getName());
         String topic = getMqttTopics()[0];
-        List<String> msgs = createMsgs(mgen, topic);
+        List<String> msgs = createMsgs(mgen, topic, getMsg1(), getMsg2());
         
         TStream<String> s = PlumbingStreams.blockingOneShotDelay(
                 top.collection(msgs), PUB_DELAY_MSEC, TimeUnit.MILLISECONDS);

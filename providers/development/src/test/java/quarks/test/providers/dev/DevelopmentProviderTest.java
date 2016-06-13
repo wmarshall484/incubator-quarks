@@ -21,17 +21,19 @@ package quarks.test.providers.dev;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Collection;
+
 import org.junit.Test;
+
 import quarks.graph.Graph;
 import quarks.graph.Vertex;
 import quarks.metrics.oplets.CounterOp;
 import quarks.oplet.Oplet;
+import quarks.streamscope.oplets.StreamScope;
 import quarks.test.topology.TopologyAbstractTest;
 import quarks.topology.TStream;
 import quarks.topology.Topology;
 import quarks.topology.tester.Condition;
-
-import java.util.Collection;
 
 public class DevelopmentProviderTest extends TopologyAbstractTest implements DevelopmentTestSetup {
 
@@ -53,18 +55,55 @@ public class DevelopmentProviderTest extends TopologyAbstractTest implements Dev
 
         complete(t, tc);
   
-        // Three vertices after submission
+        // At least three vertices after submission
+        // (provide may have added other oplets as well)
         Collection<Vertex<? extends Oplet<?, ?>, ?, ?>> verticesAfterSubmit = g.getVertices();
-        assertEquals(3, verticesAfterSubmit.size());
+        assertTrue("size="+verticesAfterSubmit.size(), verticesAfterSubmit.size() >= 3);
         
-        // The new vertex is for a metric oplet
-        boolean found = false;
+        // There is exactly one vertex for a metric oplet
+        int numOplets = 0;
         for (Vertex<? extends Oplet<?, ?>, ?, ?> v : verticesAfterSubmit) {
             Oplet<?,?> oplet = v.getInstance();
             if (oplet instanceof CounterOp) {
-                found = true;
+                numOplets++;
             }
         }
-        assertTrue(found);
+        assertEquals(1, numOplets);
+    }
+
+    // DevelopmentProvider inserts StreamScope oplets into the graph
+    @Test
+    public void testStreamScopesEverywhere() throws Exception {
+
+        Topology t = newTopology();
+        TStream<String> s = t.strings("a", "b", "c");
+        s = s.map(tuple -> tuple)
+            .filter(tuple -> true);
+
+        // Condition inserts a sink
+        Condition<Long> tc = t.getTester().tupleCount(s, 3);
+
+        Graph g = t.graph();
+        Collection<Vertex<? extends Oplet<?, ?>, ?, ?>> vertices = g.getVertices();
+        
+        // Four vertices before submission
+        assertEquals(4, vertices.size());
+
+        complete(t, tc);
+  
+        // At least 4+3 vertices after submission
+        // (provide may have added other oplets as well)
+        Collection<Vertex<? extends Oplet<?, ?>, ?, ?>> verticesAfterSubmit = g.getVertices();
+        assertTrue("size="+verticesAfterSubmit.size(), verticesAfterSubmit.size() >= 7);
+        
+        // There are exactly 3 vertex for a StreamScope oplet
+        int numOplets = 0;
+        for (Vertex<? extends Oplet<?, ?>, ?, ?> v : verticesAfterSubmit) {
+            Oplet<?,?> oplet = v.getInstance();
+            if (oplet instanceof StreamScope) {
+                numOplets++;
+            }
+        }
+        assertEquals(3, numOplets);
     }
 }

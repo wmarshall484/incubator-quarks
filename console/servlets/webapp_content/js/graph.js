@@ -16,7 +16,8 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 */
-opletColor = {"quarks.metrics.oplets.CounterOp": "#c7c7c7", "quarks.metrics.oplets.RateMeter": "#aec7e8", "quarks.oplet.core.FanIn": "#ff7f0e",
+opletColor = {"quarks.streamscope.oplets.StreamScope": "#c7c7c7",
+        "quarks.metrics.oplets.CounterOp": "#c7c7c7", "quarks.metrics.oplets.RateMeter": "#aec7e8", "quarks.oplet.core.FanIn": "#ff7f0e",
 		"quarks.oplet.core.FanOut": "#ffbb78", "quarks.oplet.core.Peek": "#2ca02c", "quarks.oplet.core.PeriodicSource": "#98df8a", 
 		"quarks.oplet.core.Pipe": "#d62728", "quarks.oplet.core.PipeWindow": "#ff9896", "quarks.oplet.core.ProcessSource": "#9467bd", 
 		"quarks.oplet.core.Sink": "#c5b0d5", "quarks.oplet.core.Source": "#8c564b", "quarks.oplet.core.Split": "#c49c94", "quarks.oplet.core.Union" : "#1f77b4",
@@ -33,15 +34,28 @@ addValuesToEdges = function(graph, counterMetrics) {
 		return parseInt(cm.value, 10);
 	});
 	var quartile1 = parseInt(max * 0.25, 10);
+	
+	if (!graph.edgeMap) {
+	    // fwiw, at this time, graph is new object on every call so these
+	    // are rebuilt every time.  ugh.
+        graph.edgeMap = makeEdgeMap(edges);  // edgeKey(edge) -> edge; {incoming,outgoing}EdgesKey(opId) -> edges[]
+	    graph.vertexMap = makeVertexMap(vertices);  // id -> vertex
+	    graph.equivMetricEdgeMap = makeEquivMetricEdgeMap(graph, counterMetrics); // metricEdge -> equivEdges[]
+	}
 
 	// assign the counter metric value to the edge that has the oplet id as a source or target
+	// and set value in equivalent edges
 	counterMetrics.forEach(function(cm){
-		edges.forEach(function(edge){
-			if (edge.sourceId === cm.opId || edge.targetId === cm.opId) {
-				// add a value to this edge from the metric
-				edge.value = cm.value;	
-			} 
-		});
+	    var edges = graph.edgeMap[incomingEdgesKey(cm.opId)];
+	    if (edges === undefined) {
+            // QUARKS-20 TopologyTestBasic has cm with no incoming edges???
+	       edges = [];
+        }
+	    pushArray(edges, graph.edgeMap[outgoingEdgesKey(cm.opId)]);
+        edges.forEach(function(edge){
+            edge.value = cm.value;
+            setEquivalentMetricEdges(graph, edge);
+        });	       
 	});
 	
 	// if there is no counter metric, assign it a mean value, along with a flag that says it is a derived value
@@ -59,6 +73,134 @@ addValuesToEdges = function(graph, counterMetrics) {
 	return graph;
 };
 
+// augment arr with arr2's items
+function pushArray(arr, arr2) {
+  if (arr2) {
+    arr.push.apply(arr, arr2);
+  }
+}
+
+// edgeMap key for edge
+function edgeKey(edge) {
+    return edge.sourceId + "," + edge.targetId;
+}
+
+// edgeMap key for all edges whose targetId === opId
+function incomingEdgesKey(opId) {
+    return "*," + opId;
+}
+
+// edgeMap key for all edges whose sourceId === opId
+function outgoingEdgesKey(opId) {
+    return opId + ",*";
+}
+
+// make edge map of:
+// - edgeKey(edge) -> edge
+// - incomingEdgesKey(edge.targetId) -> edge.targetId incoming edges[]
+// - outgoingEdgesKey(edge.sourceId) -> edge.sourceId outgoing edges[]
+//
+function makeEdgeMap(edges) {
+    var edgeMap = {};
+    edges.forEach(function(edge){
+        edgeMap[edgeKey(edge)] = edge;
+        addToEdges(edgeMap, edge, incomingEdgesKey(edge.targetId));
+        addToEdges(edgeMap, edge, outgoingEdgesKey(edge.sourceId));
+    });
+    return edgeMap;
+}
+
+// add edge to edgeMap[key]'s edges[]
+function addToEdges(edgeMap, edge, key) {
+    var edges = edgeMap[key];
+    if (edges == null) {
+        edges = [];
+        edgeMap[key] = edges;
+    }
+    edges.push(edge);
+}
+
+// make vertex map of opId -> vertex
+function makeVertexMap(vertices) {
+    var vertexMap = {};
+    vertices.forEach(function(vertex){
+        vertexMap[vertex.id] = vertex;
+    });
+    return vertexMap;
+}
+
+// make edge map of:
+// - cmOutputEdge -> equiv downstream edges[]
+// - cmInputEdge -> equiv upstream edges[]
+function makeEquivMetricEdgeMap(graph, counterMetrics) {
+    var map = {};
+    counterMetrics.forEach(function(cm){
+        // N.B. a non-injected cm (e.g., a RateMeter or CounterOp)
+        // may be present at the end of a flow - with no outgoing edges
+        var edges = graph.edgeMap[outgoingEdgesKey(cm.opId)];
+        if (edges) {
+            var edge = edges[0];
+            map[edgeKey(edge)] = collectEquivMetricEdges(graph, edge, true);
+        }
+        
+        var edges = graph.edgeMap[incomingEdgesKey(cm.opId)];
+        if (edges) {
+            // QUARKS-20 TopologyTestBasic has cm with no incoming edges???
+            var edge = edges[0];
+            map[edgeKey(edge)] = collectEquivMetricEdges(graph, edge, false);
+        }
+    });
+    
+    return map;
+}
+
+// traverse downstream/upstream from "edge" collecting "equivalent" edges.
+// Traverses through non-counter-metric peek ops.
+// Also includes a FanOut oplet's outputs when traversing downstream
+// because the runtime doesn't add CounterOps to them.
+// requires graph.edgeMap, graph.vertexMap
+function collectEquivMetricEdges(graph, edge, isDownstream) {
+    var equivEdges = [];
+    var vertex = graph.vertexMap[isDownstream ? edge.targetId : edge.sourceId];
+    if (shouldTraverseVertex(vertex)) {
+        var key = isDownstream ? outgoingEdgesKey(vertex.id) : incomingEdgesKey(vertex.id);
+        var edges = graph.edgeMap[key];
+        pushArray(equivEdges, edges);
+        edges.forEach(function(e2){
+            pushArray(equivEdges, collectEquivMetricEdges(graph, e2, isDownstream));
+        });
+    }
+    else if (isDownstream
+            && vertex.invocation.kind == "quarks.oplet.core.FanOut") {
+        pushArray(equivEdges, graph.edgeMap[outgoingEdgesKey(vertex.id)]);
+    }
+    return equivEdges;
+}
+
+// set the metricEdge's value in all edges equivalent to it.
+// requires graph.equivMetricEdgeMap
+function setEquivalentMetricEdges(graph, metricEdge) {
+    var edges = graph.equivMetricEdgeMap[edgeKey(metricEdge)];
+    edges.forEach(function(edge){
+        edge.value = metricEdge.value;
+    });
+}
+
+function shouldTraverseVertex(vertex) {
+  // TODO need an oplet tag or something to generalize this
+  var kind = vertex.invocation.kind;
+  return kind === "quarks.streamscope.oplets.StreamScope"
+      || kind === "quarks.oplet.functional.Peek"
+      // the following metric oplets are returned as "counter metrics" hence
+      // have their own counter metric value (a contiguous set of them
+      // should nominally have the same value)
+      // || kind === "quarks.metrics.oplet.RateMeter"
+      // || kind === "quarks.metrics.oplet.CounterOp"
+      // || kind === "quarks.metrics.oplet.a-Histogram-Op"
+      // || kind === "quarks.metrics.oplet.a-Timer-Op"
+      ;
+}
+
 getVertexFillColor = function(layer, data, cMetrics) {
 	if (layer === "opletColor" || layer === "static") {
 		return opletColor[data.invocation.kind];
@@ -71,6 +213,8 @@ getVertexFillColor = function(layer, data, cMetrics) {
 		var myScale = d3.scale.linear().domain([0,tupleBucketsIdx.buckets.length -1]).range(tupleColorRange);
 		if (data.invocation.kind.toUpperCase().endsWith("COUNTEROP")) {
 			return "#c7c7c7";
+        } else if (data.invocation.kind.toUpperCase().endsWith("STREAMSCOPE")) {
+            return "#c7c7c7";
 		} else {
 			return myScale(tupleBucketsIdx.bucketIdx);
 		}

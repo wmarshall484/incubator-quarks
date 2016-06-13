@@ -53,7 +53,27 @@ public class WebSocketClientTest extends ConnectorTestBase {
     boolean isExternalServer;// = true;
     int wsServerPort = !isExternalServer ? 0 : 49460;
     String wsUriPath = "/echo";  // match what WsServerEcho is using
+    private final static String str1 = "one";
+    private final static String str2 = "two";
+    private final static String str3 = "three-post-reconnect";
+    private final static String str4 = "four";
     
+    public String getStr1() {
+        return str1;
+    }
+
+    public String getStr2() {
+        return str2;
+    }
+
+    public String getStr3() {
+        return str3;
+    }
+
+    public String getStr4() {
+        return str4;
+    }
+
     @After
     public void cleanup() {
         if (wsServer != null)
@@ -124,7 +144,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
     private String getStorePath(String storeLeaf) {
         return TestRepoPath.getPath("connectors", "wsclient-javax.websocket", "src", "test", "keystores", storeLeaf);
     }
-    
+
     @Test
     public void testBasicStaticStuff() {
         Topology t = newTopology("testBasicStaticStuff");
@@ -135,14 +155,14 @@ public class WebSocketClientTest extends ConnectorTestBase {
         TStream<String> s1 = wsClient1.receiveString();
         assertNotNull("s1", s1);
         
-        TSink<String> sink1 = wsClient1.sendString(t.strings("one", "two"));
+        TSink<String> sink1 = wsClient1.sendString(t.strings(getStr1(), getStr2()));
         assertNotNull("sink1", sink1);
         
         WebSocketClient wsClient2 = new Jsr356WebSocketClient(t, config);
         TStream<String> s2 = wsClient2.receiveString();
         assertNotSame("s1 s2", s1, s2);
         
-        TSink<String> sink2 = wsClient2.sendString(t.strings("one", "two"));
+        TSink<String> sink2 = wsClient2.sendString(t.strings(getStr1(), getStr2()));
         assertNotSame("sink1 sink2", sink1, sink2);        
     }
     
@@ -201,8 +221,8 @@ public class WebSocketClientTest extends ConnectorTestBase {
     @Test(expected = IllegalStateException.class)
     public void testTooManySendersNeg() {
         Topology t = newTopology("testTooManySendersNeg");
-        TStream<String> s1 = t.strings("one", "two");
-        TStream<String> s2 = t.strings("one", "two");
+        TStream<String> s1 = t.strings(getStr1(), getStr2());
+        TStream<String> s2 = t.strings(getStr1(), getStr2());
 
         Properties config = getConfig();
         WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
@@ -233,8 +253,8 @@ public class WebSocketClientTest extends ConnectorTestBase {
         WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
         
         String[] expected = new String[] {
-                "{\"id\":\"id1\",\"value\":27}",
-                "{\"id\":\"id2\",\"value\":13}"
+                "{\"id\":\"" + getStr1() + "\",\"value\":27}",
+                "{\"id\":\"" + getStr2() + "\",\"value\":13}"
         };
         
         TStream<JsonObject> s = t.strings(expected)
@@ -258,7 +278,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
         Properties config = getConfig();
         WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
         
-        String[] expected = new String[] { "one", "two" };
+        String[] expected = new String[] { getStr1(), getStr2() };
         
         TStream<String> s = t.strings(expected);
         s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);
@@ -279,7 +299,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
         Properties config = getConfig();
         WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
         
-        String[] expected = new String[] { "one", "two" };
+        String[] expected = new String[] { getStr1(), getStr2() };
         
         TStream<byte[]> s = t.strings(expected)
                                 .map(tup -> tup.getBytes());
@@ -309,7 +329,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
         Properties config = getConfig();
         WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
         
-        String[] expected = new String[] { "one", "two", "three-post-reconnect", "four" };
+        String[] expected = new String[] { getStr1(), getStr2(), getStr3(), getStr4() };
         
         TStream<String> s = t.strings(expected);
         s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);
@@ -354,7 +374,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
         Properties config = getConfig();
         WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
         
-        String[] expected = new String[] { "one", "two", "three-post-reconnect", "four" };
+        String[] expected = new String[] { getStr1(), getStr2(), getStr3(), getStr4() };
         
         TStream<byte[]> s = t.strings(expected).map(tup -> tup.getBytes());
         s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);
@@ -431,7 +451,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
             
             WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
             
-            String[] expected = new String[] { "one", "two" };
+            String[] expected = new String[] { getStr1(), getStr2() };
             
             TStream<String> s = t.strings(expected);
             s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);
@@ -465,7 +485,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
             
             WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
             
-            String[] expected = new String[] { "one", "two" };
+            String[] expected = new String[] { getStr1(), getStr2() };
             
             TStream<String> s = t.strings(expected);
             s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);
@@ -494,7 +514,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
         
         WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
         
-        String[] expected = new String[] { "one", "two" };
+        String[] expected = new String[] { getStr1(), getStr2() };
         
         TStream<String> s = t.strings(expected);
         s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);
@@ -522,7 +542,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
          Properties config = getWssConfig();
          WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
          
-         String[] expected = new String[] { "one", "two", "three-post-reconnect", "four" };
+         String[] expected = new String[] { getStr1(), getStr2(), getStr3(), getStr4() };
          
          TStream<String> s = t.strings(expected);
          s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);
@@ -569,7 +589,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
         
         WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
         
-        String[] expected = new String[] { "one", "two" };
+        String[] expected = new String[] { getStr1(), getStr2() };
         
         TStream<String> s = t.strings(expected);
         s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);
@@ -594,7 +614,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
         
         WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
         
-        String[] expected = new String[] { "one", "two" };
+        String[] expected = new String[] { getStr1(), getStr2() };
         
         TStream<String> s = t.strings(expected);
         s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);
@@ -621,7 +641,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
         
         WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
         
-        String[] expected = new String[] { "one", "two" };
+        String[] expected = new String[] { getStr1(), getStr2() };
         
         TStream<String> s = t.strings(expected);
         s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);
@@ -648,7 +668,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
         
         WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
         
-        String[] expected = new String[] { "one", "two" };
+        String[] expected = new String[] { getStr1(), getStr2() };
         
         TStream<String> s = t.strings(expected);
         s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);
@@ -675,7 +695,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
         
         WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
         
-        String[] expected = new String[] { "one", "two" };
+        String[] expected = new String[] { getStr1(), getStr2() };
         
         TStream<String> s = t.strings(expected);
         s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);
@@ -706,7 +726,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
         
         WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
         
-        String[] expected = new String[] { "one", "two" };
+        String[] expected = new String[] { getStr1(), getStr2() };
         
         TStream<String> s = t.strings(expected);
         s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);
@@ -750,7 +770,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
         
         WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
         
-        String[] expected = new String[] { "one", "two" };
+        String[] expected = new String[] { getStr1(), getStr2() };
         
         TStream<String> s = t.strings(expected);
         s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);
@@ -782,7 +802,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
         
         WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
         
-        String[] expected = new String[] { "one", "two" };
+        String[] expected = new String[] { getStr1(), getStr2() };
         
         TStream<String> s = t.strings(expected);
         s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);
@@ -793,6 +813,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
         completeAndValidate("", t, rcvd, SEC_TMO, expected);
     }
     
+    @Test
     public void testSslPublicServerBadTrustStoreSystemPropertyNeg() throws Exception {
         Topology t = newTopology("testSslPublicServerBadTrustStoreSystemPropertyNeg");
         System.out.println("===== "+t.getName());
@@ -819,7 +840,7 @@ public class WebSocketClientTest extends ConnectorTestBase {
             
             WebSocketClient wsClient = new Jsr356WebSocketClient(t, config);
             
-            String[] expected = new String[] { "one", "two" };
+            String[] expected = new String[] { getStr1(), getStr2() };
             
             TStream<String> s = t.strings(expected);
             s = PlumbingStreams.blockingOneShotDelay(s, 2, TimeUnit.SECONDS);

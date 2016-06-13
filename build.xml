@@ -43,7 +43,7 @@
     <tstamp/>
 
     <!-- Extract the git commit hash -->
-    <exec executable="git" outputproperty="commithash">
+    <exec executable="git" outputproperty="commithash" errorproperty="commithash.error">
        <arg value="rev-parse"/>
        <arg value="--short"/>
        <arg value="HEAD"/>
@@ -55,6 +55,7 @@
           <propertyref name="DSTAMP"/>
           <propertyref name="TSTAMP"/>
           <propertyref name="commithash"/>
+          <propertyref name="commithash.error"/>
        </propertyset>
     </echoproperties>
   </target>
@@ -112,6 +113,7 @@
         <ant dir="runtime/jsoncontrol" target="@{target}" useNativeBasedir="true"/>
         <ant dir="runtime/jobregistry" target="@{target}" useNativeBasedir="true"/>
         <ant dir="utils/metrics" target="@{target}" useNativeBasedir="true"/>
+        <ant dir="utils/streamscope" target="@{target}" useNativeBasedir="true"/>
 
         <ant dir="providers/direct" target="@{target}" useNativeBasedir="true"/>
         <ant dir="connectors/common" target="@{target}" useNativeBasedir="true"/>
@@ -215,6 +217,7 @@
       </classfiles>
     <sourcefiles encoding="UTF-8">
         <fileset dir="${basedir}/utils/metrics/src/main/java" includes="**/*.java"/>
+        <fileset dir="${basedir}/utils/streamscope/src/main/java" includes="**/*.java"/>
     </sourcefiles>
     </group>
     <group name="Quarks Connectors">
@@ -321,7 +324,7 @@
        <group title="Quarks Connectors" packages="quarks.connectors.*"/>
        <group title="Quarks Samples" packages="quarks.samples.*"/>
        <group title="Quarks Analytics" packages="quarks.analytics.*"/>
-       <group title="Quarks Utilities" packages="quarks.metrics,quarks.metrics.*"/>
+       <group title="Quarks Utilities" packages="quarks.metrics,quarks.metrics.*,quarks.streamscope,quarks.streamscope.*"/>
        <group title="Quarks Low-Level API" packages="quarks.graph,quarks.graph.*,quarks.oplet,quarks.oplet.*,quarks.window"/>
        <group title="Quarks SPI" packages="quarks.*.spi.*"/>
      </javadoc>

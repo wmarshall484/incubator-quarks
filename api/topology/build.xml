@@ -26,6 +26,7 @@
   <path id="compile.classpath">
     <pathelement location="${lib}/quarks.api.execution.jar"/>
     <pathelement location="${lib}/quarks.api.graph.jar"/>
+    <pathelement location="${lib}/quarks.api.oplet.jar" />
     <path refid="quarks.ext.classpath"/>
   </path>
 

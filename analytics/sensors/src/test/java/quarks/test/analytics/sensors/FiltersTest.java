@@ -194,7 +194,7 @@ public class FiltersTest  extends TopologyAbstractTest implements DirectTestSetu
             }
             else if (curCnt == 7) {
                 // lengthen deadtime, so should now exclude 8 too and then 10
-                deadtime.setPeriod(300, TimeUnit.MILLISECONDS);
+                deadtime.setPeriod(250, TimeUnit.MILLISECONDS);
             }
             return curCnt;
             }, 100, TimeUnit.MILLISECONDS);
