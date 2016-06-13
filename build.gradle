@@ -22,9 +22,15 @@ ext.commithash = {
 def now = new Date()
 ext.DSTAMP = String.format('%tY%<tm%<td', now)
 ext.TSTAMP = String.format('%tH%<tM', now)
-ext.ext_classpath = ['com.google.code.gson:gson:2.2.4', 
-  'org.slf4j:slf4j-api:1.7.12', 
+ext.ext_classpath = ['com.google.code.gson:gson:2.2.4',
+  'org.slf4j:slf4j-api:1.7.12',
   'io.dropwizard.metrics:metrics-core:3.1.2']
+ext.buildDir = "${rootDir}/target/gradle"
+
+task clean(type: Delete) {
+    println "delete =  ${rootProject.ext.buildDir}"
+    delete "${rootProject.ext.buildDir}"
+}
 
 /* Configure subprojects */
 subprojects {
@@ -101,10 +107,33 @@ subprojects {
     metaInf {
       from rootProject.file('LICENSE')
       from rootProject.file('NOTICE')
-    } 
+    }
   }
   jar {
     configure jarOptions
+  }
+
+  task copyJar(type: Copy) {
+    def projectGroup = "$project.group".replace("quarks.", "")
+    if (["api", "providers", "runtime", "spi"].contains(projectGroup)) {
+      from jar
+      into "${rootProject.ext.buildDir}/" + "/lib"
+      rename("$jar.archiveName", "$jar.baseName.$jar.extension")
+    }else{
+      from jar
+      into "${rootProject.ext.buildDir}/" + projectGroup + "/$project.name".replaceAll(":", "/") + "/lib"
+      rename("$jar.archiveName", "$jar.baseName.$jar.extension")
+    }
+  }
+  copyJar.dependsOn assemble
+  build.dependsOn copyJar
+}
+
+task consoleWar (dependsOn: "console:servlets"){
+  copy {
+    from "console/servlets/build/webapps/"
+    into "${rootProject.ext.buildDir}/console/webapps/"
+    include "*.war"
   }
 }
 
