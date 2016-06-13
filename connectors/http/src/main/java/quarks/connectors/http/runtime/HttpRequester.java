@@ -37,6 +37,9 @@ import quarks.function.Supplier;
 
 /**
  * Function that processes HTTP requests at runtime.
+ * 
+ * @param <T> Tuple type of request stream
+ * @param <R> Tuple type of result stream
  */
 public class HttpRequester<T,R> implements Function<T,R>{
     

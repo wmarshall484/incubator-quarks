@@ -43,6 +43,9 @@ public interface Graph {
      * Add a new unconnected {@code Vertex} into the graph.
      * <p>
      * 
+     * @param <N> an Oplet type
+     * @param <C> tuple type of input streams
+     * @param <P> tuple type of output streams
      * @param oplet the oplet to associate with the new vertex
      * @param inputs the number of input connectors for the new vertex
      * @param outputs the number of output connectors for the new vertex
@@ -55,6 +58,8 @@ public interface Graph {
      * specified source {@link Oplet}.
      * <p>
      * The {@code Vertex} for the oplet has 0 input connectors and one output connector.
+     * @param <N> a Source type
+     * @param <P> tuple type
      * @param oplet the source oplet
      * @return the output connector for the newly created vertex.
      */
@@ -68,7 +73,10 @@ public interface Graph {
      * An {@link Edge} is created connecting the specified output connector to
      * the new vertice's input connector.
      * 
-     * @param output
+     * @param <N> an Oplet type
+     * @param <C> tuple type of input streams
+     * @param <P> tuple type of output streams
+     * @param output the output connector to connect to the vertice's input connector
      * @param oplet the oplet to associate with the new {@code Vertex}
      * @return the output connector for the new {@code Vertex}
      */
@@ -96,6 +104,7 @@ public interface Graph {
     
     /**
      * Return an unmodifiable view of all edges in this graph.
+     * @return the collection
      */
     Collection<Edge> getEdges();
 }

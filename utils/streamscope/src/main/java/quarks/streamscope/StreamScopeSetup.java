@@ -80,13 +80,12 @@ public class StreamScopeSetup {
      * Perform the registrations needed to use the streamscope package.
      * <P>
      * Typically called during {@link TopologyProvider} construction.
-     * </P><P>
+     * </P>
      * <UL>
      * <LI>register the StreamScopeRegistry service</LI>
      * <LI>register a cleaner to remove job oplet StreamScope registrations</LI>
      * <LI>register a StreamScopeRegistryMXBean with the registered ControlService</LI>
      * </UL>
-     * </P>
      * @param services ServiceContainer to register with.
      */
     public static void register(ServiceContainer services) {

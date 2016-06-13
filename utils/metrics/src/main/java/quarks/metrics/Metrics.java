@@ -33,6 +33,7 @@ public class Metrics {
      * 
      * @param <T>
      *            TStream tuple type
+     * @param stream to stream to instrument
      * @return a {@link TStream} containing the input tuples
      */
     public static <T> TStream<T> counter(TStream<T> stream) {
@@ -45,6 +46,7 @@ public class Metrics {
      * 
      * @param <T>
      *            TStream tuple type
+     * @param stream to stream to instrument
      * @return a {@link TStream} containing the input tuples
      */
     public static <T> TStream<T> rateMeter(TStream<T> stream) {

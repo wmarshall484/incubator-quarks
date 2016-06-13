@@ -258,6 +258,8 @@ public class HttpStreams {
      *  </LI>
      *  </UL>
      *  
+     * @param <T> Tuple type for input stream
+     * @param <R> Tuple type for output stream
      * @param stream Stream to invoke HTTP requests.
      * @param clientCreator Function to create a HTTP client.
      * @param method Function to define the HTTP method.
@@ -280,6 +282,8 @@ public class HttpStreams {
     /**
      * Make an HTTP request with body for each tuple.<br>
      * 
+     * @param <T> Tuple type for input stream
+     * @param <R> Tuple type for output stream
      * @param stream Stream to invoke HTTP requests.
      * @param clientCreator Function to create a HTTP client.
      * @param method Function to define the HTTP method.
