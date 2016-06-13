@@ -20,5 +20,5 @@ hs_err_pid*
 build/
 
 # IntelliJ Idea
-.idea
+.idea/
 *.iml
