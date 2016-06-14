@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 /* Configure root project */
+apply plugin: 'java'
 ext.commithash = {
   try {
     return "git rev-parse --short HEAD".execute().text.trim()
@@ -25,12 +26,8 @@ ext.TSTAMP = String.format('%tH%<tM', now)
 ext.ext_classpath = ['com.google.code.gson:gson:2.2.4',
   'org.slf4j:slf4j-api:1.7.12',
   'io.dropwizard.metrics:metrics-core:3.1.2']
-ext.buildDir = "${rootDir}/target/gradle"
-
-task clean(type: Delete) {
-    println "delete =  ${rootProject.ext.buildDir}"
-    delete "${rootProject.ext.buildDir}"
-}
+ext.target_dir = "$distsDir"
+ext.target_java8_dir = "${ext.target_dir}/java8"
 
 /* Configure subprojects */
 subprojects {
@@ -117,23 +114,50 @@ subprojects {
     def projectGroup = "$project.group".replace("quarks.", "")
     if (["api", "providers", "runtime", "spi"].contains(projectGroup)) {
       from jar
-      into "${rootProject.ext.buildDir}/" + "/lib"
+      into "${rootProject.ext.target_java8_dir}/" + "/lib"
+      rename("$jar.archiveName", "$jar.baseName.$jar.extension")
+    }else if(["samples"].contains(projectGroup)){
+      from jar
+      into "${rootProject.ext.target_java8_dir}/" + projectGroup + "/lib"
       rename("$jar.archiveName", "$jar.baseName.$jar.extension")
     }else{
       from jar
-      into "${rootProject.ext.buildDir}/" + projectGroup + "/$project.name".replaceAll(":", "/") + "/lib"
+      into "${rootProject.ext.target_java8_dir}/" + projectGroup + "/$project.name".replaceAll(":", "/") + "/lib"
       rename("$jar.archiveName", "$jar.baseName.$jar.extension")
     }
   }
+
+  task copySampleSrc {
+    def projectGroup = "$project.group".replace("quarks.", "")
+    if (["samples"].contains(projectGroup)) {
+      copy {
+        into "${rootProject.ext.target_java8_dir}/" + projectGroup + "/src/$project.name/src/main/java/"
+        from(sourceSets.main.allSource.srcDirs) {
+          include '**/*.java'
+        }
+      }
+    }
+  }
+
   copyJar.dependsOn assemble
   build.dependsOn copyJar
 }
 
 task consoleWar (dependsOn: "console:servlets"){
   copy {
-    from "console/servlets/build/webapps/"
-    into "${rootProject.ext.buildDir}/console/webapps/"
-    include "*.war"
+    includeEmptyDirs = false
+    from "${project("console:servlets").buildDir}"
+    into "${rootProject.ext.target_java8_dir}/console/"
+    include "**/*.war"
+  }
+}
+
+task copyScript {
+  copy {
+    includeEmptyDirs = false
+    from "scripts/"
+    into "${rootProject.ext.target_java8_dir}/scripts/"
+    include "**/*"
   }
 }
 
