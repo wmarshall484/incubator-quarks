@@ -18,7 +18,6 @@ under the License.
 */
 package quarks.metrics;
 
-import quarks.function.Functions;
 import quarks.metrics.oplets.CounterOp;
 import quarks.metrics.oplets.RateMeter;
 import quarks.topology.TStream;
@@ -64,6 +63,8 @@ public class Metrics {
      * oplet is inserted after the last Peek, right upstream from oplet B.</li>
      * <li>If a chain a Peek oplets is followed by a FanOut, a metric oplet is 
      * inserted between the last Peek and the FanOut oplet.</li>
+     * <li>Oplets are not inserted immediately downstream from another 
+     * {@code CounterOp} oplet (but they are inserted upstream from one.)</li>
      * </ul>
      * The implementation is not idempotent: Calling the method twice 
      * will insert a new set of metric oplets into the graph.
@@ -73,6 +74,9 @@ public class Metrics {
      */
     public static void counter(Topology t) {
         // peekAll() embodies the above exclusion semantics
-        t.graph().peekAll(() -> new CounterOp<>(), Functions.alwaysTrue());
+        t.graph().peekAll(
+                () -> new CounterOp<>(), 
+                v -> v.getInstance().getClass() != CounterOp.class
+            );
     }
 }
