@@ -76,7 +76,7 @@ public class Metrics {
         // peekAll() embodies the above exclusion semantics
         t.graph().peekAll(
                 () -> new CounterOp<>(), 
-                v -> v.getInstance().getClass() != CounterOp.class
+                v -> !(v.getInstance() instanceof CounterOp)
             );
     }
 }
