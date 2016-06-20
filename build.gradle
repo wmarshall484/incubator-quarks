@@ -45,7 +45,11 @@ subprojects {
   plugins.apply 'java'
   plugins.apply 'jacoco'
 
-  archivesBaseName = "${rootProject.name}${project.path.replace(':','.')}"
+  if(["javax.websocket-client", "javax.websocket-server", "quarks.javax.websocket"].contains(project.name)) {
+    archivesBaseName = "${project.name}"
+  } else{
+    archivesBaseName = "${rootProject.name}${project.path.replace(':', '.')}"
+  }
   version = build_version
 
   jacoco {
@@ -120,22 +124,18 @@ subprojects {
       from jar
       into "${rootProject.ext.target_java8_dir}/" + projectGroup + "/lib"
       rename("$jar.archiveName", "$jar.baseName.$jar.extension")
-    }else{
-      from jar
-      into "${rootProject.ext.target_java8_dir}/" + projectGroup + "/$project.name".replaceAll(":", "/") + "/lib"
-      rename("$jar.archiveName", "$jar.baseName.$jar.extension")
-    }
-  }
 
-  task copySampleSrc {
-    def projectGroup = "$project.group".replace("quarks.", "")
-    if (["samples"].contains(projectGroup)) {
+      //Copy Sample SRC to dist
       copy {
         into "${rootProject.ext.target_java8_dir}/" + projectGroup + "/src/$project.name/src/main/java/"
         from(sourceSets.main.allSource.srcDirs) {
           include '**/*.java'
         }
       }
+    }else{
+      from jar
+      into "${rootProject.ext.target_java8_dir}/" + projectGroup + "/$project.name".replaceAll(":", "/") + "/lib"
+      rename("$jar.archiveName", "$jar.baseName.$jar.extension")
     }
   }
 
@@ -164,3 +164,4 @@ task copyScript {
 task wrapper(type: Wrapper) {
   jarFile = rootProject.file('.gradle-wrapper/gradle-wrapper.jar')
 }
+

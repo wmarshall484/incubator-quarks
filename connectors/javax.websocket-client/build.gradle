@@ -11,6 +11,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+archivesBaseName = project.name
+
 dependencies {
   compile project(':connectors:quarks.javax.websocket')
   compile 'org.eclipse.jetty.websocket:javax-websocket-client-impl:9.3.6.v20151106'

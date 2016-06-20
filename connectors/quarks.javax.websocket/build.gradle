@@ -11,6 +11,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+archivesBaseName = project.name
+
 dependencies {
   compile 'javax.websocket:javax.websocket-api:1.0'
   testRuntime ext_classpath
