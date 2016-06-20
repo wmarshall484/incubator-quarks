@@ -51,7 +51,14 @@ public interface TWindow<T, K> extends TopologyElement {
      * {@code aggregator.apply(tuples, key)} is called, where {@code tuples} is an
      * {@code List} that containing all the tuples in the partition.
      * The {@code List} is stable during the method call, and returns the
-     * tuples in order of insertion into the window, from oldest to newest. <BR>
+     * tuples in order of insertion into the window, from oldest to newest. 
+     * The list will be empty if the last tuple in the partition has been evicted.
+     * <BR>
+     * The returned stream will contain a tuple that is the result of
+     * {@code aggregator.apply(tuples, key)} when the return is not {@code null}.
+     * If {@code aggregator.apply(tuples, key)} returns {@code null} then 
+     * no tuple is submitted to the returned stream.
+     * <BR>
      * Thus the returned stream will contain a sequence of tuples that where the
      * most recent tuple represents the most up to date aggregation of a
      * partition.
