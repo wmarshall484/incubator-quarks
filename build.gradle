@@ -12,6 +12,7 @@
  * limitations under the License.
  */
 /* Configure root project */
+apply plugin: 'java'
 ext.commithash = {
   try {
     return "git rev-parse --short HEAD".execute().text.trim()
@@ -22,9 +23,11 @@ ext.commithash = {
 def now = new Date()
 ext.DSTAMP = String.format('%tY%<tm%<td', now)
 ext.TSTAMP = String.format('%tH%<tM', now)
-ext.ext_classpath = ['com.google.code.gson:gson:2.2.4', 
-  'org.slf4j:slf4j-api:1.7.12', 
+ext.ext_classpath = ['com.google.code.gson:gson:2.2.4',
+  'org.slf4j:slf4j-api:1.7.12',
   'io.dropwizard.metrics:metrics-core:3.1.2']
+ext.target_dir = "$distsDir"
+ext.target_java8_dir = "${ext.target_dir}/java8"
 
 /* Configure subprojects */
 subprojects {
@@ -42,7 +45,11 @@ subprojects {
   plugins.apply 'java'
   plugins.apply 'jacoco'
 
-  archivesBaseName = "${rootProject.name}${project.path.replace(':','.')}"
+  if(["javax.websocket-client", "javax.websocket-server", "quarks.javax.websocket"].contains(project.name)) {
+    archivesBaseName = "${project.name}"
+  } else{
+    archivesBaseName = "${rootProject.name}${project.path.replace(':', '.')}"
+  }
   version = build_version
 
   jacoco {
@@ -101,13 +108,60 @@ subprojects {
     metaInf {
       from rootProject.file('LICENSE')
       from rootProject.file('NOTICE')
-    } 
+    }
   }
   jar {
     configure jarOptions
+  }
+
+  task copyJar(type: Copy) {
+    def projectGroup = "$project.group".replace("quarks.", "")
+    if (["api", "providers", "runtime", "spi"].contains(projectGroup)) {
+      from jar
+      into "${rootProject.ext.target_java8_dir}/" + "/lib"
+      rename("$jar.archiveName", "$jar.baseName.$jar.extension")
+    }else if(["samples"].contains(projectGroup)){
+      from jar
+      into "${rootProject.ext.target_java8_dir}/" + projectGroup + "/lib"
+      rename("$jar.archiveName", "$jar.baseName.$jar.extension")
+
+      //Copy Sample SRC to dist
+      copy {
+        into "${rootProject.ext.target_java8_dir}/" + projectGroup + "/src/$project.name/src/main/java/"
+        from(sourceSets.main.allSource.srcDirs) {
+          include '**/*.java'
+        }
+      }
+    }else{
+      from jar
+      into "${rootProject.ext.target_java8_dir}/" + projectGroup + "/$project.name".replaceAll(":", "/") + "/lib"
+      rename("$jar.archiveName", "$jar.baseName.$jar.extension")
+    }
+  }
+
+  copyJar.dependsOn assemble
+  build.dependsOn copyJar
+}
+
+task consoleWar (dependsOn: "console:servlets"){
+  copy {
+    includeEmptyDirs = false
+    from "${project("console:servlets").buildDir}"
+    into "${rootProject.ext.target_java8_dir}/console/"
+    include "**/*.war"
+  }
+}
+
+task copyScript {
+  copy {
+    includeEmptyDirs = false
+    from "scripts/"
+    into "${rootProject.ext.target_java8_dir}/scripts/"
+    include "**/*"
   }
 }
 
 task wrapper(type: Wrapper) {
   jarFile = rootProject.file('.gradle-wrapper/gradle-wrapper.jar')
 }
+

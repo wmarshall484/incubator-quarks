@@ -11,9 +11,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+def projectGroup = "$project.group".replace("quarks.", "")
+def lib= "${rootProject.ext.target_java8_dir}/" + projectGroup + "/$project.name".replaceAll(":", "/")
+
+//def lib="${project.distsDir}/lib"
+
 dependencies {
   compile project(':providers:development')
   compile project(':samples:apps')
   compile project(':connectors:iotf')
   compile ext_classpath
+}
+
+tasks.build.doFirst(){
+  mkdir lib 
+}
+
+tasks.build.doLast(){
+  delete lib
 }
