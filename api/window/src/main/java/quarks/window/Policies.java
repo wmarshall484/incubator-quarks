@@ -18,7 +18,9 @@ under the License.
 */
 package quarks.window;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -69,11 +71,11 @@ public class Policies {
         
         // Can't use lambda since state is required
         return new BiConsumer<Partition<T,K,L>, T>() {
-            private boolean first = true;
+            private Set<Partition<T,K,L>> initialized_partitions = new HashSet<>();
             @Override
             public void accept(Partition<T, K, L> partition, T tuple) {
-                if(first){
-                    first = false;
+                if(!initialized_partitions.contains(partition)){
+                    initialized_partitions.add(partition);
                     ScheduledExecutorService ses = partition.getWindow().getScheduledExecutorService();
                     ses.schedule(() -> partition.evict(), time, unit);
                 }    
