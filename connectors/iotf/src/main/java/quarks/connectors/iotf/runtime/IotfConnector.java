@@ -23,6 +23,8 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.Properties;
 
+import org.eclipse.paho.client.mqttv3.MqttException;
+
 import com.google.gson.JsonObject;
 import com.ibm.iotf.client.device.Command;
 import com.ibm.iotf.client.device.DeviceClient;
@@ -52,11 +54,16 @@ public class IotfConnector implements Serializable, AutoCloseable {
         this.optionsFile = optionsFile;
     }
 
-    synchronized DeviceClient connect() throws Exception {
-        DeviceClient client = getClient();
-        if (!client.isConnected())
-            client.connect();
-        return client;
+    synchronized DeviceClient connect() {
+        DeviceClient client;
+        try {
+            client = getClient();
+            if (!client.isConnected())
+                client.connect();
+            return client;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     synchronized DeviceClient getClient() throws Exception {
@@ -75,18 +82,14 @@ public class IotfConnector implements Serializable, AutoCloseable {
         client.setCommandCallback(cmd -> {
             tupleSubmitter.accept(cmd);
         });
+        
+        connect();
     }
 
     void publishEvent(String eventId, JsonObject event, int qos) {
         DeviceClient client;
         try {
             client = connect();
-        } catch (Error err) {
-            throw err;
-
-        } catch (RuntimeException re) {
-            throw re;
-
         } catch (Exception e) {
             throw new RuntimeException(e);
 
