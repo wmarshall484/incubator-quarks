@@ -383,6 +383,50 @@ public class WindowTest {
     
     @SuppressWarnings("serial")
     @Test
+    public void keyedTimeBatchWindowTest() throws InterruptedException{
+        Map<Integer, List<Long> > numBatches = Collections.synchronizedMap(new HashMap<>());
+        for(int i = 0; i < 5; i++)
+        	numBatches.put(i, new LinkedList<Long>());
+        
+        ScheduledExecutorService ses = new ScheduledThreadPoolExecutor(5);
+        Window<Integer, Integer, List<Integer>> window =
+                Windows.window(
+                        alwaysInsert(),
+                        Policies.scheduleEvictOnFirstInsert(1, TimeUnit.SECONDS),
+                        Policies.evictAllAndScheduleEvictWithProcess(1, TimeUnit.SECONDS),
+                        (partiton, tuple) -> {},
+                        tuple -> tuple,
+                        () -> new ArrayList<Integer>());
+        
+        window.registerPartitionProcessor(new BiConsumer<List<Integer>, Integer>() {
+            @Override
+            public void accept(List<Integer> t, Integer u) {
+            	List<Long> l = numBatches.get(u);
+                l.add((long)t.size());
+            }
+        });
+        
+        window.registerScheduledExecutorService(new ScheduledThreadPoolExecutor(5));
+
+        int[] count = {1};
+        ses.scheduleAtFixedRate(() -> {
+            window.insert(count[0]++ % 5);
+        }, 0, 1, TimeUnit.MILLISECONDS);
+
+        Thread.sleep(11000);
+        double tolerance = .08;
+        
+        for(Integer key : numBatches.keySet()){
+        	List<Long> batch = numBatches.get(key);
+        	for(Long l : batch){
+        		assertTrue("Values:" + batch.toString(), withinTolerance(200.0, l.doubleValue(), tolerance));
+        	}
+        }
+    }
+   
+    
+    @SuppressWarnings("serial")
+    @Test
     public void timeBatchEnsureUnique() throws InterruptedException{
         List<List<Integer>> batches = Collections.synchronizedList(new LinkedList<>());
 

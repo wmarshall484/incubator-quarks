@@ -18,6 +18,7 @@ under the License.
 */
 package quarks.window;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -71,7 +72,7 @@ public class Policies {
         
         // Can't use lambda since state is required
         return new BiConsumer<Partition<T,K,L>, T>() {
-            private Set<Partition<T,K,L>> initialized_partitions = new HashSet<>();
+            private Set<Partition<T,K,L>> initialized_partitions = Collections.synchronizedSet(new HashSet<>());
             @Override
             public void accept(Partition<T, K, L> partition, T tuple) {
                 if(!initialized_partitions.contains(partition)){
