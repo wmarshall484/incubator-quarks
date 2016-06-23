@@ -119,8 +119,10 @@ public class JsonControlService implements ControlService {
             throw new IllegalArgumentException();
         
         final String controlId = getControlId(type, id, alias);
-        if (mbeans.containsKey(controlId))
+        if (mbeans.containsKey(controlId)) {
+            logger.error("Control id: {} already exists", controlId);
             throw new IllegalStateException();
+        }
 
         logger.trace("Register control id: {}", controlId);
         mbeans.put(controlId, new ControlMBean<T>(controlInterface, control));

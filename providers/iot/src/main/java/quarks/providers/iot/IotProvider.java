@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 
+import org.slf4j.LoggerFactory;
+
 import com.google.gson.JsonObject;
 
 import quarks.apps.iot.IotDevicePubSub;
@@ -232,11 +234,13 @@ public class IotProvider implements TopologyProvider,
          
         this.registerTopology(CONTROL_APP_NAME, (iotDevice, config) -> {
             TStream<JsonObject> controlCommands = iotDevice.commands(Commands.CONTROL_SERVICE);
-            controlCommands.sink(cmd -> {
+            controlCommands.sink(cmd -> {                
                 try {
                     getControlService().controlRequest(cmd.getAsJsonObject(IotDevice.CMD_PAYLOAD));
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
+                } catch (Exception re) {
+                    // If the command fails then don't stop this application,
+                    // just process the next command.
+                    LoggerFactory.getLogger(ControlService.class).error("Control request failed: {}", cmd);
                 }
             });
         });
