@@ -18,10 +18,14 @@ under the License.
 */
 package quarks.runtime.appservice;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -36,6 +40,7 @@ import quarks.function.BiConsumer;
 import quarks.topology.Topology;
 import quarks.topology.TopologyProvider;
 import quarks.topology.mbeans.ApplicationServiceMXBean;
+import quarks.topology.services.TopologyBuilder;
 import quarks.topology.services.ApplicationService;
 
 /**
@@ -74,7 +79,7 @@ public class AppService implements ApplicationService {
     
     private final TopologyProvider provider;
     private final DirectSubmitter<Topology, Job> submitter;
-    
+        
     /**
      * Create an {@code ApplicationService} instance.
      * @param provider Provider to create topology instances for registered applications.
@@ -92,12 +97,30 @@ public class AppService implements ApplicationService {
                     ALIAS+System.currentTimeMillis(), alias,
                     ApplicationServiceMXBean.class,
                     new AppServiceControl(this));
+        
     }
 
     @Override
     public void registerTopology(String applicationName, BiConsumer<Topology, JsonObject> builder) {
         logger.trace("Register application name: {}", applicationName);
         applications.put(applicationName, builder);
+    }
+    
+    /**
+     * Create a new class loader for the jar and register any
+     * topology application that is registered as a service provider.
+     */
+    @Override
+    public void registerJar(String jarURL) throws MalformedURLException {
+        
+        // TODO copy the jar if it is not local rather than loading it
+        // directly.
+        URL url = new URL(jarURL);
+        URLClassLoader loader = new URLClassLoader(new URL[] {url});
+        
+        for (TopologyBuilder topoBuilder : ServiceLoader.load(TopologyBuilder.class, loader)) {
+            registerTopology(topoBuilder.getName(), topoBuilder.getBuilder());
+        }
     }
     
     @Override
