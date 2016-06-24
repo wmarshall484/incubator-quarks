@@ -30,6 +30,7 @@
     <pathelement location="${quarks.connectors}/iot/lib/quarks.connectors.iot.jar" />
     <pathelement location="${quarks.connectors}/pubsub/lib/quarks.connectors.pubsub.jar" />
     <pathelement location="${quarks.apps}/iot/lib/quarks.apps.iot.jar" />
+    <pathelement location="${quarks.apps}/runtime/lib/quarks.apps.runtime.jar" />
   </path>
 
   <path id="test.compile.classpath">
