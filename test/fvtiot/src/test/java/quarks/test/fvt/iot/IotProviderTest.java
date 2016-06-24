@@ -52,7 +52,6 @@ import quarks.topology.tester.Condition;
 
 /**
  * Test IotProvider using the EchoIotDevice.
-
  */
 public class IotProviderTest {
     
@@ -133,13 +132,11 @@ public class IotProviderTest {
         publishedDevice.events(cmds, Commands.CONTROL_SERVICE, 0);
         Job appStarter = provider.submit(submitter).get();
         
-        // appStarter.stateChange(Action.CLOSE);
-        
         ControlService cs = provider.getServices().getService(ControlService.class);
         assertTrue(cs instanceof JsonControlService);
         JsonControlService jsc = (JsonControlService) cs;
         
-        JobMXBean jobMbean;      
+        JobMXBean jobMbean;
         do {
             Thread.sleep(100);
             jobMbean = cs.getControl(JobMXBean.TYPE, "AppOne", JobMXBean.class);
@@ -159,16 +156,23 @@ public class IotProviderTest {
         assertEquals(Job.State.RUNNING, jobMbean.getCurrentState());
 
         jsc.controlRequest(closeJob);
-              
+
+        // await for the job to complete
         for (int i = 0; i < 30; i++) {
             Thread.sleep(100);
-            jobMbean = cs.getControl(JobMXBean.TYPE, "AppOne", JobMXBean.class);
-            if (jobMbean == null)
+            if (jobMbean.getCurrentState() == Job.State.CLOSED)
                 break;
         }
-        
-        // QUARKS-180
-        // assertNull(jobMbean);        
-        // assertEquals(Job.State.CLOSED, appStarter.getCurrentState());
+        assertEquals(Job.State.CLOSED, jobMbean.getCurrentState());
+
+        // await for the associated control to be released
+//        for (int i = 0; i < 30; i++) {
+//            Thread.sleep(100);
+//            jobMbean = cs.getControl(JobMXBean.TYPE, "AppOne", JobMXBean.class);
+//            if (jobMbean == null)
+//                break;
+//        }
+//        assertNull(jobMbean);
+//        appStarter.stateChange(Action.CLOSE);
     }
 }
