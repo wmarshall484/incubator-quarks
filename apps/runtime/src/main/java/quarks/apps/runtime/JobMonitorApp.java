@@ -147,6 +147,20 @@ public class JobMonitorApp {
      */
     protected Topology declareTopology(String name) {
         Topology t = provider.newTopology(name);
+        
+        declareTopology(t);
+        
+        return t;
+    }
+    
+    /**
+     * Populates the following topology:
+     * <pre>
+     * JobEvents source --&gt; Filter (health == unhealthy) --&gt; Restart application
+     * </pre>
+     * 
+     */
+    public static void declareTopology(Topology t) {
         TStream<JsonObject> jobEvents = JobEvents.source(
                 t, 
                 (evType, job) -> { return JobMonitorAppEvent.toJsonObject(evType, job); }
@@ -167,7 +181,6 @@ public class JobMonitorApp {
                  });
 
         jobEvents.sink(new JobRestarter(t.getRuntimeServiceSupplier()));
-        return t;
     }
 
     /**
