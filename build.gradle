@@ -30,13 +30,6 @@ ext.target_dir = "$distsDir"
 ext.target_java8_dir = "${ext.target_dir}/java8"
 ext.target_javadoc_dir = "${ext.target_dir}/docs/javadoc"
 
-if (JavaVersion.current().isJava8Compatible()) {
-  tasks.withType(Javadoc) {
-    options.addStringOption('Xdoclint:none', '-quiet')
-    options.addStringOption('sourcepath', 'src/main/java')
-  }
-}
-
 /* Configure subprojects */
 subprojects {
   if (!buildFile.exists()) {
@@ -171,6 +164,7 @@ task copyScript {
 
 task aggregateJavadoc(type: Javadoc) {
   destinationDir file("$rootProject.ext.target_javadoc_dir")
+  options.addStringOption('sourcepath', 'src/main/java')
   configure(options) {
     author= true
     version= true
@@ -178,6 +172,17 @@ task aggregateJavadoc(type: Javadoc) {
     docTitle "Apache Quarks (incubating) v${build_version}"
     footer '<a href="http://quarks.incubator.apache.org">Apache Quarks (incubating)</a>'
     bottom "Copyright &#169; 2016 The Apache Software Foundation. All Rights Reserved - ${rootProject.ext.commithash}-${DSTAMP}-${TSTAMP}"
+    overview "quarks_overview.html"
+    windowTitle "Quarks v${build_version}"
+
+    group ("Quarks API", "quarks.execution", "quarks.function", "quarks.topology", "quarks.topology.*", "quarks.execution.*")
+    group ("Quarks Providers", "quarks.providers.*")
+    group ("Quarks Connectors", "quarks.connectors.*")
+    group ("Quarks Samples", "quarks.samples.*")
+    group ("Quarks Analytics", "quarks.analytics.*")
+    group ("Quarks Utilities", "quarks.metrics", "quarks.metrics.*", "quarks.streamscope", "quarks.streamscope.*")
+    group ("Quarks Low-Level API", "quarks.graph", "quarks.graph.*", "quarks.oplet", "quarks.oplet.*", "quarks.window")
+    group ("Quarks SPI", "quarks.*.spi.*")
   }
   source subprojects.collect {project -> project.sourceSets.main.allJava }
   classpath = files(subprojects.collect
