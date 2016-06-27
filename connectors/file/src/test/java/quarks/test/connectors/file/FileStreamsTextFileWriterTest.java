@@ -27,11 +27,14 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -42,9 +45,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import org.junit.Test;
 
+import quarks.connectors.file.CompressedFileWriterPolicy;
 import quarks.connectors.file.FileStreams;
 import quarks.connectors.file.FileWriterCycleConfig;
 import quarks.connectors.file.FileWriterFlushConfig;
@@ -762,6 +768,35 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
         }
     }
 
+    @Test
+    public void testCompressedFileWriterPolicy() throws Exception {
+        Topology t = newTopology("testCompressedFileWriterPolicy");
+        
+        // establish a base path
+        Path basePath = createTempFile("test1", "txt", new String[0]);
+        
+        String[] lines = getLines();
+        
+        // build expected results
+        // net 2 tuples per file
+        int cntTuples = 2;
+        AtomicInteger cnt = new AtomicInteger();
+        Predicate<String> cycleIt = tuple -> cnt.incrementAndGet() % cntTuples == 0;
+        List<List<String>> expResults = buildExpResults(lines, cycleIt);
+        assertEquals(lines.length / cntTuples, expResults.size());
+
+        TStream<String> s = t.strings(lines);
+        
+        IFileWriterPolicy<String> policy = new CompressedFileWriterPolicy<String>(
+                FileWriterFlushConfig.newImplicitConfig(),
+                FileWriterCycleConfig.newCountBasedConfig(cntTuples),
+                FileWriterRetentionConfig.newFileCountBasedConfig(10)
+                );
+        FileStreams.textFileWriter(s, () -> basePath.toString(), () -> policy);
+
+        completeAndValidateWriter(t, TMO_SEC, basePath, expResults);
+    }
+
     private void deleteDirAndFiles(Path dir, String dirPrefix, boolean dump) {
         // exercise caution before removing all files in dir
         if (!dirPrefix.startsWith("test"))
@@ -864,6 +899,10 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
     }
     
     private void checkContents(Path path, String[] lines) {
+        if (path.getFileName().toString().endsWith(".zip")) {
+          checkZipContents(path, lines);
+          return;
+        }
         System.out.println("checking file "+path);
         int lineCnt = 0;
         try (BufferedReader br = Files.newBufferedReader(path)) {
@@ -876,6 +915,33 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
         }
         catch (IOException e) {
             assertNull("path:"+path+" line "+lineCnt+" unexpected IOException "+e, e);
+        }
+    }
+    
+    private void checkZipContents(Path path, String[] lines) {
+        System.out.println("checking file "+path);
+        String fileName = path.getFileName().toString();
+        String entryName = fileName.substring(0, fileName.length() - ".zip".length());
+        int lineCnt = 0;
+        try (
+            FileInputStream fis = new FileInputStream(path.toFile());
+            ZipInputStream zin = new ZipInputStream((new BufferedInputStream(fis)));
+            )
+        {
+          ZipEntry entry = zin.getNextEntry();
+          
+          assertEquals(entryName, entry.getName());
+
+          BufferedReader br = new BufferedReader(new InputStreamReader(zin));
+          for (String line : lines) {
+            ++lineCnt;
+            String actLine = br.readLine();
+            assertEquals("path:"+path+" line "+lineCnt, line, actLine);
+          }
+          assertNull("path:"+path+" line "+lineCnt+" expected EOF", br.readLine());
+        }
+        catch (IOException e) {
+          assertNull("path:"+path+" line "+lineCnt+" unexpected IOException "+e, e);
         }
     }
 
