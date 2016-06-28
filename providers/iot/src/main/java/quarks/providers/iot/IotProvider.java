@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.JsonObject;
 
 import quarks.apps.iot.IotDevicePubSub;
+import quarks.apps.runtime.JobMonitorApp;
 import quarks.connectors.iot.Commands;
 import quarks.connectors.iot.IotDevice;
 import quarks.connectors.pubsub.service.ProviderPubSub;
@@ -141,6 +142,7 @@ public class IotProvider implements TopologyProvider,
         
         createIotDeviceApp();
         createIotCommandToControlApp();
+        createJobMonitorApp();
     }
     
     /**
@@ -219,6 +221,18 @@ public class IotProvider implements TopologyProvider,
                 (topology, config) -> IotDevicePubSub.createApplication(createMessageHubDevice(topology)));
 
         systemApps.add(IotDevicePubSub.APP_NAME);
+    }
+    
+    /**
+     * Create Job monitor application.
+     * @see JobMonitorApp
+     */
+    protected void createJobMonitorApp() {
+        
+        getApplicationService().registerTopology(JobMonitorApp.APP_NAME,
+                (topology, config) -> JobMonitorApp.declareTopology(topology));
+
+        systemApps.add(JobMonitorApp.APP_NAME);
     }
     
     /**

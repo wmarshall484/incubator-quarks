@@ -18,6 +18,7 @@ dependencies {
   compile project(':connectors:iot')
   compile project(':connectors:pubsub')
   compile project(':apps:iot')
+  compile project(':apps:runtime')
 }
 
 addCompileTestDependencies ':api:topology'
