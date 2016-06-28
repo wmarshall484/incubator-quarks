@@ -294,7 +294,7 @@ public class FileWriterPolicy<T> implements IFileWriterPolicy<T> {
     }
     
     private String ymdhms() {
-        return new SimpleDateFormat("YYYYMMDD_HHmmss").format(new Date());
+        return new SimpleDateFormat("YYYYMMdd_HHmmss").format(new Date());
     }
     
     /**
