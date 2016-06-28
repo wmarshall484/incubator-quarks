@@ -88,7 +88,7 @@ public class CompressedFileWriterPolicy<T> extends FileWriterPolicy<T> {
   @Override
   protected void hookRenameFile(Path activePath, Path finalPath) throws IOException {
     // compress into finalPath instead of simple rename
-    assert finalPath.endsWith(SUFFIX);
+    assert finalPath.toString().endsWith(SUFFIX);
     compressFile(activePath, finalPath);
     activePath.toFile().delete();
   }
