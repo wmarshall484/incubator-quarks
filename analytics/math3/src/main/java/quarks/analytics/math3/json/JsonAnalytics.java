@@ -208,7 +208,7 @@ public class JsonAnalytics {
     /**
      * Aggregate against multiple {@code Numeric} variables contained in an JSON object.
      * <P>
-     * This is a multi-variable analog of {@link JsonAnalytics#aggregate(String, String, JsonUnivariateAggregate...) aggregate()}
+     * This is a multi-variable analog of {@link #aggregate(TWindow, String, String, JsonUnivariateAggregate...) aggregate()}
      * </P>
      * <P>
      * See {@link #mvAggregateList(String, String, List) mvAggregateList()} for
