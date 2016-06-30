@@ -206,8 +206,7 @@ public class JsonAnalytics {
     }
     
     /**
-     * Create a Function that aggregates multiple {@code Numeric}
-     * variables contained in an JSON object.
+     * Aggregate against multiple {@code Numeric} variables contained in an JSON object.
      * <P>
      * This is a multi-variable analog of {@link JsonAnalytics#aggregate(String, String, JsonUnivariateAggregate...) aggregate()}
      * </P>
@@ -224,14 +223,14 @@ public class JsonAnalytics {
      * //   "rx" - a numeric data variable
      * TStream<JsonObject> ingestData = ...
      * 
-     * // Create the window over which to aggregate
-     * TWindow<JsonObject, JsonElement> window = 
-     *    ingestData.last(5, TimeUnit.SECONDS, jo -> jo.get("id"));
-     * 
      * // Define the tuple variables and their aggregations to compute
      * List<Pair<String, JsonUnivariateAggregate[]>> aggSpecs = new ArrayList<>();
      * aggSpecs.add(mkAggregationSpec("tx", Statistics.MIN, Statistics.MAX));
      * aggSpecs.add(mkAggregationSpec("rx", Statistics.MEAN));
+     * 
+     * // Create the window over which to aggregate
+     * TWindow<JsonObject, JsonElement> window = 
+     *    ingestData.last(5, TimeUnit.SECONDS, jo -> jo.get("id"));
      * 
      * // Create a stream with the aggregations. The result tuples have properties:
      * //   "id" - the partitionKey
@@ -249,11 +248,12 @@ public class JsonAnalytics {
      *    });
      * }</pre>
      * 
-     * @param window
+     * @param window the window to compute aggregations over
      * @param resultPartitionKeyProperty name of the partition key property in the result
      * @param resultProperty name of the aggregation results property in the result
      * @param aggregateSpecs see {@link #mkAggregationSpec(String, JsonUnivariateAggregate...) mkAggregationSpec()}
      * @return TStream<JsonObject> with aggregation results
+     * 
      * @see #mvAggregateList(String, String, List) mvAggregateList()
      * @see #mkAggregationSpec(String, JsonUnivariateAggregate...) mkAggregationSpec()
      * @see #getMvAggregate(JsonObject, String, String, JsonUnivariateAggregate) getMvAggregate()
@@ -279,6 +279,7 @@ public class JsonAnalytics {
      * </P>
      * <P>
      * The specification can be use with {@link #mvAggregateList(String, String, List) mkAggregateList()}
+     * 
      * @param variableName the name of a {@code Numeric} data variable in a JSON object 
      * @param aggregates the aggregates to compute for the variable
      * @return the aggregation specification
@@ -337,6 +338,7 @@ public class JsonAnalytics {
      * @param resultProperty name of the aggregation results property in the result
      * @param aggregateSpecs see {@link #mkAggregationSpec(String, JsonUnivariateAggregate...) mkAggregationSpec()}
      * @return Function that performs the aggregations.
+     * 
      * @see #mkAggregationSpec(String, JsonUnivariateAggregate...) mkAggregationSpec()
      * @see #getMvAggregate(JsonObject, String, String, JsonUnivariateAggregate) getMvAggregate()
      */
@@ -400,7 +402,8 @@ public class JsonAnalytics {
      * @param variableName the data variable of interest in the multivariable aggregates
      * @param aggregate the variable's aggregate of interest
      * @return the variable's aggregate's value as a JsonElement
-     * @throws Exception if the requested aggregate isn't present in the result
+     * @throws RuntimeException if the aggregate isn't present in the result
+     * 
      * @see #hasMvAggregate(JsonObject, String, String, JsonUnivariateAggregate) hasAggregate()
      * @see #mvAggregate(TWindow, String, String, List) mvAggregate()
      * @see #mvAggregateList(String, String, List) mvAggregateList()
@@ -420,6 +423,7 @@ public class JsonAnalytics {
      * @param variableName the data variable of interest in the multivariable aggregates
      * @param aggregate the variable's aggregate of interest
      * @return true if the specified aggregate is present in the jo, false otherwise.
+     * 
      * @see #getMvAggregate(JsonObject, String, String, JsonUnivariateAggregate) getMvAggregate()
      */
     public static boolean hasMvAggregate(JsonObject jo, String resultProperty, String variableName, JsonUnivariateAggregate aggregate) {
