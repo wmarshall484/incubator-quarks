@@ -20,6 +20,8 @@ package quarks.analytics.math3.json;
 
 import java.util.List;
 
+import org.apache.commons.math3.util.Pair;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
@@ -201,6 +203,238 @@ public class JsonAnalytics {
         };
         
         return function;
+    }
+    
+    /**
+     * Create a Function that aggregates multiple {@code Numeric}
+     * variables contained in an JSON object.
+     * <P>
+     * This is a multi-variable analog of {@link JsonAnalytics#aggregate(String, String, JsonUnivariateAggregate...) aggregate()}
+     * </P>
+     * <P>
+     * See {@link #mvAggregateList(String, String, List) mvAggregateList()} for
+     * a description of the aggregation processing and result stream.
+     * </P>
+     * <P>
+     * Sample use:
+     * <pre>{@code
+     * // Ingest the data.  The JsonObject tuples have properties:
+     * //   "id" - the partitionKey
+     * //   "tx" - a numeric data variable
+     * //   "rx" - a numeric data variable
+     * TStream<JsonObject> ingestData = ...
+     * 
+     * // Create the window over which to aggregate
+     * TWindow<JsonObject, JsonElement> window = 
+     *    ingestData.last(5, TimeUnit.SECONDS, jo -> jo.get("id"));
+     * 
+     * // Define the tuple variables and their aggregations to compute
+     * List<Pair<String, JsonUnivariateAggregate[]>> aggSpecs = new ArrayList<>();
+     * aggSpecs.add(mkAggregationSpec("tx", Statistics.MIN, Statistics.MAX));
+     * aggSpecs.add(mkAggregationSpec("rx", Statistics.MEAN));
+     * 
+     * // Create a stream with the aggregations. The result tuples have properties:
+     * //   "id" - the partitionKey
+     * //   "aggResults" - the aggregation results
+     * TStream<JsonObject> aggResults = 
+     *    mvAggregate(window, "id", "aggResults", aggSpecs);
+     *    
+     * // Create a stream of JsonObject tuples with just the average "rx"
+     * TStream<JsonObject> avgRx = aggResults.map(
+     *    jo -> {
+     *      JsonObject result = new JsonObject();
+     *      result.add("id", jo.get("id"))
+     *      result.add("avgRx", getMvAggregate(jo, "aggResults", "Rx", Statistic.MEAN);
+     *      return result;
+     *    });
+     * }</pre>
+     * 
+     * @param window
+     * @param resultPartitionKeyProperty name of the partition key property in the result
+     * @param resultProperty name of the aggregation results property in the result
+     * @param aggregateSpecs see {@link #mkAggregationSpec(String, JsonUnivariateAggregate...) mkAggregationSpec()}
+     * @return TStream<JsonObject> with aggregation results
+     * @see #mvAggregateList(String, String, List) mvAggregateList()
+     * @see #mkAggregationSpec(String, JsonUnivariateAggregate...) mkAggregationSpec()
+     * @see #getMvAggregate(JsonObject, String, String, JsonUnivariateAggregate) getMvAggregate()
+     */
+    public static <K extends JsonElement> TStream<JsonObject> mvAggregate(
+        TWindow<JsonObject, K> window,
+        String resultPartitionKeyProperty,
+        String resultProperty,
+        List<Pair<String, JsonUnivariateAggregate[]>> aggregateSpecs) {
+
+      return window.aggregate(mvAggregateList(
+              resultPartitionKeyProperty,
+              resultProperty,
+              aggregateSpecs
+              ));
+    }
+
+    /**
+     * Create an aggregation specification.
+     * <P>
+     * The aggregation specification specifies a variable name and
+     * the aggregates to compute on it.
+     * </P>
+     * <P>
+     * The specification can be use with {@link #mvAggregateList(String, String, List) mkAggregateList()}
+     * @param variableName the name of a {@code Numeric} data variable in a JSON object 
+     * @param aggregates the aggregates to compute for the variable
+     * @return the aggregation specification
+     */
+    public static Pair<String, JsonUnivariateAggregate[]> 
+    mkAggregationSpec(String variableName, JsonUnivariateAggregate... aggregates) {
+      return new Pair<String, JsonUnivariateAggregate[]>(variableName, aggregates);
+    }
+    
+    /**
+     * Create a Function that aggregates multiple {@code Numeric}
+     * variables contained in an JSON object.
+     * <P>
+     * This is a multi-variable analog of {@link JsonAnalytics#aggregateList(String, String, quarks.function.ToDoubleFunction, JsonUnivariateAggregate...) aggregateList()}
+     * <P>
+     * The overall multi-variable aggregation result is a JSON object
+     * with properties:
+     * <ul>
+     * <li>{@code resultPartionKeyProperty} whose value is the tuple's partition key
+     * <li>{@code resultProperty} whose value is a JSON object containing
+     *     a property for each variable aggregation.  The property names
+     *     correspond to the variable names from the {@code aggregateSpecs}
+     *     and the values are the aggregation results for the variable.
+     *     The aggregation results for a variable are a JSON object 
+     *     having a property for each aggregation name and its value.</li>
+     * </ul>
+     * <P>
+     * For example if the list contains these three tuples (pseudo JSON) for
+     * partition 3:
+     * <BR>
+     * <code>{id=3,tx=2.0,rx=1.0,...}, {id=3,tx=2.6,rx=2.0,...}, {id=3,tx=1.8,rx=3.0,...}</code>
+     * <BR>
+     * the resulting aggregation JsonObject returned is:
+     * <BR>
+     * <code>{id=3, aggData={tx={MIN=1.8, MAX=2.6}, rx={MEAN=2.0}}}</code>
+     * <BR>
+     * for the invocation:
+     * <BR>
+     * <code>mvAggregateList("id", "aggData", aggSpecs).apply(list, 3))</code>
+     * <BR>
+     * where {@code aggSpecs} is:
+     * <BR>
+     * {@code
+     * aggSpecs.add(mkAggregationSpec("tx", Statistics.MIN, Statistics.MAX));
+     * aggSpecs.add(mkAggregationSpec("rx", Statistics.MEAN));
+     * }
+     * </P>
+     * <P>
+     * {@link #getMvAggregate(JsonObject, String, String, JsonUnivariateAggregate) getMvAggregate()}
+     * can be used to extract individual aggregate values from the result.
+     * </P>
+     * 
+     * @param <K> Partition Key as a JsonElement
+     * 
+     * @param resultPartitionKeyProperty name of the partition key property in the result
+     * @param resultProperty name of the aggregation results property in the result
+     * @param aggregateSpecs see {@link #mkAggregationSpec(String, JsonUnivariateAggregate...) mkAggregationSpec()}
+     * @return Function that performs the aggregations.
+     * @see #mkAggregationSpec(String, JsonUnivariateAggregate...) mkAggregationSpec()
+     * @see #getMvAggregate(JsonObject, String, String, JsonUnivariateAggregate) getMvAggregate()
+     */
+    public static <K extends JsonElement> 
+    BiFunction<List<JsonObject>, K, JsonObject> mvAggregateList(
+        String resultPartitionKeyProperty, String resultProperty,
+        List<Pair<String, JsonUnivariateAggregate[]>> aggregateSpecs) {
+      
+      BiFunction<List<JsonObject>, K, JsonObject> function = 
+        (joList, partition) -> {
+          JsonObject joResult = new JsonObject();
+          joResult.add(resultPartitionKeyProperty, partition);
+          
+          JsonObject aggregateResults = new JsonObject();
+          joResult.add(resultProperty, aggregateResults);
+          
+          for (Pair<String, JsonUnivariateAggregate[]> p : aggregateSpecs) {
+            String variableName = p.getFirst();
+            JsonUnivariateAggregate[] aggregates = p.getSecond();
+            
+            // Compute the aggregates for the variable
+            JsonObject jo2 = JsonAnalytics.aggregateList(resultPartitionKeyProperty,
+                resultProperty, jo -> jo.get(variableName).getAsDouble(),
+                aggregates).apply(joList,  partition);
+            
+            // Add the variable's aggregates result to the result
+            aggregateResults.add(variableName, jo2.get(resultProperty).getAsJsonObject());
+          }
+        
+          return joResult;
+        };
+        
+        return function;
+    }
+    
+    /**
+     * Get the value of an aggregate computed by a multi-variable aggregation.
+     * <P>
+     * This convenience method can be used to extract information from a JSON object
+     * created by {@link #mvAggregateList(String, String, List) mvAggregationList()}
+     * or {@link #mvAggregate(TWindow, String, String, List) mvAggregate()}
+     * </P>
+     * <P>
+     * Sample use:
+     * <pre>{@code
+     * ...
+     * TStream<JsonObject> aggData = mvAggregate(window, "id", "aggResults", aggSpecs);
+     * 
+     * // Create a stream of JsonObject tuples with just the average "tx"
+     * TStream<JsonObject> avgTx = aggResults.map(
+     *    jo -> {
+     *      JsonObject result = new JsonObject();
+     *      result.add(partitionKeyName, jo.get(partitionKeyName))
+     *      result.add("avgTx", getMvAggregate(jo, "aggResults", "tx", Statistic.MEAN);
+     *      return result;
+     *    });
+     * }</pre>
+     * 
+     * @param jo a JSON object created by {@code mvAggregationList}
+     * @param resultProperty the corresponding value passed to {@code mvAggragateList}
+     * @param variableName the data variable of interest in the multivariable aggregates
+     * @param aggregate the variable's aggregate of interest
+     * @return the variable's aggregate's value as a JsonElement
+     * @throws Exception if the requested aggregate isn't present in the result
+     * @see #hasMvAggregate(JsonObject, String, String, JsonUnivariateAggregate) hasAggregate()
+     * @see #mvAggregate(TWindow, String, String, List) mvAggregate()
+     * @see #mvAggregateList(String, String, List) mvAggregateList()
+     */
+    public static JsonElement getMvAggregate(JsonObject jo, String resultProperty, String variableName, JsonUnivariateAggregate aggregate) {
+      return jo.get(resultProperty).getAsJsonObject()
+              .get(variableName).getAsJsonObject()
+              .get(aggregate.name());
+    }
+
+    /**
+     * Check if an aggregation result from a multi-variable aggregation
+     * is present.
+     * 
+     * @param jo a JSON object created by {@code mvAggregationList}
+     * @param resultProperty the corresponding value passed to {@code mvAggragateList}
+     * @param variableName the data variable of interest in the multivariable aggregates
+     * @param aggregate the variable's aggregate of interest
+     * @return true if the specified aggregate is present in the jo, false otherwise.
+     * @see #getMvAggregate(JsonObject, String, String, JsonUnivariateAggregate) getMvAggregate()
+     */
+    public static boolean hasMvAggregate(JsonObject jo, String resultProperty, String variableName, JsonUnivariateAggregate aggregate) {
+      JsonElement je = jo.get(resultProperty);
+      if (je != null && je.isJsonObject()) {
+        JsonObject jo2 = je.getAsJsonObject();
+        je = jo2.get(variableName);
+        if (je != null && je.isJsonObject()) {
+          jo2 = je.getAsJsonObject();
+          je = jo2.get(aggregate.name());
+          if (je != null)
+            return true;
+        }
+      }
+      return false;
     }
 
 }
