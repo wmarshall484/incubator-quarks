@@ -21,4 +21,4 @@ dependencies {
   testCompile project(':utils:metrics')
 }
 
-addCompileTestDependencies ':api:topology', ':utils:metrics'
+addCompileTestDependencies ':api:topology', ':utils:metrics', ':runtime:appservice'
