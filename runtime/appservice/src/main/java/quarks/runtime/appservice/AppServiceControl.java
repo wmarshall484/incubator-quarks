@@ -73,4 +73,9 @@ public class AppServiceControl implements ApplicationServiceMXBean {
             throw (Exception) t;
         }
     }
+    
+    @Override
+    public void registerJar(String jarURL, String jsonConfig) throws Exception {
+        service.registerJar(jarURL, jsonConfig);
+    }
 }

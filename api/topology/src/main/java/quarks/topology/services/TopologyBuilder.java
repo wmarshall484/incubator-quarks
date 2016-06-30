@@ -25,6 +25,11 @@ import quarks.topology.Topology;
 
 /**
  * Represents an topology that can be built.
+ * 
+ * A class implementing {@code TopologyBuilder} can
+ * be registered as a service provider in a jar file for
+ * automatic application registration using
+ * {@link ApplicationService#registerJar(String, String)}.
  *
  */
 public interface TopologyBuilder {

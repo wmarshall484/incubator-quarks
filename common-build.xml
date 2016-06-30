@@ -199,6 +199,8 @@
 	         <path refid="test.classpath"/>
 	       </classpath>
 	       <sysproperty key="quarks.build.ci" value="${quarks.build.ci}"/>
+	       <!-- Allow tests to know the root directory -->
+	       <sysproperty key="quarks.test.root.dir" value="${quarks.dir}"/>
 	       <assertions><enable/></assertions>
 	       <formatter type="xml"/>
 	       <!-- Only use the brief formatter for a continuous integration build" -->

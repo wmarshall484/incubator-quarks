@@ -19,8 +19,10 @@ under the License.
 package quarks.test.providers.direct.appservice;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.net.URL;
 
 import org.junit.Test;
@@ -31,7 +33,6 @@ import quarks.topology.services.ApplicationService;
 
 public class AppServiceTest {
     
-    private static final String JAR_NAME = "quarks.api.topology.APPS.TEST.jar";
     
     @Test
     public void testRegisterTopology() {
@@ -55,9 +56,14 @@ public class AppServiceTest {
         DirectProvider direct = new DirectProvider();
         ApplicationService appService = AppService.createAndRegister(direct, direct);
         
-        URL testAppsJar = getClass().getClassLoader().getResource(JAR_NAME);
+        String qd = System.getProperty("quarks.test.root.dir");
+        assertNotNull(qd);
+        File testAppsJar = new File(qd, "api/topology/test.classes/quarks.api.topology.APPS.TEST.jar");
+        assertTrue(testAppsJar.exists());
+        
+        URL testAppsJarURL = testAppsJar.toURI().toURL();
 
-        appService.registerJar(testAppsJar.toExternalForm());
+        appService.registerJar(testAppsJarURL.toExternalForm(), null);
         
         assertEquals(3, appService.getApplicationNames().size());
         assertTrue(appService.getApplicationNames().contains("FirstJarApp"));

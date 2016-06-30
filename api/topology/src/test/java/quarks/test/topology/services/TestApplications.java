@@ -31,7 +31,7 @@ import quarks.topology.services.TopologyBuilder;
  *
  */
 public class TestApplications {
-    
+        
     private static abstract class App implements TopologyBuilder {
 
         @Override

@@ -111,7 +111,7 @@ public class AppService implements ApplicationService {
      * topology application that is registered as a service provider.
      */
     @Override
-    public void registerJar(String jarURL) throws MalformedURLException {
+    public void registerJar(String jarURL, String jsonConfig) throws MalformedURLException {
         
         // TODO copy the jar if it is not local rather than loading it
         // directly.

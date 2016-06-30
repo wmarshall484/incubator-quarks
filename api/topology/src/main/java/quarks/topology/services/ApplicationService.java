@@ -18,7 +18,6 @@ under the License.
 */
 package quarks.topology.services;
 
-import java.net.MalformedURLException;
 import java.util.Set;
 
 import com.google.gson.JsonObject;
@@ -87,8 +86,9 @@ public interface ApplicationService {
      * be the classpath of this service.
      * 
      * @param jarURL URL of Jar containing new applications.
+     * @param jsonConfig Configuration information, currently unused.
      */
-    void registerJar(String jarURL) throws MalformedURLException;
+    void registerJar(String jarURL, String jsonConfig) throws Exception;
     
     /**
      * Returns the names of applications registered with this service.

@@ -19,6 +19,7 @@ under the License.
 package quarks.topology.mbeans;
 
 import quarks.topology.services.ApplicationService;
+import quarks.topology.services.TopologyBuilder;
 
 /**
  * Control MBean for the application service.
@@ -40,4 +41,19 @@ public interface ApplicationServiceMXBean {
      * @see ApplicationService
      */
     void submit(String applicationName, String jsonConfig) throws Exception;
+    
+    /**
+     * Register a jar file containing applications with
+     * the application service. Any service providers
+     * in the jar of type {@link TopologyBuilder} will
+     * be registered as applications.
+     * 
+     * @param jarURL URL for the jar file.
+     * @param jsonConfig JSON configuration serialized as a String (currently unused).
+     * @throws Exception Error registering jar.
+     * 
+     * @see ApplicationService
+     * @see TopologyBuilder
+     */
+    void registerJar(String jarURL, String jsonConfig) throws Exception;
 }

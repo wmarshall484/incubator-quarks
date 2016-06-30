@@ -18,7 +18,11 @@ under the License.
 */
 package quarks.test.fvt.iot;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.net.URL;
 
 import org.junit.Test;
 
@@ -42,17 +46,41 @@ public class IotAppServiceTest {
         DirectProvider provider = new DirectProvider();
         
         JsonControlService control = new JsonControlService();
-        provider.getServices().addService(ControlService.class, control);
-        
-        ApplicationService apps = AppService.createAndRegister(provider, provider);
-        provider.getServices().addService(ApplicationService.class, apps);
+        provider.getServices().addService(ControlService.class, control);        
+        AppService.createAndRegister(provider, provider);
         
         IotTestApps.registerApplications(provider);       
         
-        JsonObject submitAppOne = newSubmitRequest("AppOne");
+        JsonObject submitAppOne = newSubmitRequest("AppOne");        
+        JsonElement crr = control.controlRequest(submitAppOne);      
+        assertTrue(crr.getAsBoolean());
+    }
+    
+    @Test(expected=ClassNotFoundException.class)
+    public void testAppsNotInClasspath() throws ClassNotFoundException {
+        Class.forName("quarks.test.topology.services.TestApplications");
+    }
+    
+    @Test
+    public void testAppServiceJar() throws Exception {
         
-        JsonElement crr = control.controlRequest(submitAppOne);
+        DirectProvider provider = new DirectProvider();
         
+        JsonControlService control = new JsonControlService();
+        provider.getServices().addService(ControlService.class, control);        
+        AppService.createAndRegister(provider, provider);
+        String qd = System.getProperty("quarks.test.root.dir");
+        assertNotNull(qd);
+        File testAppsJar = new File(qd, "api/topology/test.classes/quarks.api.topology.APPS.TEST.jar");
+        assertTrue(testAppsJar.exists());
+        
+        URL testAppsJarURL = testAppsJar.toURI().toURL();
+        JsonObject registerJar = newRegisterJarRequest(testAppsJarURL.toExternalForm());       
+        JsonElement crr = control.controlRequest(registerJar);    
+        assertTrue(crr.getAsBoolean());
+        
+        JsonObject submitAppTwo = newSubmitRequest("SecondJarApp");        
+        crr = control.controlRequest(submitAppTwo);      
         assertTrue(crr.getAsBoolean());
     }
     
@@ -68,4 +96,18 @@ public class IotAppServiceTest {
         
         return submitApp;
     }
+    public static JsonObject newRegisterJarRequest(String jarURL) {
+        JsonObject submitApp = new JsonObject();   
+        submitApp.addProperty(JsonControlService.TYPE_KEY, ApplicationServiceMXBean.TYPE);
+        submitApp.addProperty(JsonControlService.ALIAS_KEY, ApplicationService.ALIAS);
+        JsonArray args = new JsonArray();
+        args.add(new JsonPrimitive(jarURL));
+        args.add(new JsonObject());
+        submitApp.addProperty(JsonControlService.OP_KEY, "registerJar");
+        submitApp.add(JsonControlService.ARGS_KEY, args); 
+        
+        return submitApp;
+    }
+    
+
 }
