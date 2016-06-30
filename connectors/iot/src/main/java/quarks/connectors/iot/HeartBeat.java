@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.google.gson.JsonObject;
 
+import quarks.function.Consumer;
 import quarks.function.Functions;
 import quarks.topology.TStream;
 import quarks.topology.plumbing.PlumbingStreams;
@@ -55,12 +56,17 @@ public class HeartBeat {
    * <li>"time" : (number) {@link System#currentTimeMillis()}</li>
    * </ul> 
    * 
+   * When {@code consumer} is non-null, {@code consumer.accept()} is called
+   * with the {@code TStream<JsonObject>} created for heart beat events.
+   * </P>
+   * 
    * @param iotDevice IoT hub device
    * @param period the heart beat period
    * @param unit TimeUnit for the period
    * @param eventId the IotDevice eventId to use for the event
+   * @param consumer 
    */
-  public static void addHeartBeat(IotDevice iotDevice, long period, TimeUnit unit, String eventId) {
+  public static void addHeartBeat(IotDevice iotDevice, long period, TimeUnit unit, String eventId, Consumer<TStream<JsonObject>> consumer) {
     TStream<Date> hb = iotDevice.topology().poll(
         () -> new Date(),
         period, unit).tag("heartbeat");
@@ -71,6 +77,10 @@ public class HeartBeat {
         j.addProperty("time", date.getTime());
         return j;
     }).tag("heartbeat");
+    
+    if (consumer != null) {
+      consumer.accept(hbj);
+    }
   
     // Tolerate connection outages.  Don't block upstream processing
     // and retain the most recent heartbeat if unable to publish.
@@ -78,6 +88,22 @@ public class HeartBeat {
                 Functions.unpartitioned(), 1).tag("pressureRelieved");
   
     iotDevice.events(hbj, eventId, QoS.FIRE_AND_FORGET);
+  }
+  
+  /**
+   * Add IoT device heart beat processing to a topology.
+   * <P>
+   * Same as {@link #addHeartBeat(IotDevice, long, TimeUnit, String, Consumer)}
+   * with a null consumer parameter.
+   * </P>
+   * 
+   * @param iotDevice IoT hub device
+   * @param period the heart beat period
+   * @param unit TimeUnit for the period
+   * @param eventId the IotDevice eventId to use for the event
+   */
+  public static void addHeartBeat(IotDevice iotDevice, long period, TimeUnit unit, String eventId) {
+    addHeartBeat(iotDevice, period, unit, eventId, null);
   }
 
 }
