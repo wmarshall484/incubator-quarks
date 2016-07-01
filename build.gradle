@@ -175,14 +175,14 @@ task aggregateJavadoc(type: Javadoc) {
     overview "quarks_overview.html"
     windowTitle "Quarks v${build_version}"
 
-    group("Quarks API", "quarks.execution", "quarks.function", "quarks.topology", "quarks.topology.*", "quarks.execution.*")
+    group("Quarks API", "quarks.execution", "quarks.function", "quarks.topology", "quarks.topology.json", "quarks.topology.mbeans", "quarks.topology.plumbing", "quarks.topology.services", "quarks.execution.*")
     group("Quarks Providers", "quarks.providers.*")
     group("Quarks Connectors", "quarks.connectors.*")
     group("Quarks Samples", "quarks.samples.*")
     group("Quarks Analytics", "quarks.analytics.*")
     group("Quarks Utilities", "quarks.metrics", "quarks.metrics.*", "quarks.streamscope", "quarks.streamscope.*")
     group("Quarks Low-Level API", "quarks.graph", "quarks.graph.*", "quarks.oplet", "quarks.oplet.*", "quarks.window")
-    group("Quarks SPI", "quarks.*.spi.*")
+    group("Quarks SPI", "quarks.topology.spi", "quarks.topology.spi.*")
   }
   source subprojects.collect { project -> project.sourceSets.main.allJava }
   classpath = files(subprojects.collect
