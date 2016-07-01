@@ -164,10 +164,10 @@ task copyScript {
 
 task aggregateJavadoc(type: Javadoc) {
   destinationDir file("$rootProject.ext.target_javadoc_dir")
-  options.addStringOption('sourcepath', 'src/main/java')
+  options.addStringOption('Xdoclint:none', '-quiet')
   configure(options) {
-    author= true
-    version= true
+    author = true
+    version = true
     use = true
     docTitle "Apache Quarks (incubating) v${build_version}"
     footer '<a href="http://quarks.incubator.apache.org">Apache Quarks (incubating)</a>'
@@ -175,26 +175,19 @@ task aggregateJavadoc(type: Javadoc) {
     overview "quarks_overview.html"
     windowTitle "Quarks v${build_version}"
 
-    group ("Quarks API", "quarks.execution", "quarks.function", "quarks.topology", "quarks.topology.*", "quarks.execution.*")
-    group ("Quarks Providers", "quarks.providers.*")
-    group ("Quarks Connectors", "quarks.connectors.*")
-    group ("Quarks Samples", "quarks.samples.*")
-    group ("Quarks Analytics", "quarks.analytics.*")
-    group ("Quarks Utilities", "quarks.metrics", "quarks.metrics.*", "quarks.streamscope", "quarks.streamscope.*")
-    group ("Quarks Low-Level API", "quarks.graph", "quarks.graph.*", "quarks.oplet", "quarks.oplet.*", "quarks.window")
-    group ("Quarks SPI", "quarks.*.spi.*")
+    group("Quarks API", "quarks.execution", "quarks.function", "quarks.topology", "quarks.topology.*", "quarks.execution.*")
+    group("Quarks Providers", "quarks.providers.*")
+    group("Quarks Connectors", "quarks.connectors.*")
+    group("Quarks Samples", "quarks.samples.*")
+    group("Quarks Analytics", "quarks.analytics.*")
+    group("Quarks Utilities", "quarks.metrics", "quarks.metrics.*", "quarks.streamscope", "quarks.streamscope.*")
+    group("Quarks Low-Level API", "quarks.graph", "quarks.graph.*", "quarks.oplet", "quarks.oplet.*", "quarks.window")
+    group("Quarks SPI", "quarks.*.spi.*")
   }
-  source subprojects.collect {project -> project.sourceSets.main.allJava }
+  source subprojects.collect { project -> project.sourceSets.main.allJava }
   classpath = files(subprojects.collect
-          {project -> project.sourceSets.main.compileClasspath}
+          { project -> project.sourceSets.main.compileClasspath }
   )
-
-  exclude "**/connectors/runtime/**"
-  exclude "**/quarks/connectors/*/runtime/**"
-  exclude "**/quarks/console/**"
-  exclude "**/quarks/topology/spi/**"
-  exclude "**/quarks/graph/spi/**"
-  exclude "**/quarks/samples/scenarios/iotf/range/sensor/**"
 }
 
 build.dependsOn aggregateJavadoc
