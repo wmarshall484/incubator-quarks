@@ -296,7 +296,7 @@
       additionalparam="-Xdoclint:none"
       Overview="quarks_overview.html"
       failonwarning="true"
-      excludepackagenames="quarks.connectors.runtime,quarks.connectors.*.runtime,quarks.console.*,quarks.topology.spi.*,quarks.graph.spi.*,quarks.samples.scenarios.iotf.range.sensor"
+      excludepackagenames="quarks.connectors.runtime,quarks.connectors.*.runtime,quarks.console.*,quarks.samples.scenarios.iotf.range.sensor"
       >
       <sourcepath>
          <dirset dir="${basedir}">
@@ -319,14 +319,14 @@
        <doctitle>Apache Quarks (incubating) v${quarks.version}</doctitle>
        <footer><![CDATA[<a href="http://quarks.incubator.apache.org">Apache Quarks (incubating)</a>]]></footer>
        <bottom>Copyright &amp;copy; 2016 The Apache Software Foundation. All Rights Reserved - ${commithash}-${DSTAMP}-${TSTAMP}</bottom>
-       <group title="Quarks API" packages="quarks.execution,quarks.function,quarks.topology,quarks.topology.*,quarks.execution.*"/>
+       <group title="Quarks API" packages="quarks.execution,quarks.function,quarks.topology,quarks.topology.json,quarks.topology.mbeans,quarks.topology.plumbing,quarks.topology.services,quarks.execution.*"/>
        <group title="Quarks Providers" packages="quarks.providers.*"/>
        <group title="Quarks Connectors" packages="quarks.connectors.*"/>
        <group title="Quarks Samples" packages="quarks.samples.*"/>
        <group title="Quarks Analytics" packages="quarks.analytics.*"/>
        <group title="Quarks Utilities" packages="quarks.metrics,quarks.metrics.*,quarks.streamscope,quarks.streamscope.*"/>
        <group title="Quarks Low-Level API" packages="quarks.graph,quarks.graph.*,quarks.oplet,quarks.oplet.*,quarks.window"/>
-       <group title="Quarks SPI" packages="quarks.*.spi.*"/>
+       <group title="Quarks SPI" packages="quarks.topology.spi,quarks.topology.spi.*"/>
      </javadoc>
   </target>
 
