@@ -44,37 +44,36 @@ under the License.
  * Thus any control operation can be remotely invoked through a {@code quarksControl} device command,
  * including arbitrary control mbeans registered by applications.
  * 
- * <H4>Provider operations</H4>
- * <TABLE border="1">
- * <caption>Device Commands</caption>
+ * <H4 id="providerOps">Provider operations</H4>
+ * <TABLE border="1" aria-describedby="providerOps">
  * <tr>
- *     <th>Operation</th><th>Command identifier</th>
- *     <th>Type</th><th>Alias</th><th>Method</th><th>Arguments</th>
- *     <th>Control MBean</th>
+ *     <th id="operation">Operation</th><th id="cmdIdentifier">Command identifier</th>
+ *     <th id="type">Type</th><th id="alias">Alias</th><th id="method">Method</th><th id="args">Arguments</th>
+ *     <th id="controlMbean">Control MBean</th>
  * </tr>
  * <tr>
- *    <th rowspan="2">Submit (start) a registered application</th>
- *    <td>{@code quarksControl}</td><td>{@code appService}</td>
- *    <td>{@code quarks}</td><td>{@link quarks.topology.mbeans.ApplicationServiceMXBean#submit(String, String) submit}</td>
- *    <td><em>{@code [applicationName, config]}</em></td>
- *    <td>{@link quarks.topology.mbeans.ApplicationServiceMXBean ApplicationServiceMXBean}</td>
+ *    <td rowspan="2" headers="operation"><strong>Submit (start) a registered application</strong></td>
+ *    <td headers="cmdIdentifier">{@code quarksControl}</td><td headers="type">{@code appService}</td>
+ *    <td headers="alias">{@code quarks}</td><td headers="method">{@link quarks.topology.mbeans.ApplicationServiceMXBean#submit(String, String) submit}</td>
+ *    <td headers="args"><em>{@code [applicationName, config]}</em></td>
+ *    <td headers="controlMbean">{@link quarks.topology.mbeans.ApplicationServiceMXBean ApplicationServiceMXBean}</td>
  * </tr>
  * <tr>
- * <th>Sample command data</th>
- * <td colspan=5>{@code {"type":"appService","alias":"quarks","op":"submit","args":["Heartbeat",{}]}}</td>
+ *    <td headers="cmdIdentifier"><strong>Sample command data</strong></td>
+ *    <td colspan=5 headers="type alias method args controlMbean">{@code {"type":"appService","alias":"quarks","op":"submit","args":["Heartbeat",{}]}}</td>
  * </tr>
  * <tr></tr>
  * 
  * <tr>
- *    <th rowspan="2">Close (stop) a running registered application</th>
- *    <td>{@code quarksControl}</td><td>{@link quarks.execution.mbeans.JobMXBean#TYPE job}</td>
- *    <td><em>{@code applicationName}</em></td><td>{@link quarks.execution.mbeans.JobMXBean#stateChange(quarks.execution.Job.Action) stateChange}</td>
- *    <td>{@code ["CLOSE"]}</td>
- *    <td>{@link quarks.execution.mbeans.JobMXBean JobMXBean}</td>
+ *    <td rowspan="2" headers="operation"><strong>Close (stop) a running registered application</strong></td>
+ *    <td headers="cmdIdentifier">{@code quarksControl}</td><td headers="type">{@link quarks.execution.mbeans.JobMXBean#TYPE job}</td>
+ *    <td headers="type"><em>{@code applicationName}</em></td><td headers="method">{@link quarks.execution.mbeans.JobMXBean#stateChange(quarks.execution.Job.Action) stateChange}</td>
+ *    <td headers="args">{@code ["CLOSE"]}</td>
+ *    <td headers="controlMbean">{@link quarks.execution.mbeans.JobMXBean JobMXBean}</td>
  * </tr>
  * <tr>
- * <th>Sample command data</th>
- * <td colspan=5>{@code {"type":"job","alias":"Heartbeat","op":"stateChange","args":["CLOSE"]}}</td>
+ *    <td headers="cmdIdentifier"><strong>Sample command data</strong></td>
+ *    <td colspan=5 headers="type alias method args controlMbean">{@code {"type":"job","alias":"Heartbeat","op":"stateChange","args":["CLOSE"]}}</td>
  * </tr>
  * <tr></tr>
  * </TABLE>
