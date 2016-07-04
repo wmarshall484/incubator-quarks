@@ -182,7 +182,12 @@ public class EtiaoJob extends AbstractGraphJob implements JobContext {
 
     /**
      * Complete job closing.  This method can be invoked after a job close 
-     * has been initiated.  
+     * has been initiated.
+     * @param timeout the time to wait
+     * @param unit TimeUnit
+     * @throws ExecutionException if the job execution threw an ExecutionException.
+     * @throws InterruptedException if the job execution threw an InterruptedException.
+     * @throws TimeoutException if the job execution threw an TimeoutException.
      */
     public void completeClosing(long timeout, TimeUnit unit) throws ExecutionException, InterruptedException, TimeoutException {
         if (unit == null)

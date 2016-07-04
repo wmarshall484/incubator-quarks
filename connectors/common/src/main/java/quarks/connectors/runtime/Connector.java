@@ -106,8 +106,8 @@ public abstract class Connector<T> implements AutoCloseable, Serializable {
 
     /**
      * Disconnect the connector after the specified period of inactivity.
-     * @param idleTimeout
-     * @param unit
+     * @param idleTimeout idleTimeout(long)
+     * @param unit TimeUnit
      */
     public void setIdleTimeout(long idleTimeout, TimeUnit unit) {
         idleManager.setIdleTimeoutMsec(unit.toMillis(idleTimeout));
