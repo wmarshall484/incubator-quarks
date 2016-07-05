@@ -4,9 +4,9 @@ matrix:
    fast_finish: true
 
 before_install:
-  - wget http://archive.apache.org/dist/ant/binaries/apache-ant-1.9.4-bin.tar.gz
+  - wget --tries=40 --retry-connrefused --waitretry=1 http://archive.apache.org/dist/ant/binaries/apache-ant-1.9.4-bin.tar.gz
   - tar xzf apache-ant-1.9.4-bin.tar.gz
-  - wget -O jacoco-0.7.5.zip http://search.maven.org/remotecontent?filepath=org/jacoco/jacoco/0.7.5.201505241946/jacoco-0.7.5.201505241946.zip
+  - wget --tries=40 --retry-connrefused --waitretry=1 -O jacoco-0.7.5.zip http://search.maven.org/remotecontent?filepath=org/jacoco/jacoco/0.7.5.201505241946/jacoco-0.7.5.201505241946.zip
   - unzip -d jacoco-0.7.5 jacoco-0.7.5.zip
 
 addons:
