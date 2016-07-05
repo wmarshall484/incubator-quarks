@@ -21,6 +21,29 @@ package quarks.execution.services;
 /**
  * At runtime a container provides services to
  * executing elements such as oplets and functions.
+ * 
+ * <P>
+ * Services, providers and applications can optionally store
+ * preferences (configuration information) using a {@code java.util.pref.Preferences}
+ * instance registered as a service. Any provider may optionally register
+ * a root {@code Preferences} node. Once a provider registers
+ * a {@code Preferences} node, preferences will
+ * be saved across reboots of the provider and/or JVM if the underlying
+ * {@code Preferences} implementation supports it.
+ * 
+ * <BR>
+ * Services and application code can store keys
+ * in the root {@code Preferences} node or create child nodes
+ * as required.
+ * <pre>
+ * <code>
+ * Preferences prefs = rs.getService(Preferences.class);
+ * if (prefs != null) {
+ *     prefs.put("threshold", 3);
+ * }
+ * </code>
+ * </pre>
+ * </P>
  *
  */
 public interface RuntimeServices {

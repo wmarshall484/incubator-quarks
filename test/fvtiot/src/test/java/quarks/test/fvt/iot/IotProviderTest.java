@@ -19,6 +19,8 @@ under the License.
 package quarks.test.fvt.iot;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -28,6 +30,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 import org.junit.Test;
 
@@ -172,5 +176,64 @@ public class IotProviderTest {
         jobMbean = cs.getControl(JobMXBean.TYPE, "AppOne", JobMXBean.class);
         assertNull(jobMbean);
         appStarter.stateChange(Action.CLOSE);
+    }
+    
+    @Test
+    public void testNoPreferences() {
+        IotProvider provider1 = new IotProvider(EchoIotDevice::new);
+        assertNull(provider1.getServices().getService(Preferences.class));
+        
+        IotProvider provider2 = new IotProvider(null, EchoIotDevice::new);
+        assertNull(provider2.getServices().getService(Preferences.class));
+    }
+    
+    @Test
+    public void testPreferences() throws BackingStoreException {
+        
+        Preferences.userNodeForPackage(IotProvider.class).removeNode();     
+        
+        {
+            IotProvider provider1 = new IotProvider("PP1", EchoIotDevice::new);
+            IotProvider provider2 = new IotProvider("PP2", EchoIotDevice::new);
+
+            Preferences pp1 = provider1.getServices().getService(Preferences.class);
+            assertNotNull(pp1);
+
+            Preferences pp2 = provider2.getServices().getService(Preferences.class);
+            assertNotNull(pp2);
+
+            assertNotSame(pp1, pp2);
+
+            pp1.put("a", "one");
+            assertEquals("one", pp1.get("a", "unset"));
+
+            // Ensure setting of one does not affect the other
+            assertEquals("unset", pp2.get("a", "unset"));
+
+            pp2.put("a", "two");
+            assertEquals("two", pp2.get("a", "unset"));
+            assertEquals("one", pp1.get("a", "unset"));
+
+            pp1.flush();
+            pp2.flush();
+        }
+        
+        // Create a new proivder with the same name
+        // it should pick up the previously values.
+        {
+            IotProvider provider1N = new IotProvider("PP1", EchoIotDevice::new);
+            Preferences pp1N = provider1N.getServices().getService(Preferences.class);
+            assertNotNull(pp1N);
+            assertEquals("one", pp1N.get("a", "unset"));
+        }
+        {
+            IotProvider provider2N = new IotProvider("PP2", EchoIotDevice::new);
+            Preferences pp2N = provider2N.getServices().getService(Preferences.class);
+            assertNotNull(pp2N);
+            assertEquals("two", pp2N.get("a", "unset"));
+        }
+        
+        // Remove the nodes
+        Preferences.userNodeForPackage(IotProvider.class).removeNode();
     }
 }
