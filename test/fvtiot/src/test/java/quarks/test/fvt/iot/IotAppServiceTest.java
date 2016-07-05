@@ -79,9 +79,13 @@ public class IotAppServiceTest {
         JsonElement crr = control.controlRequest(registerJar);    
         assertTrue(crr.getAsBoolean());
         
+        Thread.sleep(500);
+        
         JsonObject submitAppTwo = newSubmitRequest("SecondJarApp");        
         crr = control.controlRequest(submitAppTwo);      
         assertTrue(crr.getAsBoolean());
+        
+        Thread.sleep(500);
     }
     
     public static JsonObject newSubmitRequest(String name) {

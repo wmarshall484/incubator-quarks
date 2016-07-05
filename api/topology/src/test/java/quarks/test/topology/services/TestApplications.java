@@ -36,7 +36,7 @@ public class TestApplications {
 
         @Override
         public BiConsumer<Topology, JsonObject> getBuilder() {
-            return (t,c) -> t.strings(getName());
+            return (t,c) -> t.strings(getName()).print();
         }     
     }
     
