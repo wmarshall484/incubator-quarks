@@ -167,7 +167,9 @@ public class AppService implements ApplicationService {
                     fileName = path.substring(lastSlash+1);                  
             }
         }
-        Path dir = Files.createTempDirectory("quarksjar");
+        // TODO - allow persistence across reboots
+        // For now just store in a temp directory
+        Path dir = Files.createTempDirectory("quarksjars");
         File file;
         if (fileName.isEmpty())
             file = File.createTempFile("quarks", "jar", dir.toFile());
