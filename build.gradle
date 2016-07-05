@@ -28,6 +28,7 @@ ext.ext_classpath = ['com.google.code.gson:gson:2.2.4',
   'io.dropwizard.metrics:metrics-core:3.1.2']
 ext.target_dir = "$distsDir"
 ext.target_java8_dir = "${ext.target_dir}/java8"
+ext.target_javadoc_dir = "${ext.target_dir}/docs/javadoc"
 
 /* Configure subprojects */
 subprojects {
@@ -161,7 +162,36 @@ task copyScript {
   }
 }
 
+task aggregateJavadoc(type: Javadoc) {
+  destinationDir file("$rootProject.ext.target_javadoc_dir")
+  options.addStringOption('Xdoclint:none', '-quiet')
+  configure(options) {
+    author = true
+    version = true
+    use = true
+    docTitle "Apache Quarks (incubating) v${build_version}"
+    footer '<a href="http://quarks.incubator.apache.org">Apache Quarks (incubating)</a>'
+    bottom "Copyright &#169; 2016 The Apache Software Foundation. All Rights Reserved - ${rootProject.ext.commithash}-${DSTAMP}-${TSTAMP}"
+    overview "quarks_overview.html"
+    windowTitle "Quarks v${build_version}"
+
+    group("Quarks API", "quarks.execution", "quarks.function", "quarks.topology", "quarks.topology.json", "quarks.topology.mbeans", "quarks.topology.plumbing", "quarks.topology.services", "quarks.execution.*")
+    group("Quarks Providers", "quarks.providers.*")
+    group("Quarks Connectors", "quarks.connectors.*")
+    group("Quarks Samples", "quarks.samples.*")
+    group("Quarks Analytics", "quarks.analytics.*")
+    group("Quarks Utilities", "quarks.metrics", "quarks.metrics.*", "quarks.streamscope", "quarks.streamscope.*")
+    group("Quarks Low-Level API", "quarks.graph", "quarks.graph.*", "quarks.oplet", "quarks.oplet.*", "quarks.window")
+    group("Quarks SPI", "quarks.topology.spi", "quarks.topology.spi.*")
+  }
+  source subprojects.collect { project -> project.sourceSets.main.allJava }
+  classpath = files(subprojects.collect
+          { project -> project.sourceSets.main.compileClasspath }
+  )
+}
+
+build.dependsOn aggregateJavadoc
+
 task wrapper(type: Wrapper) {
   jarFile = rootProject.file('.gradle-wrapper/gradle-wrapper.jar')
 }
-
