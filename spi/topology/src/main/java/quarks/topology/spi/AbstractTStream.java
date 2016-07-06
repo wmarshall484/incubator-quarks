@@ -31,8 +31,9 @@ import quarks.topology.Topology;
 /**
  * Abstract stream that uses the functional primitives to implement most
  * methods.
- * <P>
+ * <p>
  * The functional primitives are:
+ * </p>
  * <UL>
  * <LI>{@link TStream#filter(quarks.function.Predicate)}</LI>
  * <LI>{@link TStream#map(quarks.function.Function)}</LI>
@@ -40,8 +41,7 @@ import quarks.topology.Topology;
  * </UL>
  * These methods are unimplemented, thus left to the specific implementation
  * used to build the topology.
- * </P>
- * 
+ *
  * @param <G>
  *            Type of the {@link Topology} implementation.
  * @param <T>
@@ -74,18 +74,16 @@ public abstract class AbstractTStream<G extends Topology, T> implements TStream<
      * a different object of the same type.
      * If {@code modifier.apply(t)} returns {@code null} then no tuple
      * is submitted to the returned stream for {@code t}.
-     * 
+     *
      * <P>
      * Example of modifying a stream  {@code String} values by adding the suffix '{@code extra}'.
-     * 
+     * </P>
      * <pre>
      * <code>
      * TStream&lt;String&gt; strings = ...
      * TStream&lt;String&gt; modifiedStrings = strings.modify(t -&gt; t.concat("extra"));
      * </code>
      * </pre>
-     * 
-     * </P>
      * <P>
      * This method is equivalent to
      * {@code map(Function<T,T> modifier}).
@@ -131,7 +129,7 @@ public abstract class AbstractTStream<G extends Topology, T> implements TStream<
      * {@code other}. A stream cannot be unioned with itself, in this case
      * {@code this} will be returned.
      * 
-     * @param other
+     * @param other TStream
      * @return A stream that is the union of {@code this} and {@code other}.
      */
     @Override

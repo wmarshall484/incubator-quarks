@@ -108,7 +108,7 @@ public class HttpServer {
     /**
      * 
      * @return a String containing the context path to the console web application
-     * @throws Exception
+     * @throws Exception on failure
      */
     public String getConsoleContextPath() throws Exception {
         return HttpServerHolder.WEBAPP.getContextPath();
@@ -167,7 +167,7 @@ public class HttpServer {
     /**
      * Returns the url for the web application at the "console" context path.  Localhost is always assumed
      * @return the url for the web application at the "console" context path.
-     * @throws Exception 
+     * @throws Exception on failure
      */
     public String getConsoleUrl() throws Exception {
         return new String("http://localhost" + ":" + getConsolePortNumber() + getConsoleContextPath());

@@ -45,7 +45,7 @@ under the License.
  * including arbitrary control mbeans registered by applications.
  * 
  * <H4 id="providerOps">Provider operations</H4>
- * <TABLE border="1" aria-describedby="providerOps">
+ * <table border="1" summary="Provider operations">
  * <tr>
  *     <th id="operation">Operation</th><th id="cmdIdentifier">Command identifier</th>
  *     <th id="type">Type</th><th id="alias">Alias</th><th id="method">Method</th><th id="args">Arguments</th>
@@ -76,7 +76,7 @@ under the License.
  *    <td colspan=5 headers="type alias method args controlMbean">{@code {"type":"job","alias":"Heartbeat","op":"stateChange","args":["CLOSE"]}}</td>
  * </tr>
  * <tr></tr>
- * </TABLE>
+ * </table>
  * 
  */
 package quarks.providers.iot;

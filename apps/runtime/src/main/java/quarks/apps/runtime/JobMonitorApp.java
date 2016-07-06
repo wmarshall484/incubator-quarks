@@ -203,7 +203,8 @@ public class JobMonitorApp {
      * <pre>
      * JobEvents source --&gt; Filter (health == unhealthy) --&gt; Restart application
      * </pre>
-     * 
+     * @param t Topology
+     *
      */
     public static void declareTopology(Topology t) {
         TStream<JsonObject> jobEvents = JobEvents.source(
