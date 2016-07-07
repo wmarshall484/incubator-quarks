@@ -23,6 +23,8 @@ import static quarks.topology.services.ApplicationService.SYSTEM_APP_PREFIX;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 import org.slf4j.LoggerFactory;
 
@@ -62,6 +64,11 @@ import quarks.topology.services.ApplicationService;
  * <LI>{@link ControlService control} - An instance of {@link JsonControlService}.</LI>
  * <LI>{@link ApplicationService application} - An instance of {@link AppService}.</LI>
  * <LI>{@link PublishSubscribeService publish-subscribe} - An instance of {@link ProviderPubSub}</LI>
+ * <LI>preferences (optional) - An instance of {@code java.util.pref.Preferences} to store application
+ * and service preferences. A {@code Preferences} node is created if the provider is created with
+ * a name that is not {@code null}. if the preferences implementation supports persistence
+ * then any preferences will be maintained across provider and JVM restarts when creating a
+ * provider with the same name. The {@code Preferences} node is a user node.
  * </UL>
  * System applications provide this functionality:
  * <UL>
@@ -89,6 +96,7 @@ public class IotProvider implements TopologyProvider,
      */
     public static final String CONTROL_APP_NAME = SYSTEM_APP_PREFIX + "IotCommandsToControl";
     
+    private final String name;
     private final TopologyProvider provider;
     private final Function<Topology, IotDevice> iotDeviceCreator;
     private final DirectSubmitter<Topology, Job> submitter;
@@ -102,47 +110,71 @@ public class IotProvider implements TopologyProvider,
     
     /**
      * Create an {@code IotProvider} that uses its own {@code DirectProvider}.
+     * No name is assigned to the provider so a preferences service is not created.
      * @param iotDeviceCreator How the {@code IotDevice} is created.
      * 
      * @see DirectProvider
      */
     public IotProvider(Function<Topology, IotDevice> iotDeviceCreator) {   
-        this(new DirectProvider(), iotDeviceCreator);
+        this(null, new DirectProvider(), iotDeviceCreator);
+    }
+    
+    /**
+     * Create an {@code IotProvider} that uses its own {@code DirectProvider}.
+     * @param name Name of the provider, if the value is not {@code null} then a preferences service is created.
+     * @param iotDeviceCreator How the {@code IotDevice} is created.
+     * 
+     * @see DirectProvider
+     */
+    public IotProvider(String name, Function<Topology, IotDevice> iotDeviceCreator) {   
+        this(name, new DirectProvider(), iotDeviceCreator);
     }
     
     /**
      * Create an {@code IotProvider} that uses the passed in {@code DirectProvider}.
      * 
+     * @param name Name of the provider, if the value is not {@code null} then a preferences service is created.
      * @param provider {@code DirectProvider} to use for topology creation and submission.
      * @param iotDeviceCreator How the {@code IotDevice} is created.
      * 
      * @see DirectProvider
      *
      */
-    public IotProvider(DirectProvider provider, Function<Topology, IotDevice> iotDeviceCreator) {
-        this(provider, provider, iotDeviceCreator);
+    public IotProvider(String name, DirectProvider provider, Function<Topology, IotDevice> iotDeviceCreator) {
+        this(name, provider, provider, iotDeviceCreator);
     }
 
     /**
      * Create an {@code IotProvider}.
+     * @param name Name of the provider, if the value is not {@code null} then a preferences service is created.
      * @param provider How topologies are created.
      * @param submitter How topologies will be submitted.
      * @param iotDeviceCreator How the {@code IotDevice} is created.
      * 
      */
-    public IotProvider(TopologyProvider provider, DirectSubmitter<Topology, Job> submitter,
+    public IotProvider(String name, TopologyProvider provider, DirectSubmitter<Topology, Job> submitter,
             Function<Topology, IotDevice> iotDeviceCreator) {
+        this.name = name;
         this.provider = provider;
         this.submitter = submitter;
         this.iotDeviceCreator = iotDeviceCreator;
         
         registerControlService();
         registerApplicationService();
-        registerPublishSubscribeService();
+        registerPublishSubscribeService();       
+        registerPreferencesService();
         
         createIotDeviceApp();
         createIotCommandToControlApp();
         createJobMonitorApp();
+    }
+    
+    /**
+     * Return the name of this provider.
+     * @return Provider's name, can be {@code null}.
+     */
+    public String getName() {
+        return name;
     }
     
     /**
@@ -202,6 +234,25 @@ public class IotProvider implements TopologyProvider,
     protected void registerPublishSubscribeService() {
         getServices().addService(PublishSubscribeService.class, 
                 new ProviderPubSub());
+    }
+    
+    /**
+     * @throws BackingStoreException 
+     * 
+     */
+    protected void registerPreferencesService() {
+        if (getName() == null)
+            return;
+        Preferences classNode = Preferences.userNodeForPackage(IotProvider.class);
+        Preferences providerNode = classNode.node(getName());
+        
+        try {
+            providerNode.flush();
+            getServices().addService(Preferences.class, providerNode);
+        } catch (BackingStoreException e) {
+            // No preferences available
+            ;
+        }
     }
 
     protected JsonControlService getControlService() {
