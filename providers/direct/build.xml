@@ -33,6 +33,7 @@
 
   <path id="test.compile.classpath">
     <pathelement location="${jar}" />
+    <pathelement location="${lib}/quarks.runtime.appservice.jar" />
     <pathelement location="../../api/topology/test.classes" />
     <pathelement location="../../utils/metrics/test.classes" />
     <pathelement location="${quarks.utils}/metrics/lib/quarks.utils.metrics.jar" />

@@ -49,6 +49,7 @@ public interface ApplicationService {
     
     /**
      * Add a topology that can be started though a control mbean.
+     * Any registration replaces any existing application with the same name.
      * <BR>
      * When a {@link ApplicationServiceMXBean#submit(String, String) submit}
      * is invoked {@code builder.accept(topology, config)} is called passing:
@@ -74,6 +75,20 @@ public interface ApplicationService {
      * @see ApplicationServiceMXBean
      */
     void registerTopology(String applicationName, BiConsumer<Topology, JsonObject> builder);
+    
+    /**
+     * Register a jar file containing new applications.
+     * Any service provider within the jar of type {@link TopologyBuilder}
+     * will be {@link #registerTopology(String, BiConsumer) registered} as
+     * a topology.
+     * 
+     * The jar cannot have any new dependencies, its classpath will
+     * be the classpath of this service.
+     * 
+     * @param jarURL URL of Jar containing new applications.
+     * @param jsonConfig Configuration information, currently unused.
+     */
+    void registerJar(String jarURL, String jsonConfig) throws Exception;
     
     /**
      * Returns the names of applications registered with this service.

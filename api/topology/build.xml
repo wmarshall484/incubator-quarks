@@ -41,5 +41,17 @@
     <path refid="test.compile.classpath"/>
     <path refid="test.common.classpath" />
   </path>
-
+	
+  <!-- Build a jar file containing the applications to test the ApplicationService -->
+  <target name="test.compile" depends="quarks.common.test.compile,test.jar"/>
+  <target name="test.jar" depends="quarks.common.test.compile">
+    <jar destfile="${test.classes}/${ant.project.name}.APPS.TEST.jar">
+      <service type="quarks.topology.services.TopologyBuilder">
+        <provider classname="quarks.test.topology.services.TestApplications$AppOne" />
+        <provider classname="quarks.test.topology.services.TestApplications$AppTwo" />
+        <provider classname="quarks.test.topology.services.TestApplications$AppThree" />
+      </service>
+     <fileset dir="${test.classes}" includes="**/TestApplications*"/>
+    </jar>
+  </target>
 </project>

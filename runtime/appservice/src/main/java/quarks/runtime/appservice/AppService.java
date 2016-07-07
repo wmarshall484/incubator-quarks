@@ -18,10 +18,20 @@ under the License.
 */
 package quarks.runtime.appservice;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -36,6 +46,7 @@ import quarks.function.BiConsumer;
 import quarks.topology.Topology;
 import quarks.topology.TopologyProvider;
 import quarks.topology.mbeans.ApplicationServiceMXBean;
+import quarks.topology.services.TopologyBuilder;
 import quarks.topology.services.ApplicationService;
 
 /**
@@ -74,7 +85,7 @@ public class AppService implements ApplicationService {
     
     private final TopologyProvider provider;
     private final DirectSubmitter<Topology, Job> submitter;
-    
+        
     /**
      * Create an {@code ApplicationService} instance.
      * @param provider Provider to create topology instances for registered applications.
@@ -92,12 +103,95 @@ public class AppService implements ApplicationService {
                     ALIAS+System.currentTimeMillis(), alias,
                     ApplicationServiceMXBean.class,
                     new AppServiceControl(this));
+        
     }
 
     @Override
     public void registerTopology(String applicationName, BiConsumer<Topology, JsonObject> builder) {
         logger.trace("Register application name: {}", applicationName);
         applications.put(applicationName, builder);
+    }
+    
+    /**
+     * Create a new class loader for the jar and register any
+     * topology application that is registered as a service provider.
+     */
+    @Override
+    public void registerJar(String jarURL, String jsonConfig) throws Exception {
+        logger.trace("Register jar: {}", jarURL);
+        
+        // If it's a http URL download it otherwise use directly.
+        URL url = new URL(jarURL);
+        String protocol = url.getProtocol();
+        if ("http".equals(protocol) || "https".equals(protocol)) {
+            url = downloadJar(url);
+        }
+        URLClassLoader loader = new URLClassLoader(new URL[] {url});
+        
+        for (TopologyBuilder topoBuilder : ServiceLoader.load(TopologyBuilder.class, loader)) {
+            registerTopology(topoBuilder.getName(), topoBuilder.getBuilder());
+        }
+    }
+    
+    /**
+     * Download an HTTP URL to a local file.
+     * @param url URL to download from.
+     * @return URL of the local file.
+     */
+    private URL downloadJar(URL url) throws Exception {
+        HttpURLConnection httpConn = (HttpURLConnection) url.openConnection();
+        int responseCode = httpConn.getResponseCode();
+        if (responseCode != HttpURLConnection.HTTP_OK) {
+            logger.error("Error response code for URL: {} : response code={}", url.toExternalForm(), responseCode);
+            throw new IOException();
+        }
+        
+        String fileName = "";
+        String disposition = httpConn.getHeaderField("Content-Disposition");
+
+        if (disposition != null) {
+            // extracts file name from header field
+            int index = disposition.indexOf("filename=");
+            if (index > 0) {
+                fileName = disposition.substring(index + 10,
+                        disposition.length() - 1);
+            }
+        } else {
+            // extracts file name from URL path
+            String path = url.getPath();
+            if (!path.isEmpty()) {
+                int lastSlash = path.lastIndexOf("/");
+                if (lastSlash == -1)
+                    fileName = path;
+                else
+                    fileName = path.substring(lastSlash+1);                  
+            }
+        }
+        // TODO - allow persistence across reboots
+        // For now just store in a temp directory
+        Path dir = Files.createTempDirectory("quarksjars");
+        File file;
+        if (fileName.isEmpty())
+            file = File.createTempFile("quarks", "jar", dir.toFile());
+        else
+            file = new File(dir.toFile(), fileName);
+        
+        InputStream inputStream = httpConn.getInputStream();
+        FileOutputStream outputStream = new FileOutputStream(file);
+
+        int bytesRead;
+        byte[] buffer = new byte[4096];
+        while ((bytesRead = inputStream.read(buffer)) != -1) {
+            outputStream.write(buffer, 0, bytesRead);
+        }
+
+        outputStream.flush();
+        outputStream.close();
+        inputStream.close();
+        
+        logger.trace("Register jar downloaded as: {}", file);
+        
+        return file.toURI().toURL();
     }
     
     @Override
