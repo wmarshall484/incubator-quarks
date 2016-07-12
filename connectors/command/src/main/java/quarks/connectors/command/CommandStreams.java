@@ -33,12 +33,13 @@ import quarks.topology.TStream;
 import quarks.topology.Topology;
 
 /**
- * Connectors for creating a TStream from a Command's / OS Process's output
+ * Connector for creating a TStream from a Command's / OS Process's output
  * and sinking a TStream to a Command's / OS Process's input.
  * <P>
  * e.g., run a network monitor command (like Tiger Shark) and ingest its output.
  */
 public class CommandStreams {
+  private CommandStreams() {}
 
   /**
    * Tokenize the specified {@code cmdString} in the exact same manner as

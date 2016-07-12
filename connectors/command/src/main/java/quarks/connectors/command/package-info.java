@@ -18,7 +18,7 @@ under the License.
 */
 
 /**
- * Connectors to a Command / OS Process.
+ * Connector to a Command / OS Process.
  */
 package quarks.connectors.command;
 
