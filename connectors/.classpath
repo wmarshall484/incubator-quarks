@@ -2,6 +2,8 @@
 <classpath>
 	<classpathentry kind="src" path="common/src/main/java"/>
 	<classpathentry kind="src" path="common/src/test/java"/>
+	<classpathentry kind="src" path="command/src/main/java"/>
+	<classpathentry kind="src" path="command/src/test/java"/>
 	<classpathentry kind="src" path="csv/src/main/java"/>
 	<classpathentry kind="src" path="csv/src/test/java"/>
 	<classpathentry kind="src" path="file/src/main/java"/>

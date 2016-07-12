@@ -26,17 +26,14 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static quarks.test.connectors.common.FileUtil.createTempFile;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -943,21 +940,5 @@ public class FileStreamsTextFileWriterTest extends TopologyAbstractTest implemen
         catch (IOException e) {
           assertNull("path:"+path+" line "+lineCnt+" unexpected IOException "+e, e);
         }
-    }
-
-    public static Path createTempFile(String name, String extension, String[] lines) throws Exception {
-        Path tmpFile = Files.createTempFile(name, extension);
-        
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(
-                new FileOutputStream(tmpFile.toFile()), StandardCharsets.UTF_8));
-        
-        for (int i = 0; i < lines.length; i++) {
-            bw.write(lines[i]);
-            bw.write("\n");
-        }
-        bw.flush();
-        bw.close();
-        
-        return tmpFile;
     }
 }
