@@ -22,8 +22,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.math3.util.Pair;
 import org.junit.Test;
 
 import com.google.gson.JsonElement;
@@ -76,7 +78,7 @@ public class StatisticsTest  extends TopologyAbstractTest implements DirectTestS
 	
     @Test
     public void testMaxMean() throws Exception {
-        Topology topology = newTopology("testMin");
+        Topology topology = newTopology("testMaxMean");
 
         TStream<JsonObject> aggregate = aggregate(topology, Statistic.MAX, Statistic.MEAN);
 
@@ -125,7 +127,7 @@ public class StatisticsTest  extends TopologyAbstractTest implements DirectTestS
     
     @Test
     public void testSlope() throws Exception {
-        Topology topology = newTopology("testMin");
+        Topology topology = newTopology("testSlope");
         
         TStream<JsonObject> aggregate = aggregate(topology, Regression.SLOPE);
         
@@ -153,6 +155,55 @@ public class StatisticsTest  extends TopologyAbstractTest implements DirectTestS
         assertResult(tuples, Regression.SLOPE, 9, "A", -102.0);
         assertResult(tuples, Regression.SLOPE, 10, "C", 601.0);
     }
+    
+    @Test
+    public void testMvMaxMean() throws Exception {
+        Topology topology = newTopology("testMvMaxMean");
+
+        TStream<JsonObject> aggregate = mvAggregate(topology, Statistic.MAX, Statistic.MEAN);
+
+        Condition<Long> count = topology.getTester().atLeastTupleCount(aggregate, 11);
+        Condition<List<JsonObject>> contents = topology.getTester().streamContents(aggregate);
+        complete(topology, count);
+        assertTrue(count.valid());
+
+        List<JsonObject> tuples = contents.getResult();
+        assertEquals(11, tuples.size());
+
+        assertMvOutputStructure(tuples, Statistic.MAX, Statistic.MEAN);
+
+        // "A1", "B7", "C4", "A4", "B3", "C99", "A102", "B43", "B13.0", "A0",
+        // "C700"
+        assertMvResult(tuples, Statistic.MAX, 0, "A", 1.0);
+        assertMvResult(tuples, Statistic.MAX, 1, "B", 7.0);
+        assertMvResult(tuples, Statistic.MAX, 2, "C", 4.0);
+
+        assertMvResult(tuples, Statistic.MAX, 3, "A", 4.0);
+        assertMvResult(tuples, Statistic.MAX, 4, "B", 7.0);
+        assertMvResult(tuples, Statistic.MAX, 5, "C", 99.0);
+
+        assertMvResult(tuples, Statistic.MAX, 6, "A", 102.0);
+        assertMvResult(tuples, Statistic.MAX, 7, "B", 43.0);
+        assertMvResult(tuples, Statistic.MAX, 8, "B", 43.0);
+
+        assertMvResult(tuples, Statistic.MAX, 9, "A", 102.0);
+        assertMvResult(tuples, Statistic.MAX, 10, "C", 700.0);
+        
+        assertMvResult(tuples, Statistic.MEAN, 0, "A", 1.0);
+        assertMvResult(tuples, Statistic.MEAN, 1, "B", 7.0);
+        assertMvResult(tuples, Statistic.MEAN, 2, "C", 4.0);
+
+        assertMvResult(tuples, Statistic.MEAN, 3, "A", 2.5);
+        assertMvResult(tuples, Statistic.MEAN, 4, "B", 5.0);
+        assertMvResult(tuples, Statistic.MEAN, 5, "C", 51.5);
+
+        assertMvResult(tuples, Statistic.MEAN, 6, "A", 53.0);
+        assertMvResult(tuples, Statistic.MEAN, 7, "B", 23.0);
+        assertMvResult(tuples, Statistic.MEAN, 8, "B", 28.0);
+
+        assertMvResult(tuples, Statistic.MEAN, 9, "A", 51.0);
+        assertMvResult(tuples, Statistic.MEAN, 10, "C", 399.5);
+    }
 	
 	private static void assertResult(List<JsonObject> tuples, JsonUnivariateAggregate stat, int index, String key, Double value) {
 	    JsonObject tuple = tuples.get(index);
@@ -166,6 +217,23 @@ public class StatisticsTest  extends TopologyAbstractTest implements DirectTestS
             assertFalse(agg.has(stat.name()));
         }
 	}
+  
+  private static void assertMvResult(List<JsonObject> tuples, JsonUnivariateAggregate stat, int index, String key, Double value) {
+      JsonObject tuple = tuples.get(index);
+      assertEquals(key, tuple.get("id").getAsString());
+      
+      if (value != null) {
+        Double result = JsonAnalytics.getMvAggregate(tuple, "aggResults", "value", stat).getAsDouble();
+        assertEquals("index:" + index + " value "+stat, value, result, 0.01);
+  
+        Double result2 = JsonAnalytics.getMvAggregate(tuple, "aggResults", "value2", stat).getAsDouble();
+        assertEquals("index:" + index + " value2 "+stat, value+1000, result2, 0.01);
+      }
+      else {
+        assertFalse("index:" + index + " value "+stat, JsonAnalytics.hasMvAggregate(tuple, "aggResults", "value", stat));
+        assertFalse("index:" + index + " value2 "+stat, JsonAnalytics.hasMvAggregate(tuple, "aggResults", "value2", stat));
+      }
+  }
 	
 	public static void assertOutputStructure(List<JsonObject> tuples, JsonUnivariateAggregate ... stats) {
 	    for (JsonObject j : tuples) {
@@ -178,6 +246,20 @@ public class StatisticsTest  extends TopologyAbstractTest implements DirectTestS
 	        }
 	    }
 	}
+  
+  public static void assertMvOutputStructure(List<JsonObject> tuples, JsonUnivariateAggregate ... stats) {
+      for (JsonObject j : tuples) {
+          assertTrue(j.has("id")); // Value of the key
+          assertTrue(j.has("aggResults")); // Value of the key
+          
+          for (JsonUnivariateAggregate stat : stats) {
+            assertTrue("value "+stat, JsonAnalytics.hasMvAggregate(j, "aggResults", "value", stat));
+          }
+          for (JsonUnivariateAggregate stat : stats) {
+            assertTrue("value2 "+stat, JsonAnalytics.hasMvAggregate(j, "aggResults", "value2", stat));
+          }
+      }
+  }
 	
 	public static TStream<JsonObject> aggregate(Topology topology, JsonUnivariateAggregate ... stats) {
 	       TStream<JsonObject> sourceData = sourceData(topology);
@@ -199,4 +281,30 @@ public class StatisticsTest  extends TopologyAbstractTest implements DirectTestS
 	            return j;
 	        });
 	}
+  
+  public static TStream<JsonObject> mvAggregate(Topology topology, JsonUnivariateAggregate ... stats) {
+         TStream<JsonObject> sourceData = sourceMvData(topology);
+          
+          TWindow<JsonObject, JsonElement> window = sourceData.last(2, j -> j.get("id"));
+          
+          List<Pair<String, JsonUnivariateAggregate[]>> aggSpecs = new ArrayList<>();
+          aggSpecs.add(JsonAnalytics.mkAggregationSpec("value", stats));
+          aggSpecs.add(JsonAnalytics.mkAggregationSpec("value2", stats));
+          
+          return JsonAnalytics.mvAggregate(window, "id", "aggResults", aggSpecs);
+  }
+  
+  /*
+   * same JsonObject as sourceData() but with an additional 
+   * "value2" variable whose value is the the "value" variable's value + 1000 
+   */
+  public static TStream<JsonObject> sourceMvData(Topology topology)
+  {
+    return sourceData(topology)
+        .map(jo -> {
+          jo.addProperty("value2", jo.get("value").getAsLong() + 1000);
+          return jo;
+        });
+  }
+  
 }
