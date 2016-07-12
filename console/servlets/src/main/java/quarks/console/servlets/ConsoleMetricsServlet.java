@@ -48,6 +48,7 @@ public class ConsoleMetricsServlet extends HttpServlet {
 		String[] metricNames;
 		String metricName = "";
 		boolean availableMetrics = false;
+		boolean getAllMetrics = false;
 		for(Map.Entry<String,String[]> entry : parameterMap.entrySet()) {
 			if (entry.getKey().equals("job")) {
 				jobIds = entry.getValue();
@@ -64,6 +65,11 @@ public class ConsoleMetricsServlet extends HttpServlet {
 				if (getMetrics.length == 1) {
 					availableMetrics = true;
 				}
+			} else if (entry.getKey().equals("getAllMetrics")) {
+				String[] getAll = entry.getValue();
+				if (getAll.length == 1) {
+					getAllMetrics = true;
+				}
 			}
 		}
 
@@ -72,6 +78,15 @@ public class ConsoleMetricsServlet extends HttpServlet {
 			Iterator<ObjectInstance> counterIterator = MetricsUtil.getCounterObjectIterator(jobId);
 			if (availableMetrics) {
 				MetricsGson gsonJob = MetricsUtil.getAvailableMetricsForJob(jobId, meterIterator, counterIterator);
+				Gson gson = new Gson();
+		    	response.setContentType("application/json");
+		    	response.setCharacterEncoding("UTF-8");
+		    	response.getWriter().write(gson.toJson(gsonJob));
+				return;
+			}
+			
+			if (getAllMetrics) {
+				MetricsGson gsonJob = MetricsUtil.getAllRateMetrics(jobId);
 				Gson gson = new Gson();
 		    	response.setContentType("application/json");
 		    	response.setCharacterEncoding("UTF-8");
@@ -88,8 +103,6 @@ public class ConsoleMetricsServlet extends HttpServlet {
 	    	response.setCharacterEncoding("UTF-8");
 	    	
 	    	response.getWriter().write(jsonString);
-			
-
 		}
 	}
 

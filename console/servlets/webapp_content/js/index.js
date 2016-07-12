@@ -27,6 +27,9 @@ var refreshedRowValues = [];
 var stateTooltip = null;
 var rowsTooltip = null;
 
+var tableMetrics = null;
+var metricsTooltip = null;
+
 var tagsColors = {};
 var propWindow;
 
@@ -250,7 +253,180 @@ var showAllLink = d3.select("#showAll")
 		displayRowsTooltip(true);
 	} 
 });
+
+var showMetricsTimeout = null;
+
+d3.select("#showMetricsTable")
+	.on('mouseover', function() {
+		showMetricsTooltip(d3.event);
+	})
+	.on('mouseout', function() {
+		hideMetricsTooltip();
+	})
+	.on('keydown', function() {
+		if (d3.event.keyCode && d3.event.keyCode === 13) {
+			showMetricsTooltip(d3.event);
+		} else if (d3.event.keyCode) {
+			hideMetricsTooltip();
+		}
+	});
+
+var showMetricsTooltip = function(event) {
+	if (showMetricsTimeout) {
+		clearTimeout(showMetricsTimeout);
+	}
+	var jobId = d3.select("#jobs").node().value;
+	var content = "<div style='margin:10px; width: 300px; max-height: 300px;overflow-x: scroll;'>";
 	
+	var tableMetrics = new Array();
+	
+	var queryString = "metrics?job=" + jobId + "&getAllMetrics=true";
+	var getEvent = function(){
+		return event;
+	}
+	d3.xhr(queryString, function(error, responseData) {
+		  if (error) {
+			  console.log("error retrieving metrics");
+		  }
+		  if (responseData) {
+			  if (responseData.response) {
+				  var evt = getEvent();
+				  tableMetrics = JSON.parse(responseData.response);
+				  
+					if (tableMetrics.ops.length === 0) {
+						content+= "<span>There are no metrics to display.</span>";
+					} else {
+						var opMetrics = tableMetrics.ops;
+						var countArr = new Array();
+						var rateArr = new Array();
+						opMetrics.forEach(function(op) {
+							var metrics = op.metrics;
+							var opId = op.opId;
+							metrics.forEach(function(tm) {
+								var rateIdx = tm["name"].toUpperCase().indexOf("RATE");
+								// if it starts with Rate it is RateUnit
+								if (opId) {
+									tm.opId = opId;
+								}
+								if (rateIdx !== -1 && rateIdx !== 0) {
+									rateArr.push(tm);
+								} else if (rateIdx !== 0){
+									countArr.push(tm);
+								}
+							});
+
+						});
+						
+						var rowIdx = 0;
+						content += "<table><tr><th tabindex=0>Operator name</th><th tabindex=0>Counter value</th></tr>";
+						
+						var sortFunc = function(objA, objB) {
+							var a = objA.opId;
+							var b = objB.opId;
+							
+							if (a < b) {
+								return -1;
+							} else if (a > b) {
+								return 1;
+							} else {
+								return 0;
+							}
+						};
+						
+						var startTr = "<tr><td align='center' tabindex=0>";
+						var startTd = "<td align='center' tabindex=0>";
+						var startTdLeft = "<td align='left' tabindex=0>";
+						var endTd = "</td>"
+						var endTr = "</tr>";
+						
+						if (countArr.length > 0) {
+							countArr.sort(sortFunc);
+
+							countArr.forEach(function(counter) {
+								rowIdx++;
+	
+								var opName = counter["opId"].substring("OP_".length, counter["opId"].length);
+								content +=  startTr + opName + endTd;
+	
+								content += startTd + counter["value"] + endTd + endTr;	
+							});
+							
+							content += "</table>";
+						}
+						
+						if (rateArr.length > 0) {
+							rateArr.sort(sortFunc);
+							content += "<table><tr><th tabindex=0>Operator name</th><th tabindex=0>Rate type</th><th tabindex=0>Rate value</th></tr>";
+							rateArr.forEach(function(rate) {
+								rowIdx++;
+								
+								var opName = rate["opId"].substring("OP_".length, rate["opId"].length);
+								content +=  startTr + opName + endTd;
+								var rateName = rate["name"];
+								if (rateName.toUpperCase().endsWith("RATE")) {
+									rateName = rateName.substring(0, rateName.length - "RATE".length);
+								}
+								content += startTdLeft + rateName + endTd;
+								var num = Number.parseFloat(rate["value"]);
+								content += startTd + num.toFixed(4) + endTd + endTr;	
+							});
+							content += "</table>";
+						}
+
+					}
+					var evtX = evt.srcElement.x;
+					var evtY = evt.srcElement.y;
+					content += "</div>";
+
+					metricsTooltip
+					.html(content)
+					.style("left", (evtX + 140) + "px")
+					.style("top", evtY +"px")
+					.style("padding-x", 22)
+					.style("padding-y", 10)
+					.style("display", "block");
+					
+					d3.select("#showMetricsTable").node().blur();
+					metricsTooltip.node().focus();
+					
+
+					metricsTooltip
+					.on("keydown", function() {
+						// Escape key closes the popup
+						if (d3.event.keyCode && d3.event.keyCode === 27) {
+							hideMetricsTooltip();
+						}
+					});
+					
+					metricsTooltip
+					.on("mouseover", function() {
+						if (showMetricsTimeout) {
+							clearTimeout(showMetricsTimeout);
+						}
+					});
+					
+					metricsTooltip
+					.on("mouseout", function() {
+						hideMetricsTooltip();
+					});
+				  
+			  }
+		  }
+	});
+};
+
+
+
+var hideMetricsTooltip = function() {
+	if (showMetricsTimeout) {
+		clearTimeout(showMetricsTimeout);
+	}
+	showMetricsTimeout = setTimeout(function() {
+			metricsTooltip
+			.style("display", "none");
+	}, 400);
+};
+
 var tooltip = d3.select("body")
 	.append("div")
 	.attr("class", "tooltip")
@@ -370,16 +546,27 @@ var displayRowsTooltip = function(newRequest) {
 		}
 	}
 };
-
+var showStateTimeout = null;
 
 var showStateTooltip = function(event) {
+	if (showStateTimeout) {
+		clearTimeout(showStateTimeout);
+	}
 	var jobId = d3.select("#jobs").node().value;
 	var jobObj = jobMap[jobId];
-	var content = "<div style='margin:10px'>";
+	var content = "<div style='margin:10px'><table>";
+	
+	var rowPfx = "stateData";
+	var startTd = "<td align='center' tabindex=0>";
+	var endTd = "</td>"
+	var endTr = "</tr>";
+	
+	var rowIdx = 0;
 
-	var kIdx = 0;
 	for (var key in jobObj) {
-		kIdx++;
+		rowIdx++;
+		content += "<tr>" + startTd;
+		
 		var idx = key.indexOf("State");
 		var errIdx = key.indexOf("Error");
 		
@@ -387,28 +574,36 @@ var showStateTooltip = function(event) {
 			var name = key.substring(0, idx) + " " + key.substring(idx, key.length).toLowerCase();
 			var val = jobObj[key];
 			var value = val.substring(0,1) + val.substring(1,val.length).toLowerCase();
-			content += "<div tabindex=0 id='sJobDiv" + kIdx + "'>" + name + ": " + value + "</div>";
-		} else if (errIdx !== -1) {
+			content += name + endTd;
+			content += "<td tabindex=0 id='" + rowPfx + rowIdx + "'>" + value + endTd + endTr;
+		}
+		
+		if (errIdx !== -1) {
 			var name = key.substring(0, errIdx) + " " + key.substring(errIdx, key.length).toLowerCase();
 			var val = jobObj[key];
 			var value = "";
 			if (val) {
 				value = val.substring(0,1) + val.substring(1,val.length).toLowerCase();
 			}
-			content += "<div tabindex=0 id='sJobDiv" + kIdx + "'>" + name + ": " + value + "</div>";
-		} else {
-			content += "<div tabindex=0 id='sJobDiv" + kIdx + "'>" + key + ": " + jobObj[key] + "</div>";
-		}
+			content += name + endTd;
+			content += "<td tabindex=0 id='" + rowPfx + rowIdx + "'>" + value + endTd + endTr;
+		} 
 		
+		if (idx === -1 && errIdx === -1) {
+			content += key + endTd;
+			content += "<td tabindex=0 id='" + rowPfx + rowIdx + "'>" + jobObj[key] + endTd + endTr;
+		}
+
 	}
+
 	var evtX = d3.event.srcElement.x;
 	var evtY = d3.event.srcElement.y;
 	content += "</div>";
-
+	
 	stateTooltip
 	.html(content)
 	.style("left", (evtX - 160) + "px")
-	.style("top", evtY +"px")
+	.style("top", evtY - 20 +"px")
 	.style("padding-x", 22)
 	.style("padding-y", 10)
 	.style("display", "block");
@@ -416,24 +611,55 @@ var showStateTooltip = function(event) {
 	d3.select("#stateImg").node().blur();
 	stateTooltip.node().focus();
 	
-	var keyDownNode = "#sJobDiv" + kIdx
+	var lastNode = "#" + rowPfx + rowIdx;
 	
-	d3.select(keyDownNode)
+	d3.select(lastNode)
 	.on("keydown", function() {
 		// the next tab closes the popup
 		if (d3.event.keyCode && d3.event.keyCode === 9) {
 			hideStateTooltip();
 		}
 	});
+
+
+	stateTooltip
+	.on("keydown", function() {
+		// Escape key closes the popup
+		if (d3.event.keyCode && d3.event.keyCode === 27) {
+			hideStateTooltip();
+		}
+	});
+	
+	stateTooltip
+	.on("mouseover", function() {
+		if (showStateTimeout) {
+			clearTimeout(showStateTimeout);
+		}
+	});
+	
+	stateTooltip
+	.on("mouseout", function() {
+		hideStateTooltip();
+	});
+	
 };
 
 var hideStateTooltip = function() {
-	stateTooltip
-	.style("display", "none");
-	//put focus back on the state image
+	if (showStateTimeout) {
+		clearTimeout(showStateTimeout);
+	}
+	
+	stateTooltip.node().blur();
+	// the focus needs to be put on the stateImg so that when the 
+	// tooltip is closed, the loss of focus on that retains the tab order.
+	// Now the next element to focus on is 'layers'
 	d3.select("#stateImg").node().focus();
+	
+	showStateTimeout = setTimeout(function() {
+		stateTooltip
+		.style("display", "none");
+	}, 400)
 };
-
 
 var makeRows = function() {
 	var nodes = refreshedRowValues !== null ? refreshedRowValues : sankey.nodes();
@@ -952,6 +1178,15 @@ var fetchJobsInfo = function() {
 	                                .style("display", "none")
 	                                .style("background-color", "white")
 	                                .attr("class", "bshadow");
+	                                
+	                                metricsTooltip = d3.select("body")
+	                                .append("div")
+	                                .style("position", "absolute")
+	                                .style("z-index", "10")
+	                                .style("display", "none")
+	                                .style("background-color", "white")
+	                                .attr("class", "bshadow")
+	                                .attr("tabindex", "0");
 	                                
 	                                // check to see if a job is already selected and it's still in the jobMap object
 	                                var jobId = d3.select("#jobs").node().value;

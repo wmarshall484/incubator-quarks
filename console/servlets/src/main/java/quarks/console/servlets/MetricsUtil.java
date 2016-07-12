@@ -104,21 +104,20 @@ final class MetricsUtil {
 			    		OpMetric aMetric = gsonJob.new OpMetric();
 		    			aMetric.type = "meter";
 		    			aMetric.name = attributeInfo.getName();
-		    			// if the name of the metric is "RateUnit", get the value as well
-		    			if (aMetric.name.equals("RateUnit")) {				 
-		    				try {
-		    					aMetric.value = String.valueOf(mBeanServer.getAttribute(mObjName, aMetric.name));
-		    				} catch (AttributeNotFoundException | InstanceNotFoundException | MBeanException
-								| ReflectionException e) {
-		    				    logger.error("Exception caught while accessing MBean", e);
-		    				}
-		    			}
+				 
+	    				try {
+	    					aMetric.value = String.valueOf(mBeanServer.getAttribute(mObjName, aMetric.name));
+	    				} catch (AttributeNotFoundException | InstanceNotFoundException | MBeanException
+							| ReflectionException e) {
+	    				    logger.error("Exception caught while accessing MBean", e);
+	    				}
+		    			
 		    			// if the op associated with this metric is not in the job add it
 		    			if (!gsonJob.isOpInJob(opName)) {
 						    anOp = gsonJob.new Operator();
 						    gsonJob.addOp(anOp);
 						    anOp.opId = opName;
-						    counterOps.add(anOp); // why do I have this?
+						    counterOps.add(anOp);
 						    metrics = new ArrayList<OpMetric>();
 		    			} 
 		    			metrics.add(aMetric);
@@ -146,6 +145,12 @@ final class MetricsUtil {
 	    		OpMetric aMetric = gsonJob.new OpMetric();
     			aMetric.type = "counter";
     			aMetric.name = attributeInfo.getName();
+				try {
+					aMetric.value = String.valueOf(mBeanServer.getAttribute(cObjName, aMetric.name));
+				} catch (AttributeNotFoundException | InstanceNotFoundException | MBeanException
+					| ReflectionException e) {
+				    logger.error("Exception caught while accessing MBean", e);
+				}
     			Operator theOp = gsonJob.getOp(opName1);
 				if (theOp == null) {
 					anOp = gsonJob.new Operator();
@@ -164,6 +169,105 @@ final class MetricsUtil {
 		
 		return gsonJob;
 
+	}
+	
+	/**
+	 * Get all the rate metrics, i.e, one minute rate, fifteen minute rate, mean rate, etc  for a job
+	 * @param job id (e.g, "JOB_0")
+	 * 
+	 * @return  all metrics for this job if there are any
+	 */
+	static MetricsGson getAllRateMetrics(String jobId) {
+		MetricsGson gsonJob = new MetricsGson();
+		gsonJob.setJobId(jobId);
+		
+		Iterator<ObjectInstance> meterIterator = MetricsUtil.getMeterObjectIterator(jobId);
+		while (meterIterator.hasNext()) {
+			ArrayList<OpMetric> metrics = null;
+			ObjectInstance meterInstance = (ObjectInstance)meterIterator.next();
+			ObjectName mObjName = meterInstance.getObjectName();
+			//i.e, quarks.providers.development:jobId=JOB-0,opId=OP_4,name=TupleRateMeter.quarks.oplet.JOB_0.OP_4,type=metric.meters
+			String jobName = mObjName.getKeyProperty("jobId");
+			String opName = mObjName.getKeyProperty("opId");
+			Operator anOp = null;
+
+			if (jobId.equals(jobName)) {
+				MBeanInfo mBeanInfo = null;
+			
+				try {
+					mBeanInfo = mBeanServer.getMBeanInfo(mObjName);
+				} catch (IntrospectionException | InstanceNotFoundException | ReflectionException e) {
+				    logger.error("Exception caught while getting MBeanInfo", e);
+				}
+				
+		    	for (MBeanAttributeInfo attributeInfo : mBeanInfo.getAttributes()) {
+		    		String name = attributeInfo.getName();
+    				OpMetric aMetric = gsonJob.new OpMetric();
+    				aMetric.name = name;
+    				aMetric.type = attributeInfo.getType();
+    				try {
+						aMetric.value = String.valueOf(mBeanServer.getAttribute(mObjName, name));
+    				} catch (AttributeNotFoundException | InstanceNotFoundException | MBeanException
+							| ReflectionException e) {
+					    logger.error("Exception caught while accessing MBean", e);
+    				}
+					 if (!gsonJob.isOpInJob(opName)) {
+					    anOp = gsonJob.new Operator();
+					    gsonJob.addOp(anOp);
+					    anOp.opId = opName;
+					    metrics = new ArrayList<OpMetric>();
+					    gsonJob.setOpMetrics(anOp, metrics);
+					 } else {
+						anOp = gsonJob.getOp(opName);
+						metrics = anOp.metrics;
+					 }
+					 metrics.add(aMetric);
+		    	}
+			}
+		}
+		
+		Iterator<ObjectInstance> counterIterator = MetricsUtil.getCounterObjectIterator(jobId);
+		while (counterIterator.hasNext()) {
+			ArrayList<OpMetric> metrics = null;
+			ObjectInstance counterInstance = (ObjectInstance)counterIterator.next();
+			ObjectName cObjName = counterInstance.getObjectName();
+			String opName1 = cObjName.getKeyProperty("opId");
+
+			Operator anOp = null;
+			if (!opName1.equals("")) {
+			MBeanInfo mBeanInfo = null;
+			try {
+				mBeanInfo = mBeanServer.getMBeanInfo(cObjName);
+			} catch (IntrospectionException | InstanceNotFoundException | ReflectionException e) {
+			    logger.error("Exception caught while getting MBeanInfo", e);
+			}
+
+	    	for (MBeanAttributeInfo attributeInfo : mBeanInfo.getAttributes()) {
+	    		OpMetric aMetric = gsonJob.new OpMetric();
+    			aMetric.type = "counter";
+    			aMetric.name = attributeInfo.getName();
+				try {
+					aMetric.value = String.valueOf(mBeanServer.getAttribute(cObjName, aMetric.name));
+				} catch (AttributeNotFoundException | InstanceNotFoundException | MBeanException
+					| ReflectionException e) {
+				    logger.error("Exception caught while accessing MBean", e);
+				}
+    			Operator theOp = gsonJob.getOp(opName1);
+				if (theOp == null) {
+					anOp = gsonJob.new Operator();
+					gsonJob.addOp(anOp);
+					anOp.opId = opName1;
+					metrics = new ArrayList<OpMetric>();
+					gsonJob.setOpMetrics(anOp, metrics);
+				} else {
+					// get the op
+					metrics = theOp.metrics;
+				}
+    			metrics.add(aMetric);
+	    	}
+			}
+		}
+		return gsonJob;
 	}
 	// format for metricName is "name:RateUnit,type:meter"
 	static MetricsGson getMetric(String jobId, String metricName, Iterator<ObjectInstance> metricIterator, Iterator<ObjectInstance> counterIterator) {

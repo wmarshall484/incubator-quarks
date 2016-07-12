@@ -1,5 +1,6 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" 
+   "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en-us">
 <head>
 <title>Quarks Console</title>
 
@@ -12,6 +13,7 @@
 </head>
 
 <body>
+<div role="main">
 <div style='margin-left:15px; float:left;'>
 <img height='95' width='178' tabindex=0 alt="Quarks logo" title="Quarks logo" src="resources/images/small_quarks.png"/>
 </div>
@@ -31,20 +33,21 @@
 <option value="static">Static flow</option>
 <option value="flow">Tuple count</option>
 <option value="opletColor">Oplet kind</option>
-<!-- <option value='stags' disabled>Stream tags</option> -->
 </select>
 
 <div id="tagsDiv" style="visibility:hidden;margin-top: 5px;">
 
-	<label for='showTags'>Show tags:</label>
+	
 	<input type='checkbox' id='showTags' checked/>
+	<label for='showTags'>Show tags:</label>
 	<div>
-		<label for='showAllTags'>Show all tags:</label>
+		
 		<input type='checkbox' id='showAllTags' checked/>
+		<label for='showAllTags'>Show all tags:</label>
 		<button id="tagDialogBtn" type='button' disabled>Select individual tags ...</button>
 	</div>
 		<div id="dialog" title="Select one or more tags">
-			<label class="tagsLabel">Tag:</label>
+			<label for="tags" class="tagsLabel">Tag:</label>
 			<select id="tags" multiple></select>
 		</div>
 </div>
@@ -57,7 +60,10 @@
 </div>
 
 <div style='width: 300px; margin-left: 30px; clear:both;'>
-	<div id="showAll" tabindex=0 >View all oplet properties</div>
+	<div id="showAll" tabindex=0 >
+		<div>View all oplet properties</div>
+		<div style='font-size: 0.95em'>(opens a new window)</div> 
+	</div>
 	<div id="graphLegend" style='height: 600px;'></div>
 </div>
 	<div id="chart" style="float:right; margin-right: 100px; margin-top: -600px;"><div id="loading">Loading graph ...</div></div>
@@ -68,23 +74,29 @@
 <label class="metricsTitle">Metrics</label>
 </div>
 <div class="metricsControls">
-<label class="metricsLabel">Metrics:</label>
+<label for='metrics' class="metricsLabel">Metrics:</label>
 <select id="metrics"></select>
 <span id="rateUnit"></span>
 </div>
 
-<div class="metricsControls" style='width:250px;'>
-<label class="chartTypeLabel">Chart type:</label>
+<div class="metricsControls">
+<label for='mChartType' class="chartTypeLabel">Chart type:</label>
 <select id="mChartType">
 <option value='barChart' selected>Bar chart</option>
 <option value='lineChart' selected>Line chart</option>
 </select>
+</div>
+
+<div class="metricsControls">
 <span id="noLineChartWarning" style="visibility:hidden;" class="warningLabel">*Line charts are not available when you select a metric containing multiple oplets</span>
+</div>
+<div style='clear:left; padding-top: 10px; width: 140px;'>
+<img id="showMetricsTable" width="150" height="38" tabindex=0 alt="Show metrics table" src="resources/images/show_metrics_in_table.png"/>
 </div>
 
 <div id="metricsChart" style="clear:left;"></div>
 </div>
-
+</div>
 <script src="js/ext/d3.min.js" charset="utf-8"></script>
 <script src="js/ext/jquery-ui-1.11.4.custom/external/jquery/jquery.js"></script>
 <script src="js/ext/jquery-ui-1.11.4.custom/jquery-ui.min.js"></script>
