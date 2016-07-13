@@ -139,12 +139,14 @@ d3.select("#toggleTimer")
 		stopTimer = true;
 		d3.select(this).text("Resume graph");
 		d3.select(this)
-		.attr("class", "start");
+		.attr("class", "start")
+		.attr("title", "Resume graph")
 	} else {
 		stopTimer = false;
 		d3.select(this).text("Pause graph");
 		d3.select(this)
-		.attr("class", "stop");
+		.attr("class", "stop")
+		.attr("title", "Pause graph");
 	}
 });
 
@@ -318,7 +320,7 @@ var showMetricsTooltip = function(event) {
 						});
 						
 						var rowIdx = 0;
-						content += "<table><tr><th tabindex=0>Operator name</th><th tabindex=0>Counter value</th></tr>";
+						content += "<table role='presentation'><caption>Counter oplet values</caption><tr><th tabindex=0>Operator name</th><th tabindex=0>Counter value</th></tr>";
 						
 						var sortFunc = function(objA, objB) {
 							var a = objA.opId;
@@ -356,7 +358,7 @@ var showMetricsTooltip = function(event) {
 						
 						if (rateArr.length > 0) {
 							rateArr.sort(sortFunc);
-							content += "<table><tr><th tabindex=0>Operator name</th><th tabindex=0>Rate type</th><th tabindex=0>Rate value</th></tr>";
+							content += "<table role='presentation'><caption>Rate meter oplet values</caption><tr><th tabindex=0>Operator name</th><th tabindex=0>Rate type</th><th tabindex=0>Rate value</th></tr>";
 							rateArr.forEach(function(rate) {
 								rowIdx++;
 								
@@ -374,9 +376,20 @@ var showMetricsTooltip = function(event) {
 						}
 
 					}
-					var evtX = evt.srcElement.x;
-					var evtY = evt.srcElement.y;
 					content += "</div>";
+					
+					var evtX;
+					var evtY;
+					var target = evt.target;
+					if (target) {
+						if (target.x && target.y) {
+							evtX = target.x;
+							evtY = target.y;
+						} else if (target.offsetLeft && target.offsetTop) {
+							evtX = target.offsetLeft;
+							evtY = target.offsetTop;
+						}
+					}
 
 					metricsTooltip
 					.html(content)
@@ -509,10 +522,11 @@ var displayRowsTooltip = function(newRequest) {
 	if (newRequest) {
 		var htmlStr = "<html><head><title>Oplet properties</title><link rel='stylesheet' type='text/css' href='resources/css/main.css'></head>" + 
 		"<body>";
-		var buttonStr = '<button id="pauseTableRefresh" type="button">Pause table refresh</button>';
-		var tableHdr = "<table id='allPropsTable' tabindex=0 style='width: 675px;margin: 10px;table-layout:fixed;word-wrap: break-word;'>";
+		var buttonStr = '<button title="Pause table refresh" id="pauseTableRefresh" type="button">Pause table refresh</button>';
+		var closeWinStr = '<button title="Close window" id="closeTablePropsWindow" type="button">Close window</button>';
+		var tableHdr = "<table id='allPropsTable' tabindex=0 style='width: 675px;margin: 10px;table-layout:fixed;word-wrap: break-word;'><caption>Oplet properties</caption>";
 		
-		var str = htmlStr + buttonStr + tableHdr + headerStr + content + "</table></body><html>";
+		var str = htmlStr + buttonStr + closeWinStr + tableHdr + headerStr + content + "</table></body><html>";
 		propWindow = window.open("", "Properties", "width=825,height=500,scrollbars=yes,dependent=yes");
 		propWindow.document.body.innerHTML = "";
 		propWindow.document.write(str);
@@ -531,11 +545,21 @@ var displayRowsTooltip = function(newRequest) {
 			function() {
 				 if (this.innerHTML === "Pause table refresh") {
 					 this.innerHTML = "Resume table refresh";
+					 this.title = "Resume table refresh";
 					 refreshTable = false;
 				 } else {
 					 this.innerHTML = "Pause table refresh";
+					 this.title = "Pause table refresh";
 					 refreshTable = true;
 				 }
+		};
+		
+		var closeBtn = propWindow.document.getElementById("closeTablePropsWindow");
+		closeBtn.onclick = 
+			function() {
+			if (propWindow) {
+				propWindow.close();
+			}
 		};
 	} else {
 		if (refreshTable) {
@@ -554,7 +578,7 @@ var showStateTooltip = function(event) {
 	}
 	var jobId = d3.select("#jobs").node().value;
 	var jobObj = jobMap[jobId];
-	var content = "<div style='margin:10px'><table>";
+	var content = "<div style='margin:10px'><table><caption>Job State</caption>";
 	
 	var rowPfx = "stateData";
 	var startTd = "<td align='center' tabindex=0>";
@@ -596,8 +620,19 @@ var showStateTooltip = function(event) {
 
 	}
 
-	var evtX = d3.event.srcElement.x;
-	var evtY = d3.event.srcElement.y;
+	var evtX;
+	var evtY;
+	var target = d3.event.target;
+	if (target) {
+		if (target.x && target.y) {
+			evtX = target.x;
+			evtY = target.y;
+		} else if (target.offsetLeft && target.offsetTop) {
+			evtX = target.offsetLeft;
+			evtY = target.offsetTop;
+		}
+	}
+
 	content += "</div>";
 	
 	stateTooltip
