@@ -24,8 +24,9 @@
 <label for="jobs" class="jobsLabel">Job:</label>
 <select id="jobs"></select>
 </div>
-<div style="float:left;">
-<img id="stateImg" width="28" height="28" style="display:none;" tabindex=0 alt="Job state" src="resources/images/state.png"/>
+<div id='stateImg' tabindex=0 style="float:left; display:none; margin-top: 10px; margin-left: 5px; margin-right: 10px;">
+<div class="hidden">Job state, press the Enter key to display the job state information in a table</div>
+<img width="28" height="28" alt="job state" src="resources/images/state.png"/>
 </div>
 <div class="topControls">
 <label for="layers" class="layersLabel">View by:</label>
@@ -36,8 +37,6 @@
 </select>
 
 <div id="tagsDiv" style="visibility:hidden;margin-top: 5px;">
-
-	
 	<input type='checkbox' id='showTags' checked/>
 	<label for='showTags'>Show tags:</label>
 	<div>
@@ -53,10 +52,10 @@
 </div>
 </div>
 <div class="topControls">
-<label for="refreshInterval" class="refreshLabel">Refresh interval:</label>
-<input id="refreshInterval" style='width: 40px;' type="number" min="3" max="20" step="1" value="5"/>
-<label title="seconds" style='margin-left: 5px; margin-right: 10px;'>seconds</label>
-<button id="toggleTimer" type="button">Pause graph</button>
+<label class="refreshLabel" tabindex=0>Refresh interval:</span>
+<input aria-label='Refresh interval' name='refreshInterval' id="refreshInterval" style='width: 40px;' type="number" min="3" max="20" step="1" value="5"/>
+<label title="seconds" tabindex=0 style='margin-left: 5px; margin-right: 10px;'>seconds</label>
+<button id="toggleTimer" title='Pause graph' type="button">Pause graph</button>
 </div>
 
 <div style='width: 300px; margin-left: 30px; clear:both;'>
@@ -90,8 +89,9 @@
 <div class="metricsControls">
 <span id="noLineChartWarning" style="visibility:hidden;" class="warningLabel">*Line charts are not available when you select a metric containing multiple oplets</span>
 </div>
-<div style='clear:left; padding-top: 10px; width: 140px;'>
-<img id="showMetricsTable" width="150" height="38" tabindex=0 alt="Show metrics table" src="resources/images/show_metrics_in_table.png"/>
+<div id="showMetricsTable" tabindex=0 style='clear:left; padding-top: 10px; width: 150px;'>
+<div class='hidden'>Show metrics in table. Press the Enter key to display available metrics in a table. To close the dialog once it is open, press the Escape key.</div>
+<img width="150" height="38" alt='show table metrics' src="resources/images/show_metrics_in_table.png"/>
 </div>
 
 <div id="metricsChart" style="clear:left;"></div>
