@@ -117,6 +117,7 @@
 
         <ant dir="providers/direct" target="@{target}" useNativeBasedir="true"/>
         <ant dir="connectors/common" target="@{target}" useNativeBasedir="true"/>
+        <ant dir="connectors/command" target="@{target}" useNativeBasedir="true"/>
         <ant dir="connectors/csv" target="@{target}" useNativeBasedir="true"/>
         <ant dir="connectors/iot" target="@{target}" useNativeBasedir="true"/>
         <ant dir="connectors/serial" target="@{target}" useNativeBasedir="true"/>
@@ -229,6 +230,7 @@
       </classfiles>
     <sourcefiles encoding="UTF-8">
         <fileset dir="${basedir}/connectors/common/src/main/java" includes="**/*.java"/>
+        <fileset dir="${basedir}/connectors/command/src/main/java" includes="**/*.java"/>
         <fileset dir="${basedir}/connectors/csv/src/main/java" includes="**/*.java"/>
         <fileset dir="${basedir}/connectors/file/src/main/java" includes="**/*.java"/>
         <fileset dir="${basedir}/connectors/iot/src/main/java" includes="**/*.java"/>

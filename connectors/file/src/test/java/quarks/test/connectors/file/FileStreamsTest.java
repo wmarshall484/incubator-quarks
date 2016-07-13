@@ -20,12 +20,8 @@ package quarks.test.connectors.file;
 
 import static org.junit.Assume.assumeTrue;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
@@ -43,6 +39,7 @@ import org.junit.Test;
 import quarks.connectors.file.FileStreams;
 import quarks.function.BiFunction;
 import quarks.function.Function;
+import quarks.test.connectors.common.FileUtil;
 import quarks.test.providers.direct.DirectTestSetup;
 import quarks.test.topology.TopologyAbstractTest;
 import quarks.topology.TStream;
@@ -202,8 +199,8 @@ public class FileStreamsTest extends TopologyAbstractTest implements DirectTestS
         String[] allLines = Stream.concat(Stream.of(lines), Stream.of(ucLines))
                 .toArray(String[]::new);
         
-        Path tempFile1 = createTempFile("test1", "txt", lines);
-        Path tempFile2 = createTempFile("test2", "txt", ucLines);
+        Path tempFile1 = FileUtil.createTempFile("test1", "txt", lines);
+        Path tempFile2 = FileUtil.createTempFile("test2", "txt", ucLines);
         
         TStream<String> contents = FileStreams.textFileReader(
                 t.strings(tempFile1.toAbsolutePath().toString(),
@@ -229,8 +226,8 @@ public class FileStreamsTest extends TopologyAbstractTest implements DirectTestS
         String[] allLines = Stream.concat(Stream.of(lines), Stream.of(ucLines))
                 .toArray(String[]::new);
         
-        Path tempFile1 = createTempFile("test1", "txt", lines);
-        Path tempFile2 = createTempFile("test2", "txt", ucLines);
+        Path tempFile1 = FileUtil.createTempFile("test1", "txt", lines);
+        Path tempFile2 = FileUtil.createTempFile("test2", "txt", ucLines);
         
         // ensure a problem in one file (tuple) doesn't affect others.
         // The problem files should result in a log entry but otherwise be ignored.
@@ -259,8 +256,8 @@ public class FileStreamsTest extends TopologyAbstractTest implements DirectTestS
                 .map(line -> line.toUpperCase())
                 .toArray(String[]::new);
         
-        Path tempFile1 = createTempFile("test1", "txt", lines);
-        Path tempFile2 = createTempFile("test2", "txt", ucLines);
+        Path tempFile1 = FileUtil.createTempFile("test1", "txt", lines);
+        Path tempFile2 = FileUtil.createTempFile("test2", "txt", ucLines);
         
         // Be insensitive to Windows path separators and "/tmp" location
         boolean isWindows = System.getProperty("os.name").startsWith("Windows");
@@ -310,21 +307,5 @@ public class FileStreamsTest extends TopologyAbstractTest implements DirectTestS
             tempFile1.toFile().delete();
             tempFile2.toFile().delete();
         }
-    }
-
-    public static Path createTempFile(String name, String extension, String[] lines) throws Exception {
-        Path tmpFile = Files.createTempFile(name, extension);
-        
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(
-                new FileOutputStream(tmpFile.toFile()), StandardCharsets.UTF_8));
-        
-        for (int i = 0; i < lines.length; i++) {
-            bw.write(lines[i]);
-            bw.write("\n");
-        }
-        bw.flush();
-        bw.close();
-        
-        return tmpFile;
     }
 }
