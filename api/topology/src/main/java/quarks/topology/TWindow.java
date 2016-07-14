@@ -45,21 +45,27 @@ import quarks.function.Function;
  */
 public interface TWindow<T, K> extends TopologyElement {
     /**
-     * Declares a stream that is a continuous aggregation of
-     * partitions in this window. Each time the contents of a partition is updated by a new
-     * tuple being added to it, or tuples being evicted
-     * {@code aggregator.apply(tuples, key)} is called, where {@code tuples} is an
-     * {@code List} that containing all the tuples in the partition.
-     * The {@code List} is stable during the method call, and returns the
-     * tuples in order of insertion into the window, from oldest to newest. 
-     * The list will be empty if the last tuple in the partition has been evicted.
-     * <BR>
-     * The returned stream will contain a tuple that is the result of
-     * {@code aggregator.apply(tuples, key)} when the return is not {@code null}.
-     * If {@code aggregator.apply(tuples, key)} returns {@code null} then 
-     * no tuple is submitted to the returned stream.
-     * <BR>
-     * Thus the returned stream will contain a sequence of tuples that where the
+     * Declares a stream that is a continuous, sliding, aggregation of
+     * partitions in this window.
+     * <P>
+     * Changes in a partition's contents trigger an invocation of
+     * {@code aggregator.apply(tuples, key)}, where {@code tuples} is
+     * a {@code List<T>} containing all the tuples in the partition in
+     * insertion order from oldest to newest:
+     * <UL>
+     * <LI>Count-based window: the aggregator is called after each
+     * tuple added to a partition.  When an addition results in a tuple
+     * being evicted, the eviction occurs before the aggregator is called.</LI>
+     * <LI>Time-based window: the aggregator is called after each tuple
+     * added to a partition. The aggregator is also called
+     * each time one or more tuples are evicted from a partition 
+     * (multiple tuples may be evicted at once).  The list will be
+     * empty if the eviction results in an empty partition.</LI>
+     * </UL>
+     * A non-null {@code aggregator} result is added to the returned stream.
+     * </P>
+     * <P>
+     * Thus the returned stream will contain a sequence of tuples where the
      * most recent tuple represents the most up to date aggregation of a
      * partition.
      *
@@ -72,17 +78,24 @@ public interface TWindow<T, K> extends TopologyElement {
     
     /**
      * Declares a stream that represents a batched aggregation of
-     * partitions in this window. Each time the contents of a partition equals 
-     * the window size or the time duration,
-     * {@code batcher.apply(tuples, key)} is called, where {@code tuples} is an
-     * {@code List} that containing all the tuples in the partition.
-     * The {@code List} is stable during the method call, and returns the
-     * tuples in order of insertion into the window, from oldest to newest. <BR>
-     * Thus the returned stream will contain a sequence of tuples that where 
-     * each tuple represents the output of the most recent batch of a partition.
-     * The tuples contained in a partition during a batch do not overlap with 
-     * the tuples in any subsequent batch. After a partition is batched, its 
-     * contents are cleared.
+     * partitions in this window. 
+     * <P>
+     * Each partition "batch" triggers an invocation of
+     * {@code batcher.apply(tuples, key)}, where {@code tuples} is
+     * a {@code List<T>} containing all the tuples in the partition in
+     * insertion order from oldest to newest:
+     * <UL>
+     * <LI>Count-based window: a batch occurs when the partition is full.</LI>
+     * <LI>Time-based window: a batch occurs every "time" period units.  The
+     * list will be empty if no tuples have been received during the period.</LI>
+     * </UL>
+     * A non-null {@code batcher} result is added to the returned stream.
+     * The partition's contents are cleared after a batch is processed.
+     * </P>
+     * <P>
+     * Thus the returned stream will contain a sequence of tuples where the
+     * most recent tuple represents the most up to date aggregation of a
+     * partition.
      * 
      * @param <U> Tuple type
      * @param batcher
