@@ -51,7 +51,8 @@ public interface TWindow<T, K> extends TopologyElement {
      * Changes in a partition's contents trigger an invocation of
      * {@code aggregator.apply(tuples, key)}, where {@code tuples} is
      * a {@code List<T>} containing all the tuples in the partition in
-     * insertion order from oldest to newest:
+     * insertion order from oldest to newest.  The list is stable
+     * during the aggregator invocation.
      * <UL>
      * <LI>Count-based window: the aggregator is called after each
      * tuple added to a partition.  When an addition results in a tuple
@@ -83,7 +84,8 @@ public interface TWindow<T, K> extends TopologyElement {
      * Each partition "batch" triggers an invocation of
      * {@code batcher.apply(tuples, key)}, where {@code tuples} is
      * a {@code List<T>} containing all the tuples in the partition in
-     * insertion order from oldest to newest:
+     * insertion order from oldest to newest  The list is stable
+     * during the batcher invocation.
      * <UL>
      * <LI>Count-based window: a batch occurs when the partition is full.</LI>
      * <LI>Time-based window: a batch occurs every "time" period units.  The
