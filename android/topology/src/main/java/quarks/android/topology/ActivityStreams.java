@@ -16,15 +16,15 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 */
-package quarks.android.topology;
+package edgent.android.topology;
 
 import android.app.Activity;
-import quarks.android.oplet.RunOnUIThread;
-import quarks.function.Consumer;
-import quarks.function.Function;
-import quarks.topology.TSink;
-import quarks.topology.TStream;
-import quarks.topology.plumbing.PlumbingStreams;
+import edgent.android.oplet.RunOnUIThread;
+import edgent.function.Consumer;
+import edgent.function.Function;
+import edgent.topology.TSink;
+import edgent.topology.TStream;
+import edgent.topology.plumbing.PlumbingStreams;
 
 /**
  * Stream utilities for an Android {@code Activity}.
@@ -43,7 +43,7 @@ public class ActivityStreams {
     * @param stream Stream to be sinked.
     * @param sinker Function that will be executed on the UI thread.
     *
-    * @see quarks.topology.TStream#sink(quarks.function.Consumer)
+    * @see edgent.topology.TStream#sink(edgent.function.Consumer)
     */
     public static <T> TSink sinkOnUIThread(Activity activity, TStream<T> stream, Consumer<T> sinker) { 
         return stream.pipe(new RunOnUIThread<>(activity)).sink(sinker);
@@ -67,7 +67,7 @@ public class ActivityStreams {
     * @param ordered True if tuple ordering must be maintained after the
     * execution on the UI thread. False if ordering is not required.
     *
-    * @see quarks.topology.TStream#map(quarks.function.Function)
+    * @see edgent.topology.TStream#map(edgent.function.Function)
     */
     public static <T,U> TStream<U> mapOnUIThread(Activity activity, TStream<T> stream, Function<T,U> mapper, boolean ordered) {  
         

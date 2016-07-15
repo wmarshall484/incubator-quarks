@@ -16,13 +16,13 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 */
-package quarks.android.hardware.runtime;
+package edgent.android.hardware.runtime;
 
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 
-import quarks.function.Consumer;
+import edgent.function.Consumer;
 
 /**
  * Sensor event listener that submits sensor

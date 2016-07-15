@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 
-quarks=../../..
+edgent=../../..
 
 # Runs IBM Watson IoT Plaform sample.
 #
@@ -30,6 +30,6 @@ quarks=../../..
 # IBM Watson IoT Platform and a sample is in this directory
 # (omitting values for the authorization tokens).
 
-export CLASSPATH=${quarks}/samples/lib/quarks.samples.connectors.jar
+export CLASSPATH=${edgent}/samples/lib/edgent.samples.connectors.jar
 
-java quarks.samples.connectors.iotf.IotfSensors $1
+java edgent.samples.connectors.iotf.IotfSensors $1

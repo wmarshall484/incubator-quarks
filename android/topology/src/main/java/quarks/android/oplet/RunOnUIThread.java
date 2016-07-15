@@ -16,10 +16,10 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 */
-package quarks.android.oplet;
+package edgent.android.oplet;
 
 import android.app.Activity;
-import quarks.oplet.core.Pipe;
+import edgent.oplet.core.Pipe;
 
 public class RunOnUIThread<T> extends Pipe<T,T> {
 

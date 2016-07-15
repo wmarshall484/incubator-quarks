@@ -16,7 +16,7 @@
 # limitations under the License.
 #
 
-quarks=../../..
+edgent=../../..
 
 # Runs IBM Watson IoT Plaform Quickstart sample.
 #
@@ -29,6 +29,6 @@ quarks=../../..
 # to see the data being sent from this sample to
 # IBM Watson IoT Plaform Quickstart sample.
 
-export CLASSPATH=${quarks}/samples/lib/quarks.samples.connectors.jar
+export CLASSPATH=${edgent}/samples/lib/edgent.samples.connectors.jar
 
-java quarks.samples.connectors.iotf.IotfQuickstart
+java edgent.samples.connectors.iotf.IotfQuickstart

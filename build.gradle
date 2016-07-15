@@ -46,7 +46,7 @@ subprojects {
   plugins.apply 'java'
   plugins.apply 'jacoco'
 
-  if(["javax.websocket-client", "javax.websocket-server", "quarks.javax.websocket"].contains(project.name)) {
+  if(["javax.websocket-client", "javax.websocket-server", "edgent.javax.websocket"].contains(project.name)) {
     archivesBaseName = "${project.name}"
   } else{
     archivesBaseName = "${rootProject.name}${project.path.replace(':', '.')}"
@@ -91,7 +91,7 @@ subprojects {
 
   test {
     include '**/*Test.class'
-    systemProperty 'quarks.test.top.dir.file.path', rootProject.projectDir
+    systemProperty 'edgent.test.top.dir.file.path', rootProject.projectDir
     testLogging {
       exceptionFormat 'full'
     }
@@ -116,7 +116,7 @@ subprojects {
   }
 
   task copyJar(type: Copy) {
-    def projectGroup = "$project.group".replace("quarks.", "")
+    def projectGroup = "$project.group".replace("edgent.", "")
     if (["api", "providers", "runtime", "spi"].contains(projectGroup)) {
       from jar
       into "${rootProject.ext.target_java8_dir}/" + "/lib"
@@ -169,20 +169,20 @@ task aggregateJavadoc(type: Javadoc) {
     author = true
     version = true
     use = true
-    docTitle "Apache Quarks (incubating) v${build_version}"
-    footer '<a href="http://quarks.incubator.apache.org">Apache Quarks (incubating)</a>'
+    docTitle "Apache Edgent (incubating) v${build_version}"
+    footer '<a href="http://edgent.incubator.apache.org">Apache Edgent (incubating)</a>'
     bottom "Copyright &#169; 2016 The Apache Software Foundation. All Rights Reserved - ${rootProject.ext.commithash}-${DSTAMP}-${TSTAMP}"
-    overview "quarks_overview.html"
-    windowTitle "Quarks v${build_version}"
+    overview "edgent_overview.html"
+    windowTitle "Edgent v${build_version}"
 
-    group("Quarks API", "quarks.execution", "quarks.function", "quarks.topology", "quarks.topology.json", "quarks.topology.mbeans", "quarks.topology.plumbing", "quarks.topology.services", "quarks.execution.*")
-    group("Quarks Providers", "quarks.providers.*")
-    group("Quarks Connectors", "quarks.connectors.*")
-    group("Quarks Samples", "quarks.samples.*")
-    group("Quarks Analytics", "quarks.analytics.*")
-    group("Quarks Utilities", "quarks.metrics", "quarks.metrics.*", "quarks.streamscope", "quarks.streamscope.*")
-    group("Quarks Low-Level API", "quarks.graph", "quarks.graph.*", "quarks.oplet", "quarks.oplet.*", "quarks.window")
-    group("Quarks SPI", "quarks.topology.spi", "quarks.topology.spi.*")
+    group("Edgent API", "edgent.execution", "edgent.function", "edgent.topology", "edgent.topology.json", "edgent.topology.mbeans", "edgent.topology.plumbing", "edgent.topology.services", "edgent.execution.*")
+    group("Edgent Providers", "edgent.providers.*")
+    group("Edgent Connectors", "edgent.connectors.*")
+    group("Edgent Samples", "edgent.samples.*")
+    group("Edgent Analytics", "edgent.analytics.*")
+    group("Edgent Utilities", "edgent.metrics", "edgent.metrics.*", "edgent.streamscope", "edgent.streamscope.*")
+    group("Edgent Low-Level API", "edgent.graph", "edgent.graph.*", "edgent.oplet", "edgent.oplet.*", "edgent.window")
+    group("Edgent SPI", "edgent.topology.spi", "edgent.topology.spi.*")
   }
   source subprojects.collect { project -> project.sourceSets.main.allJava }
   classpath = files(subprojects.collect

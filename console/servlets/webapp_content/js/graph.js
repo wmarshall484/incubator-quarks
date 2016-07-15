@@ -16,15 +16,15 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 */
-opletColor = {"quarks.streamscope.oplets.StreamScope": "#c7c7c7",
-        "quarks.metrics.oplets.CounterOp": "#c7c7c7", "quarks.metrics.oplets.RateMeter": "#aec7e8", "quarks.oplet.core.FanIn": "#ff7f0e",
-		"quarks.oplet.core.FanOut": "#ffbb78", "quarks.oplet.core.Peek": "#2ca02c", "quarks.oplet.core.PeriodicSource": "#98df8a", 
-		"quarks.oplet.core.Pipe": "#d62728", "quarks.oplet.core.PipeWindow": "#ff9896", "quarks.oplet.core.ProcessSource": "#9467bd", 
-		"quarks.oplet.core.Sink": "#c5b0d5", "quarks.oplet.core.Source": "#8c564b", "quarks.oplet.core.Split": "#c49c94", "quarks.oplet.core.Union" : "#1f77b4",
-		"quarks.oplet.functional.ConsumerEventSource": "#e377c2", "quarks.oplet.functional.ConsumerPeek": "#f7b6d2", "quarks.oplet.functional.ConsumerSink": "#7f7f7f", 
-		"quarks.oplet.functional.Filter": "#7F7F7F", "quarks.oplet.functional.FlatMapper": "#bcbd22", "quarks.oplet.functional.Isolate": "#dbdb8d", 
-		"quarks.oplet.functional.Map": "#17becf", "quarks.oplet.functional.SupplierPeriodicSource": "#9edae5", "quarks.oplet.functional.SupplierSource": "#b5cf6b", 
-		"quarks.oplet.plumbing.PressureReliever": "#e7cb94", "quarks.oplet.plumbing.TextFileReader": "#ad494a", "quarks.oplet.plumbing.UnorderedIsolate": "#de9ed6"};
+opletColor = {"edgent.streamscope.oplets.StreamScope": "#c7c7c7",
+        "edgent.metrics.oplets.CounterOp": "#c7c7c7", "edgent.metrics.oplets.RateMeter": "#aec7e8", "edgent.oplet.core.FanIn": "#ff7f0e",
+		"edgent.oplet.core.FanOut": "#ffbb78", "edgent.oplet.core.Peek": "#2ca02c", "edgent.oplet.core.PeriodicSource": "#98df8a", 
+		"edgent.oplet.core.Pipe": "#d62728", "edgent.oplet.core.PipeWindow": "#ff9896", "edgent.oplet.core.ProcessSource": "#9467bd", 
+		"edgent.oplet.core.Sink": "#c5b0d5", "edgent.oplet.core.Source": "#8c564b", "edgent.oplet.core.Split": "#c49c94", "edgent.oplet.core.Union" : "#1f77b4",
+		"edgent.oplet.functional.ConsumerEventSource": "#e377c2", "edgent.oplet.functional.ConsumerPeek": "#f7b6d2", "edgent.oplet.functional.ConsumerSink": "#7f7f7f", 
+		"edgent.oplet.functional.Filter": "#7F7F7F", "edgent.oplet.functional.FlatMapper": "#bcbd22", "edgent.oplet.functional.Isolate": "#dbdb8d", 
+		"edgent.oplet.functional.Map": "#17becf", "edgent.oplet.functional.SupplierPeriodicSource": "#9edae5", "edgent.oplet.functional.SupplierSource": "#b5cf6b", 
+		"edgent.oplet.plumbing.PressureReliever": "#e7cb94", "edgent.oplet.plumbing.TextFileReader": "#ad494a", "edgent.oplet.plumbing.UnorderedIsolate": "#de9ed6"};
 colorMap = {};
 
 addValuesToEdges = function(graph, counterMetrics) {
@@ -48,7 +48,7 @@ addValuesToEdges = function(graph, counterMetrics) {
 	counterMetrics.forEach(function(cm){
 	    var edges = graph.edgeMap[incomingEdgesKey(cm.opId)];
 	    if (edges === undefined) {
-            // QUARKS-20 TopologyTestBasic has cm with no incoming edges???
+            // EDGENT-20 TopologyTestBasic has cm with no incoming edges???
 	       edges = [];
         }
 	    pushArray(edges, graph.edgeMap[outgoingEdgesKey(cm.opId)]);
@@ -145,7 +145,7 @@ function makeEquivMetricEdgeMap(graph, counterMetrics) {
         
         var edges = graph.edgeMap[incomingEdgesKey(cm.opId)];
         if (edges) {
-            // QUARKS-20 TopologyTestBasic has cm with no incoming edges???
+            // EDGENT-20 TopologyTestBasic has cm with no incoming edges???
             var edge = edges[0];
             map[edgeKey(edge)] = collectEquivMetricEdges(graph, edge, false);
         }
@@ -171,7 +171,7 @@ function collectEquivMetricEdges(graph, edge, isDownstream) {
         });
     }
     else if (isDownstream
-            && vertex.invocation.kind == "quarks.oplet.core.FanOut") {
+            && vertex.invocation.kind == "edgent.oplet.core.FanOut") {
         pushArray(equivEdges, graph.edgeMap[outgoingEdgesKey(vertex.id)]);
     }
     return equivEdges;
@@ -189,15 +189,15 @@ function setEquivalentMetricEdges(graph, metricEdge) {
 function shouldTraverseVertex(vertex) {
   // TODO need an oplet tag or something to generalize this
   var kind = vertex.invocation.kind;
-  return kind === "quarks.streamscope.oplets.StreamScope"
-      || kind === "quarks.oplet.functional.Peek"
+  return kind === "edgent.streamscope.oplets.StreamScope"
+      || kind === "edgent.oplet.functional.Peek"
       // the following metric oplets are returned as "counter metrics" hence
       // have their own counter metric value (a contiguous set of them
       // should nominally have the same value)
-      // || kind === "quarks.metrics.oplet.RateMeter"
-      // || kind === "quarks.metrics.oplet.CounterOp"
-      // || kind === "quarks.metrics.oplet.a-Histogram-Op"
-      // || kind === "quarks.metrics.oplet.a-Timer-Op"
+      // || kind === "edgent.metrics.oplet.RateMeter"
+      // || kind === "edgent.metrics.oplet.CounterOp"
+      // || kind === "edgent.metrics.oplet.a-Histogram-Op"
+      // || kind === "edgent.metrics.oplet.a-Timer-Op"
       ;
 }
 

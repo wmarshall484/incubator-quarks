@@ -16,14 +16,14 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 */
-package quarks.android.hardware;
+package edgent.android.hardware;
 
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorManager;
-import quarks.android.hardware.runtime.SensorSourceSetup;
-import quarks.topology.TStream;
-import quarks.topology.TopologyElement;
+import edgent.android.hardware.runtime.SensorSourceSetup;
+import edgent.topology.TStream;
+import edgent.topology.TopologyElement;
 
 /**
  * Create streams from sensors.
