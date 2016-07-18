@@ -166,7 +166,7 @@
 	      <manifest>
                 <attribute name="Implementation-Title" value="${ant.project.name}"/>
                 <attribute name="Implementation-Version" value="${commithash}-${DSTAMP}-${TSTAMP}"/>
-                <attribute name="Implementation-Vendor" value="edgent-edge@github.com"/>
+                <attribute name="Implementation-Vendor" value="Apache Software Foundation"/>
 	        <attribute name="Class-Path" value="${jar.classpath}"/>
 	      </manifest>
 	      <fileset dir="${classes}"/>
