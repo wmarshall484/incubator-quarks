@@ -19,6 +19,7 @@ dependencies {
   compile project(':runtime:jsoncontrol')
   compile ext_classpath
   testCompile project(':utils:metrics')
+  testCompile project(':runtime:appservice')
 }
 
 addCompileTestDependencies ':api:topology', ':utils:metrics', ':runtime:appservice'
