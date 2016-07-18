@@ -125,7 +125,7 @@ A couple of key items in the mean time:
 Search the code for org.slf4j.LoggerFactory to see a sample of its use.
 
 ### Use of Java 8 features
-Edgent primary development environment is Java 8, to take advantage of lambda expressions
+Edgent's primary development environment is Java 8, to take advantage of lambda expressions
 since Edgent's primary api is a functional one.
 
 **However** in order to support Android (and Java 7) other features of Java 8 are not used in the core
