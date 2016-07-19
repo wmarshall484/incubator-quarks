@@ -86,10 +86,10 @@ For example, you could analyze the last 90 seconds of data from a sensor to iden
 <P>
 <H3>Topology functional API</H3>
 <H4>Overview</H4>
-The primary api is {@link edgent.topology.Topology} which uses a functional
-model to build a topology of {@link edgent.topology.TStream streams} for an application.
+The primary api is {@link org.apache.edgent.topology.Topology} which uses a functional
+model to build a topology of {@link org.apache.edgent.topology.TStream streams} for an application.
 <BR>
-{@link edgent.topology.TStream TStream} is a declaration of a stream of tuples, an application will create streams that source data (e.g. sensor readings) and then apply functions that transform those streams into derived streams, for example simply filtering a stream containg engine temperator readings to a derived stream that only contains readings thar are greater than 100&deg;C.
+{@link org.apache.edgent.topology.TStream TStream} is a declaration of a stream of tuples, an application will create streams that source data (e.g. sensor readings) and then apply functions that transform those streams into derived streams, for example simply filtering a stream containg engine temperator readings to a derived stream that only contains readings thar are greater than 100&deg;C.
 <BR>
 An application terminates processing for a stream by <em>sinking</em> it. Sinking effectively terminates a stream by applying processing to each tuple on the stream (as it occurs) that does not produce a result. Typically this sinking is transmitting the tuple to an external system, for example the messgae hub to send the data to a back-end system, or locally sending the data to a user interface.
 </P>
@@ -113,9 +113,9 @@ However Edgent allows arbitrary topologies including:
 </UL>
 <H3>Graph API</H3>
 <H4>Overview</H4>
-The {@link edgent.graph.Graph graph} API is a lower-level API that the
+The {@link org.apache.edgent.graph.Graph graph} API is a lower-level API that the
 topology api is built on top of. A graph consists of
-{@link edgent.oplet.Oplet oplet} invocations connected by streams.
+{@link org.apache.edgent.oplet.Oplet oplet} invocations connected by streams.
 The oplet invocations contain the processing applied to each tuple
 on streams connected to their input ports. Processing by the oplet
 submits tuples to its output ports for subsequent processing
@@ -135,53 +135,53 @@ See the {@code README} there.
 Summary of samples:
 <TABLE border=1 width="80%" table-layout="auto">
 <TR class="rowColor"><TH>Sample</TH><TH>Description</TH><TH>Focus</TH></TR>
-<TR class="altColor"><TD>{@link edgent.samples.topology.HelloEdgent}</TD>
+<TR class="altColor"><TD>{@link org.apache.edgent.samples.topology.HelloEdgent}</TD>
   <TD>Prints Hello Edgent! to standard output.</TD>
   <TD>Basic mechanics of declaring a topology and executing it.</TD></TR>
-<TR class="altColor"><TD>{@link edgent.samples.topology.PeriodicSource}</TD>
+<TR class="altColor"><TD>{@link org.apache.edgent.samples.topology.PeriodicSource}</TD>
   <TD>Polls a random number generator for a new value every second
       and then prints out the raw value and a filtered and transformed stream.</TD>
   <TD>Polling of a data value to create a source stream.</TD></TR>
-<TR class="altColor"><TD>{@link edgent.samples.topology.SensorsAggregates}</TD>
+<TR class="altColor"><TD>{@link org.apache.edgent.samples.topology.SensorsAggregates}</TD>
   <TD>Demonstrates partitioned aggregation and filtering of simulated sensors
       that are bursty in nature, so that only intermittently
       is the data output to {@code System.out}</TD>
   <TD>Simulated sensors with windowed aggregation</TD></TR>
-<TR class="altColor"><TD>{@link edgent.samples.topology.SimpleFilterTransform}</TD>
+<TR class="altColor"><TD>{@link org.apache.edgent.samples.topology.SimpleFilterTransform}</TD>
   <TD></TD>
   <TD></TD></TR>
-<TR class="altColor"><TD><a href="{@docRoot}/edgent/samples/connectors/file/package-summary.html">
+<TR class="altColor"><TD><a href="{@docRoot}/org/apache/edgent/samples/connectors/file/package-summary.html">
       File</a></TD>
   <TD>Write a stream of tuples to files.  Watch a directory for new files
       and create a stream of tuples from the file contents.</TD>
-  <TD>Use of the <a href="{@docRoot}/edgent/connectors/file/package-summary.html">
+  <TD>Use of the <a href="{@docRoot}/org/apache/edgent/connectors/file/package-summary.html">
       File stream connector</a></TD></TR>
-<TR class="altColor"><TD><a href="{@docRoot}/edgent/samples/connectors/iotf/package-summary.html">
+<TR class="altColor"><TD><a href="{@docRoot}/org/apache/edgent/samples/connectors/iotf/package-summary.html">
       IotfSensors, IotfQuickstart</a></TD>
   <TD>Sends simulated sensor readings to an IBM Watson IoT Platform instance as device events.</TD>
-  <TD>Use of the <a href="{@docRoot}/edgent/connectors/iotf/package-summary.html">
+  <TD>Use of the <a href="{@docRoot}/org/apache/edgent/connectors/iotf/package-summary.html">
       IBM Watson IoT Platform connector</a> to send device events and receive device commands.</TD></TR>
-<TR class="altColor"><TD><a href="{@docRoot}/edgent/samples/connectors/jdbc/package-summary.html">
+<TR class="altColor"><TD><a href="{@docRoot}/org/apache/edgent/samples/connectors/jdbc/package-summary.html">
       JDBC</a></TD>
   <TD>Write a stream of tuples to an Apache Derby database table.
       Create a stream of tuples by reading a table.</TD>
-  <TD>Use of the <a href="{@docRoot}/edgent/connectors/jdbc/package-summary.html">
+  <TD>Use of the <a href="{@docRoot}/org/apache/edgent/connectors/jdbc/package-summary.html">
       JDBC stream connector</a></TD></TR>
-<TR class="altColor"><TD><a href="{@docRoot}/edgent/samples/connectors/kafka/package-summary.html">
+<TR class="altColor"><TD><a href="{@docRoot}/org/apache/edgent/samples/connectors/kafka/package-summary.html">
       Kafka</a></TD>
   <TD>Publish a stream of tuples to a Kafka topic. 
       Create a stream of tuples by subscribing to a topic and receiving 
       messages from it.</TD>
-  <TD>Use of the <a href="{@docRoot}/edgent/connectors/kafka/package-summary.html">
+  <TD>Use of the <a href="{@docRoot}/org/apache/edgent/connectors/kafka/package-summary.html">
       Kafka stream connector</a></TD></TR>
-<TR class="altColor"><TD><a href="{@docRoot}/edgent/samples/connectors/mqtt/package-summary.html">
+<TR class="altColor"><TD><a href="{@docRoot}/org/apache/edgent/samples/connectors/mqtt/package-summary.html">
       MQTT</a></TD>
   <TD>Publish a stream of tuples to a MQTT topic. 
       Create a stream of tuples by subscribing to a topic and receiving 
       messages from it.</TD>
-  <TD>Use of the <a href="{@docRoot}/edgent/connectors/mqtt/package-summary.html">
+  <TD>Use of the <a href="{@docRoot}/org/apache/edgent/connectors/mqtt/package-summary.html">
       MQTT stream connector</a></TD></TR>
-<TR class="altColor"><TD><a href="{@docRoot}/edgent/samples/apps/sensorAnalytics/package-summary.html">
+<TR class="altColor"><TD><a href="{@docRoot}/org/apache/edgent/samples/apps/sensorAnalytics/package-summary.html">
       SensorAnalytics</a></TD>
   <TD>Demonstrates a Sensor Analytics application that includes: 
       configuration control, a device of one or more sensors and
@@ -199,9 +199,9 @@ on what features your application uses.
 Include one or both of the following:
 <ul>
 <li>{@code <edgent-target>/lib/edgent.providers.direct.jar} - if you use the
-{@link edgent.providers.direct.DirectProvider DirectProvider}</li>
+{@link org.apache.edgent.providers.direct.DirectProvider DirectProvider}</li>
 <li>{@code <edgent-target>/lib/edgent.providers.development.jar} - if you use the
-{@link edgent.providers.development.DevelopmentProvider DevelopmentProvider}</li>
+{@link org.apache.edgent.providers.development.DevelopmentProvider DevelopmentProvider}</li>
 </ul>
 Include the jar of any Edgent connector you use:
 <ul>

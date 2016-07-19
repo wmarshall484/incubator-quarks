@@ -26,4 +26,4 @@ edgent=../../..
 
 export CLASSPATH=${edgent}/lib/edgent.samples.connectors.jar
 
-java edgent.samples.connectors.kafka.KafkaClient $@
+java org.apache.edgent.samples.connectors.kafka.KafkaClient $@

@@ -17,4 +17,4 @@ REM limitations under the License.
 
 REM Runs PeriodSource
 set CLASSPATH=..\samples\lib\edgent.samples.topology.jar
-java edgent.samples.topology.PeriodicSource
+java org.apache.edgent.samples.topology.PeriodicSource

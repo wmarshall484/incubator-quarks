@@ -26,4 +26,4 @@ edgent=../../..
 
 export CLASSPATH=${edgent}/samples/lib/edgent.samples.apps.jar
 
-java edgent.samples.apps.mqtt.DeviceCommsApp sensorAnalytics.properties $*
+java org.apache.edgent.samples.apps.mqtt.DeviceCommsApp sensorAnalytics.properties $*

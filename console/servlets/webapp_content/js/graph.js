@@ -16,15 +16,15 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 */
-opletColor = {"edgent.streamscope.oplets.StreamScope": "#c7c7c7",
-        "edgent.metrics.oplets.CounterOp": "#c7c7c7", "edgent.metrics.oplets.RateMeter": "#aec7e8", "edgent.oplet.core.FanIn": "#ff7f0e",
-		"edgent.oplet.core.FanOut": "#ffbb78", "edgent.oplet.core.Peek": "#2ca02c", "edgent.oplet.core.PeriodicSource": "#98df8a", 
-		"edgent.oplet.core.Pipe": "#d62728", "edgent.oplet.core.PipeWindow": "#ff9896", "edgent.oplet.core.ProcessSource": "#9467bd", 
-		"edgent.oplet.core.Sink": "#c5b0d5", "edgent.oplet.core.Source": "#8c564b", "edgent.oplet.core.Split": "#c49c94", "edgent.oplet.core.Union" : "#1f77b4",
-		"edgent.oplet.functional.ConsumerEventSource": "#e377c2", "edgent.oplet.functional.ConsumerPeek": "#f7b6d2", "edgent.oplet.functional.ConsumerSink": "#7f7f7f", 
-		"edgent.oplet.functional.Filter": "#7F7F7F", "edgent.oplet.functional.FlatMapper": "#bcbd22", "edgent.oplet.functional.Isolate": "#dbdb8d", 
-		"edgent.oplet.functional.Map": "#17becf", "edgent.oplet.functional.SupplierPeriodicSource": "#9edae5", "edgent.oplet.functional.SupplierSource": "#b5cf6b", 
-		"edgent.oplet.plumbing.PressureReliever": "#e7cb94", "edgent.oplet.plumbing.TextFileReader": "#ad494a", "edgent.oplet.plumbing.UnorderedIsolate": "#de9ed6"};
+opletColor = {"org.apache.edgent.streamscope.oplets.StreamScope": "#c7c7c7",
+        "org.apache.edgent.metrics.oplets.CounterOp": "#c7c7c7", "org.apache.edgent.metrics.oplets.RateMeter": "#aec7e8", "org.apache.edgent.oplet.core.FanIn": "#ff7f0e",
+		"org.apache.edgent.oplet.core.FanOut": "#ffbb78", "org.apache.edgent.oplet.core.Peek": "#2ca02c", "org.apache.edgent.oplet.core.PeriodicSource": "#98df8a", 
+		"org.apache.edgent.oplet.core.Pipe": "#d62728", "org.apache.edgent.oplet.core.PipeWindow": "#ff9896", "org.apache.edgent.oplet.core.ProcessSource": "#9467bd", 
+		"org.apache.edgent.oplet.core.Sink": "#c5b0d5", "org.apache.edgent.oplet.core.Source": "#8c564b", "org.apache.edgent.oplet.core.Split": "#c49c94", "org.apache.edgent.oplet.core.Union" : "#1f77b4",
+		"org.apache.edgent.oplet.functional.ConsumerEventSource": "#e377c2", "org.apache.edgent.oplet.functional.ConsumerPeek": "#f7b6d2", "org.apache.edgent.oplet.functional.ConsumerSink": "#7f7f7f", 
+		"org.apache.edgent.oplet.functional.Filter": "#7F7F7F", "org.apache.edgent.oplet.functional.FlatMapper": "#bcbd22", "org.apache.edgent.oplet.functional.Isolate": "#dbdb8d", 
+		"org.apache.edgent.oplet.functional.Map": "#17becf", "org.apache.edgent.oplet.functional.SupplierPeriodicSource": "#9edae5", "org.apache.edgent.oplet.functional.SupplierSource": "#b5cf6b", 
+		"org.apache.edgent.oplet.plumbing.PressureReliever": "#e7cb94", "org.apache.edgent.oplet.plumbing.TextFileReader": "#ad494a", "org.apache.edgent.oplet.plumbing.UnorderedIsolate": "#de9ed6"};
 colorMap = {};
 
 addValuesToEdges = function(graph, counterMetrics) {
@@ -171,7 +171,7 @@ function collectEquivMetricEdges(graph, edge, isDownstream) {
         });
     }
     else if (isDownstream
-            && vertex.invocation.kind == "edgent.oplet.core.FanOut") {
+            && vertex.invocation.kind == "org.apache.edgent.oplet.core.FanOut") {
         pushArray(equivEdges, graph.edgeMap[outgoingEdgesKey(vertex.id)]);
     }
     return equivEdges;
@@ -189,15 +189,15 @@ function setEquivalentMetricEdges(graph, metricEdge) {
 function shouldTraverseVertex(vertex) {
   // TODO need an oplet tag or something to generalize this
   var kind = vertex.invocation.kind;
-  return kind === "edgent.streamscope.oplets.StreamScope"
-      || kind === "edgent.oplet.functional.Peek"
+  return kind === "org.apache.edgent.streamscope.oplets.StreamScope"
+      || kind === "org.apache.edgent.oplet.functional.Peek"
       // the following metric oplets are returned as "counter metrics" hence
       // have their own counter metric value (a contiguous set of them
       // should nominally have the same value)
-      // || kind === "edgent.metrics.oplet.RateMeter"
-      // || kind === "edgent.metrics.oplet.CounterOp"
-      // || kind === "edgent.metrics.oplet.a-Histogram-Op"
-      // || kind === "edgent.metrics.oplet.a-Timer-Op"
+      // || kind === "org.apache.edgent.metrics.oplet.RateMeter"
+      // || kind === "org.apache.edgent.metrics.oplet.CounterOp"
+      // || kind === "org.apache.edgent.metrics.oplet.a-Histogram-Op"
+      // || kind === "org.apache.edgent.metrics.oplet.a-Timer-Op"
       ;
 }
 

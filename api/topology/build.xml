@@ -46,10 +46,10 @@
   <target name="test.compile" depends="edgent.common.test.compile,test.jar"/>
   <target name="test.jar" depends="edgent.common.test.compile">
     <jar destfile="${test.classes}/${ant.project.name}.APPS.TEST.jar">
-      <service type="edgent.topology.services.TopologyBuilder">
-        <provider classname="edgent.test.topology.services.TestApplications$AppOne" />
-        <provider classname="edgent.test.topology.services.TestApplications$AppTwo" />
-        <provider classname="edgent.test.topology.services.TestApplications$AppThree" />
+      <service type="org.apache.edgent.topology.services.TopologyBuilder">
+        <provider classname="org.apache.edgent.test.topology.services.TestApplications$AppOne" />
+        <provider classname="org.apache.edgent.test.topology.services.TestApplications$AppTwo" />
+        <provider classname="org.apache.edgent.test.topology.services.TestApplications$AppThree" />
       </service>
      <fileset dir="${test.classes}" includes="**/TestApplications*"/>
     </jar>

@@ -20,4 +20,4 @@ edgent=..
 # Runs SimpleFilterTransform
 #
 export CLASSPATH="${edgent}/samples/lib/edgent.samples.topology.jar"
-java edgent.samples.topology.SimpleFilterTransform
+java org.apache.edgent.samples.topology.SimpleFilterTransform

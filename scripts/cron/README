@@ -8,10 +8,10 @@ command to start the application in the first place.
 
 A crontab entry file contains information which cron uses to schedule the job.
 The sample startapp.cron file is configured to execute the 
-edgent.samples.topology.Terminated sample application, which terminates the 
-JVM after processing a preset number of tuples.
+org.apache.edgent.samples.topology.TerminateAfterNTuples sample application,
+which terminates the JVM after processing a preset number of tuples.
 
-To setup cron to restart edgent.samples.topology.Terminated every minute:
+To setup cron to restart the sample application every minute:
 
 1. Edit the startapp.cron file:
    - Set the EDGENT environment variable to point to your edgent installation,

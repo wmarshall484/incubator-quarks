@@ -20,4 +20,4 @@ edgent=..
 # Runs PeriodSource
 #
 export CLASSPATH="${edgent}/samples/lib/edgent.samples.topology.jar"
-java edgent.samples.topology.PeriodicSource
+java org.apache.edgent.samples.topology.PeriodicSource

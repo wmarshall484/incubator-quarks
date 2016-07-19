@@ -15,6 +15,7 @@ dependencies {
   compile project(':api:topology')
   compile project(':spi:topology')
   compile project(':spi:graph')
+  compile project(':runtime:appservice')
   compile project(':runtime:etiao')
   compile project(':runtime:jsoncontrol')
   compile ext_classpath

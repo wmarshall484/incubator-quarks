@@ -31,4 +31,4 @@ edgent=../../..
 
 export CLASSPATH=${edgent}/samples/lib/edgent.samples.connectors.jar
 
-java edgent.samples.connectors.iotf.IotfQuickstart
+java org.apache.edgent.samples.connectors.iotf.IotfQuickstart

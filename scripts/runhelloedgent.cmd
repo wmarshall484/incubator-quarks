@@ -17,4 +17,4 @@ REM limitations under the License.
 
 REM Runs HelloEdgent
 set CLASSPATH=..\samples\lib\edgent.samples.topology.jar
-java edgent.samples.topology.HelloEdgent
+java org.apache.edgent.samples.topology.HelloEdgent

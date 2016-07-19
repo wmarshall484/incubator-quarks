@@ -17,4 +17,4 @@ REM limitations under the License.
 
 REM Runs SensorsReadingAggregates
 set CLASSPATH=..\samples\lib\edgent.samples.topology.jar
-java edgent.samples.topology.SensorsAggregates
+java org.apache.edgent.samples.topology.SensorsAggregates

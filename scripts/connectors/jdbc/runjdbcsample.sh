@@ -36,9 +36,9 @@ export CLASSPATH=${edgent}/samples/lib/edgent.samples.connectors.jar:$DERBY_HOME
 
 app=$1; shift
 if [ "$app" == "writer" ]; then
-    java edgent.samples.connectors.jdbc.SimpleWriterApp jdbc.properties
+    java org.apache.edgent.samples.connectors.jdbc.SimpleWriterApp jdbc.properties
 elif [ "$app" == "reader" ]; then
-    java edgent.samples.connectors.jdbc.SimpleReaderApp jdbc.properties
+    java org.apache.edgent.samples.connectors.jdbc.SimpleReaderApp jdbc.properties
 else
     echo "unrecognized mode '$app'"
     echo "usage: $0 writer|reader"

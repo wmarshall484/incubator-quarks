@@ -32,9 +32,9 @@ export CLASSPATH=${edgent}/samples/lib/edgent.samples.connectors.jar
 
 app=$1; shift
 if [ "$app" == "writer" ]; then
-    java edgent.samples.connectors.file.FileWriterApp $sampledir
+    java org.apache.edgent.samples.connectors.file.FileWriterApp $sampledir
 elif [ "$app" == "reader" ]; then
-    java edgent.samples.connectors.file.FileReaderApp $sampledir
+    java org.apache.edgent.samples.connectors.file.FileReaderApp $sampledir
 else
     echo "unrecognized mode '$app'"
     echo "usage: $0 'writer|reader'"

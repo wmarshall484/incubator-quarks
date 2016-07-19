@@ -20,4 +20,4 @@ edgent=..
 # Runs HelloEdgent
 #
 export CLASSPATH="${edgent}/samples/lib/edgent.samples.topology.jar"
-java edgent.samples.topology.HelloEdgent
+java org.apache.edgent.samples.topology.HelloEdgent

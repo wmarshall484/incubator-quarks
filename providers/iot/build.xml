@@ -26,7 +26,7 @@
   <path id="compile.classpath">
     <pathelement location="${edgent.lib}/edgent.providers.direct.jar" />
     <pathelement location="${edgent.lib}/edgent.runtime.jsoncontrol.jar" />
-    <pathelement location="${edgent.lib}/edgent.runtime.appservice.jar" />
+    <pathelement location="${edgent.lib}/edgent.runtime.appservice.appservice.jar" />
     <pathelement location="${edgent.connectors}/iot/lib/edgent.connectors.iot.jar" />
     <pathelement location="${edgent.connectors}/pubsub/lib/edgent.connectors.pubsub.jar" />
     <pathelement location="${edgent.apps}/iot/lib/edgent.apps.iot.jar" />

@@ -27,9 +27,9 @@ export CLASSPATH=${edgent}/samples/lib/edgent.samples.connectors.jar
 
 app=$1; shift
 if [ "$app" == "pub" ]; then
-    java edgent.samples.connectors.mqtt.SimplePublisherApp mqtt.properties
+    java org.apache.edgent.samples.connectors.mqtt.SimplePublisherApp mqtt.properties
 elif [ "$app" == "sub" ]; then
-    java edgent.samples.connectors.mqtt.SimpleSubscriberApp mqtt.properties
+    java org.apache.edgent.samples.connectors.mqtt.SimpleSubscriberApp mqtt.properties
 else
     echo "unrecognized mode '$app'"
     echo "usage: $0 pub|sub"

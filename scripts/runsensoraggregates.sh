@@ -20,4 +20,4 @@ edgent=..
 # Runs SensorsReadingAggregates
 #
 export CLASSPATH="${edgent}/samples/lib/edgent.samples.topology.jar"
-java edgent.samples.topology.SensorsAggregates
+java org.apache.edgent.samples.topology.SensorsAggregates

@@ -26,4 +26,4 @@ edgent=../../..
 
 export CLASSPATH=${edgent}/samples/lib/edgent.samples.connectors.jar
 
-java edgent.samples.connectors.mqtt.MqttClient $@
+java org.apache.edgent.samples.connectors.mqtt.MqttClient $@

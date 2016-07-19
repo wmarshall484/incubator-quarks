@@ -24,7 +24,9 @@ Please *Get Involved!*
 
 Edgent is released under the [Apache License Version 2.0](LICENSE)
 
-[ Up until July 2016, Edgent was known as Quarks. ]
+[ Up until July 2016, Edgent was known as Quarks.  
+  In conjunction with the change, all Edgent java package names
+  have the prefix "org.apache.edgent".  ]
 
 # Edgent
 Devices and sensors are everywhere. And more are coming online every day. You need a way to analyze all of the data coming from your devices, but it can be expensive to transmit all of the data from a sensor to your central analytics engine.

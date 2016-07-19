@@ -300,7 +300,7 @@
       additionalparam="-Xdoclint:none"
       Overview="edgent_overview.html"
       failonwarning="true"
-      excludepackagenames="edgent.connectors.runtime,edgent.connectors.*.runtime,edgent.console.*,edgent.samples.scenarios.iotf.range.sensor"
+      excludepackagenames="org.apache.edgent.connectors.runtime,org.apache.edgent.connectors.*.runtime,org.apache.edgent.console.*,org.apache.edgent.samples.scenarios.iotf.range.sensor"
       >
       <sourcepath>
          <dirset dir="${basedir}">
@@ -323,14 +323,14 @@
        <doctitle>Apache Edgent (incubating) v${edgent.version}</doctitle>
        <footer><![CDATA[<a href="http://edgent.incubator.apache.org">Apache Edgent (incubating)</a>]]></footer>
        <bottom>Copyright &amp;copy; 2016 The Apache Software Foundation. All Rights Reserved - ${commithash}-${DSTAMP}-${TSTAMP}</bottom>
-       <group title="Edgent API" packages="edgent.execution,edgent.function,edgent.topology,edgent.topology.json,edgent.topology.mbeans,edgent.topology.plumbing,edgent.topology.services,edgent.execution.*"/>
-       <group title="Edgent Providers" packages="edgent.providers.*"/>
-       <group title="Edgent Connectors" packages="edgent.connectors.*"/>
-       <group title="Edgent Samples" packages="edgent.samples.*"/>
-       <group title="Edgent Analytics" packages="edgent.analytics.*"/>
-       <group title="Edgent Utilities" packages="edgent.metrics,edgent.metrics.*,edgent.streamscope,edgent.streamscope.*"/>
-       <group title="Edgent Low-Level API" packages="edgent.graph,edgent.graph.*,edgent.oplet,edgent.oplet.*,edgent.window"/>
-       <group title="Edgent SPI" packages="edgent.topology.spi,edgent.topology.spi.*"/>
+       <group title="Edgent API" packages="org.apache.edgent.execution,org.apache.edgent.function,org.apache.edgent.topology,org.apache.edgent.topology.json,org.apache.edgent.topology.mbeans,org.apache.edgent.topology.plumbing,org.apache.edgent.topology.services,org.apache.edgent.execution.*"/>
+       <group title="Edgent Providers" packages="org.apache.edgent.providers.*"/>
+       <group title="Edgent Connectors" packages="org.apache.edgent.connectors.*"/>
+       <group title="Edgent Samples" packages="org.apache.edgent.samples.*"/>
+       <group title="Edgent Analytics" packages="org.apache.edgent.analytics.*"/>
+       <group title="Edgent Utilities" packages="org.apache.edgent.metrics,edgent.metrics.*,org.apache.edgent.streamscope,org.apache.edgent.streamscope.*"/>
+       <group title="Edgent Low-Level API" packages="org.apache.edgent.graph,edgent.graph.*,org.apache.edgent.oplet,edgent.oplet.*,org.apache.edgent.window"/>
+       <group title="Edgent SPI" packages="org.apache.edgent.topology.spi,org.apache.edgent.topology.spi.*"/>
      </javadoc>
   </target>
 

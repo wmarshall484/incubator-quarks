@@ -17,4 +17,4 @@ REM limitations under the License.
 
 REM Runs SimpleFilterTransform
 set CLASSPATH=..\samples\lib\edgent.samples.topology.jar
-java edgent.samples.topology.SimpleFilterTransform
+java org.apache.edgent.samples.topology.SimpleFilterTransform
