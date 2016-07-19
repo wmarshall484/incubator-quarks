@@ -8,6 +8,27 @@ This describes development of Apache Edgent itself, not how to develop Edgent ap
 The Edgent community welcomes contributions, please *Get Involved*!
  * http://edgent.incubator.apache.org/docs/community
 
+## Renamed from Apache Quarks
+Apache Edgent is the new name. Things are in a state of transition until all
+of the pieces arrive.
+
+The "incubator-quarks" repository has been fully updated.
+
+Until the Apache infrastructure changes are done, continue to use
+the Quarks mailing list, website, and repositories:
+  * mailing list: dev at quarks.incubator.apache.org
+  * http://quarks.incubator.apache.org/
+  * https://git-wip-us.apache.org/repos/asf/incubator-quarks.git
+  * https://github.com/apache/incubator-quarks
+
+Code changes:
+  * package names have the prefix "org.apache.edgent"
+  * jar names have the prefix "edgent"
+  
+Users of Edgent will need to update their references to the above.
+It's recommended that developers of Edgent create a new workspace instead of
+reusing their Quarks workspace.
+
 ### Setup
 
 Once you have forked the repository and created your local clone you need to download

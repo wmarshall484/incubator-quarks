@@ -24,9 +24,26 @@ Please *Get Involved!*
 
 Edgent is released under the [Apache License Version 2.0](LICENSE)
 
-[ Up until July 2016, Edgent was known as Quarks.  
-  In conjunction with the change, all Edgent java package names
-  have the prefix "org.apache.edgent".  ]
+# Renamed from Apache Quarks
+Apache Edgent is the new name. Things are in a state of transition until all
+of the pieces arrive.
+
+The "incubator-quarks" repository has been fully updated.
+
+Until the Apache infrastructure changes are done, continue to use
+the Quarks mailing list, website, and repositories:
+  * mailing list: dev at quarks.incubator.apache.org
+  * http://quarks.incubator.apache.org/
+  * https://git-wip-us.apache.org/repos/asf/incubator-quarks.git
+  * https://github.com/apache/incubator-quarks
+
+Code changes:
+  * package names have the prefix "org.apache.edgent"
+  * jar names have the prefix "edgent"
+  
+Users of Edgent will need to update their references to the above.
+It's recommended that developers of Edgent create a new workspace instead of
+reusing their Quarks workspace.
 
 # Edgent
 Devices and sensors are everywhere. And more are coming online every day. You need a way to analyze all of the data coming from your devices, but it can be expensive to transmit all of the data from a sensor to your central analytics engine.
