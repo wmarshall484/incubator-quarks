@@ -11,7 +11,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-def projectGroup = "$project.group".replace("quarks.", "")
+def projectGroup = "$project.group".replace("edgent.", "")
 def lib= "${rootProject.ext.target_java8_dir}/" + projectGroup + "/$project.name".replaceAll(":", "/")
 
 //def lib="${project.distsDir}/lib"
