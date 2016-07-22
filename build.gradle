@@ -89,14 +89,6 @@ subprojects {
     configure compileOptions
   }
 
-  test {
-    include '**/*Test.class'
-    systemProperty 'edgent.test.top.dir.file.path', rootProject.projectDir
-    testLogging {
-      exceptionFormat 'full'
-    }
-  }
-
   ext.jarOptions = {
     manifest {
       attributes(
@@ -144,12 +136,11 @@ subprojects {
   build.dependsOn copyJar
 }
 
-task consoleWar (dependsOn: "console:servlets"){
-  copy {
-    includeEmptyDirs = false
-    from "${project("console:servlets").buildDir}"
-    into "${rootProject.ext.target_java8_dir}/console/"
-    include "**/*.war"
+test {
+  include '**/*Test.class'
+  systemProperty 'edgent.test.top.dir.file.path', rootProject.projectDir
+  testLogging {
+    exceptionFormat 'full'
   }
 }
 

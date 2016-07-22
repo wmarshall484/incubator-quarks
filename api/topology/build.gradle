@@ -17,3 +17,13 @@ dependencies {
   compile project(':api:oplet')
   compile ext_classpath
 }
+
+
+jar {
+  configure jarOptions
+  jar.includeEmptyDirs = false
+  destinationDir = sourceSets.test.output.classesDir
+  archiveName = "edgent.api.topology.APPS.TEST.jar"
+  //from sourceSets.main.output.classesDir
+  //include 'quarks.test.topology.services.TestApplications$AppOne'
+}
