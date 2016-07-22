@@ -18,7 +18,7 @@
     xmlns:jacoco="antlib:org.jacoco.ant"
     >
     <description>
-        Build IOTF connectors.
+        Build Watson IoT Platform connector.
     </description>
 
   <property name="component.path" value="connectors/iotp"/>
