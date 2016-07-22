@@ -79,7 +79,7 @@ public class ServerUtil {
         } catch (IOException e) {
           // end of file searching
         }
-        if (foundFiles.size() == 1) {
+        if (foundFiles.size() != 0) {
             return foundFiles.get(0);
         }
         return null;
