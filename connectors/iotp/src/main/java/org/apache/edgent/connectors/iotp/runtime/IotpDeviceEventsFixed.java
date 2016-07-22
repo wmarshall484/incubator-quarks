@@ -17,7 +17,7 @@ specific language governing permissions and limitations
 under the License.
 */
 
-package org.apache.edgent.connectors.iotf.runtime;
+package org.apache.edgent.connectors.iotp.runtime;
 
 import org.apache.edgent.function.Consumer;
 
@@ -27,13 +27,13 @@ import com.google.gson.JsonObject;
  * Consumer that publishes stream tuples as IoTf device events.
  *
  */
-public class IotfDeviceEventsFixed implements Consumer<JsonObject> {
+public class IotpDeviceEventsFixed implements Consumer<JsonObject> {
     private static final long serialVersionUID = 1L;
-    private final IotfConnector connector;
+    private final IotpConnector connector;
     private final String eventId;
     private final int qos;
 
-    public IotfDeviceEventsFixed(IotfConnector connector, String eventId, int qos) {
+    public IotpDeviceEventsFixed(IotpConnector connector, String eventId, int qos) {
         this.connector = connector;
         this.eventId = eventId;
         this.qos = qos;

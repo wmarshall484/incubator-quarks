@@ -22,5 +22,5 @@ under the License.
  * <BR>
  * <em>Note IBM Watson IoT Platform was previously known as Internet of Things Foundation.</em>
  */
-package org.apache.edgent.connectors.iotf;
+package org.apache.edgent.connectors.iotp;
 

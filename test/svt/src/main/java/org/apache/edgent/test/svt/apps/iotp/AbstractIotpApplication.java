@@ -16,13 +16,13 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
  */
-package org.apache.edgent.test.svt.apps.iotf;
+package org.apache.edgent.test.svt.apps.iotp;
 
 import java.io.PrintWriter;
 import java.util.Random;
 
 import org.apache.edgent.connectors.iot.IotDevice;
-import org.apache.edgent.connectors.iotf.IotfDevice;
+import org.apache.edgent.connectors.iotp.IotpDevice;
 import org.apache.edgent.samples.apps.AbstractApplication;
 import org.apache.edgent.samples.apps.ApplicationUtilities;
 import org.apache.edgent.samples.apps.TopologyProviderFactory;
@@ -45,32 +45,32 @@ import org.apache.edgent.topology.Topology;
  * <li>Provides a {@link IotDevice}</li>
  * </ul>
  */
-public abstract class AbstractIotfApplication extends AbstractApplication {
+public abstract class AbstractIotpApplication extends AbstractApplication {
 
     private IotDevice device;
 
-    public AbstractIotfApplication(String propsPath) throws Exception {
+    public AbstractIotpApplication(String propsPath) throws Exception {
         super(propsPath);
     }
 
     @Override
     protected void preBuildTopology(Topology topology) {
-        // Add an Iotf device communication manager to the topology
+        // Add an Iotp device communication manager to the topology
         // Declare a connection to IoTF Quickstart service
         String deviceId = "qs" + Long.toHexString(new Random().nextLong());
-        device = IotfDevice.quickstart(topology, deviceId);
+        device = IotpDevice.quickstart(topology, deviceId);
 
         // TODO replace quickstart
-        // iotfDevice = new IotfDevice(topology, new File("device.cfg"));
+        // iotfDevice = new IotpDevice(topology, new File("device.cfg"));
 
-        System.out.println("Quickstart device type:" + IotfDevice.QUICKSTART_DEVICE_TYPE);
+        System.out.println("Quickstart device type:" + IotpDevice.QUICKSTART_DEVICE_TYPE);
         System.out.println("Quickstart device id  :" + deviceId);
         System.out.println("https://quickstart.internetofthings.ibmcloud.com/#/device/" + deviceId);
         // Also write this information to file quickstartUrl.txt in case the
         // console scrolls too fast
         try {
             PrintWriter writer = new PrintWriter("iotfUrl.txt", "UTF-8");
-            writer.println("Quickstart device type:" + IotfDevice.QUICKSTART_DEVICE_TYPE);
+            writer.println("Quickstart device type:" + IotpDevice.QUICKSTART_DEVICE_TYPE);
             writer.println("Quickstart device id  :" + deviceId);
             writer.println("https://quickstart.internetofthings.ibmcloud.com/#/device/" + deviceId);
             writer.close();
@@ -80,16 +80,16 @@ public abstract class AbstractIotfApplication extends AbstractApplication {
     }
 
     /**
-     * Get the application's IotfDevice
+     * Get the application's IotDevice
      * 
-     * @return the IotfDevice
+     * @return the IotDevice
      */
     public IotDevice iotDevice() {
         return device;
     }
 
     /**
-     * Compose a IotfDevice eventId for the sensor.
+     * Compose a IotDevice eventId for the sensor.
      * 
      * @param sensorId
      *            the sensor id
@@ -102,7 +102,7 @@ public abstract class AbstractIotfApplication extends AbstractApplication {
     }
 
     /**
-     * Compose a IotfDevice commandId for the sensor
+     * Compose a IotpDevice commandId for the sensor
      * 
      * @param sensorId
      *            the sensor id

@@ -32,7 +32,7 @@
   <path id="compile.classpath">
     <pathelement location="${edgent.lib}/edgent.providers.development.jar"/>
   	 <pathelement location="${target.java8.dir}/samples/lib/edgent.samples.apps.jar"/>
-  	 <pathelement location="${edgent.connectors}/iotf/lib/edgent.connectors.iotf.jar"/>
+  	 <pathelement location="${edgent.connectors}/iotp/lib/edgent.connectors.iotp.jar"/>
   </path>
 
   <path id="test.compile.classpath">

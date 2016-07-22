@@ -17,7 +17,7 @@ specific language governing permissions and limitations
 under the License.
 */
 
-package org.apache.edgent.connectors.iotf.runtime;
+package org.apache.edgent.connectors.iotp.runtime;
 
 import org.apache.edgent.function.Consumer;
 import org.slf4j.Logger;
@@ -29,12 +29,12 @@ import com.ibm.iotf.client.device.Command;
  * Consumer that publishes stream tuples as IoTf device events.
  *
  */
-public class IotfDeviceCommands implements Consumer<Consumer<Command>> {
+public class IotpDeviceCommands implements Consumer<Consumer<Command>> {
     private static final long serialVersionUID = 1L;
-    private final IotfConnector connector;
-    private static final Logger logger = LoggerFactory.getLogger(IotfDeviceCommands.class);
+    private final IotpConnector connector;
+    private static final Logger logger = LoggerFactory.getLogger(IotpDeviceCommands.class);
 
-    public IotfDeviceCommands(IotfConnector connector) {
+    public IotpDeviceCommands(IotpConnector connector) {
         this.connector = connector;
     }
 

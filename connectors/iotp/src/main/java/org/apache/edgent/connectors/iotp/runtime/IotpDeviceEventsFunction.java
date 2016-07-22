@@ -17,7 +17,7 @@ specific language governing permissions and limitations
 under the License.
 */
 
-package org.apache.edgent.connectors.iotf.runtime;
+package org.apache.edgent.connectors.iotp.runtime;
 
 import org.apache.edgent.function.Consumer;
 import org.apache.edgent.function.Function;
@@ -30,15 +30,15 @@ import com.google.gson.JsonObject;
  * event identifier and qos.
  *
  */
-public class IotfDeviceEventsFunction implements Consumer<JsonObject> {
+public class IotpDeviceEventsFunction implements Consumer<JsonObject> {
 
     private static final long serialVersionUID = 1L;
-    private final IotfConnector connector;
+    private final IotpConnector connector;
     private final Function<JsonObject, String> eventId;
     private UnaryOperator<JsonObject> payload;
     private final Function<JsonObject, Integer> qos;
 
-    public IotfDeviceEventsFunction(IotfConnector connector, Function<JsonObject, String> eventId,
+    public IotpDeviceEventsFunction(IotpConnector connector, Function<JsonObject, String> eventId,
             UnaryOperator<JsonObject> payload,
             Function<JsonObject, Integer> qos) {
         this.connector = connector;

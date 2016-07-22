@@ -17,7 +17,7 @@ specific language governing permissions and limitations
 under the License.
 */
 
-package org.apache.edgent.connectors.iotf.runtime;
+package org.apache.edgent.connectors.iotp.runtime;
 
 import java.io.File;
 import java.io.Serializable;
@@ -32,7 +32,7 @@ import com.ibm.iotf.client.device.DeviceClient;
 /**
  * Device connector for IoTf.
  */
-public class IotfConnector implements Serializable, AutoCloseable {
+public class IotpConnector implements Serializable, AutoCloseable {
     private static final long serialVersionUID = 1L;
 
     private Properties options;
@@ -44,11 +44,11 @@ public class IotfConnector implements Serializable, AutoCloseable {
      *
      * @param options connector options
      */
-    public IotfConnector(Properties options) {
+    public IotpConnector(Properties options) {
         this.options = options;
     }
 
-    public IotfConnector(File optionsFile) {
+    public IotpConnector(File optionsFile) {
         this.optionsFile = optionsFile;
     }
 
