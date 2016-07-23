@@ -20,9 +20,9 @@ edgent=../../..
 
 # Runs IBM Watson IoT Plaform sample.
 #
-# runiotfsensors.sh path/device.cfg
+# runiotpsensors.sh path/device.cfg
 #
-# e.g. runiotfsensors.sh $HOME/device.cfg
+# e.g. runiotpsensors.sh $HOME/device.cfg
 #
 # This connectors to your IBM Watson IoT Platform service
 # as the device defined in the device.cfg.
@@ -32,4 +32,4 @@ edgent=../../..
 
 export CLASSPATH=${edgent}/samples/lib/edgent.samples.connectors.jar
 
-java org.apache.edgent.samples.connectors.iotf.IotfSensors $1
+java org.apache.edgent.samples.connectors.iotp.IotpSensors $1
