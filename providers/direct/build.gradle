@@ -21,8 +21,6 @@ dependencies {
   compile ext_classpath
   testCompile project(':utils:metrics')
   testCompile project(':runtime:appservice')
-  testCompile files('edgent.api.topology.APPS.TEST.jar')
 }
 
 addCompileTestDependencies ':api:topology', ':utils:metrics', ':runtime:appservice'
-

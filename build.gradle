@@ -89,6 +89,16 @@ subprojects {
     configure compileOptions
   }
 
+  test {
+    include '**/*Test.class'
+
+    systemProperty 'edgent.test.top.dir.file.path', rootProject.projectDir
+    systemProperty 'edgent.test.root.dir', rootProject.projectDir
+    testLogging {
+      exceptionFormat 'full'
+    }
+  }
+
   ext.jarOptions = {
     manifest {
       attributes(
@@ -134,14 +144,6 @@ subprojects {
 
   copyJar.dependsOn assemble
   build.dependsOn copyJar
-}
-
-test {
-  include '**/*Test.class'
-  systemProperty 'edgent.test.top.dir.file.path', rootProject.projectDir
-  testLogging {
-    exceptionFormat 'full'
-  }
 }
 
 task copyScript {

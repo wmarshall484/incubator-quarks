@@ -18,12 +18,16 @@ dependencies {
   compile ext_classpath
 }
 
-
-jar {
-  configure jarOptions
-  jar.includeEmptyDirs = false
-  destinationDir = sourceSets.test.output.classesDir
-  archiveName = "edgent.api.topology.APPS.TEST.jar"
-  //from sourceSets.main.output.classesDir
-  //include 'quarks.test.topology.services.TestApplications$AppOne'
+//Build a jar file containing the applications to test the ApplicationService
+task testApplicationJar{
+  ant.jar(destfile: "test.classes/edgent.api.topology.APPS.TEST.jar") {
+    service(type: 'org.apache.edgent.topology.services.TopologyBuilder') {
+      provider(classname: 'org.apache.edgent.test.topology.services.TestApplications$AppOne')
+      provider(classname: 'org.apache.edgent.test.topology.services.TestApplications$AppTwo')
+      provider(classname: 'org.apache.edgent.test.topology.services.TestApplications$AppThree')
+    }
+    fileset (dir: 'test.classes', includes: '**/*TestApplications$App*.class')
+  }
 }
+
+testClasses.dependsOn testApplicationJar
