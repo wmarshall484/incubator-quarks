@@ -34,3 +34,5 @@ war {
   }
   webXml = file('webapp_content/WEB-INF/console.xml')
 }
+
+testClasses.dependsOn war
