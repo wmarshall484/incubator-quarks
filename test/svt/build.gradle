@@ -19,7 +19,7 @@ def lib= "${rootProject.ext.target_java8_dir}/" + projectGroup + "/$project.name
 dependencies {
   compile project(':providers:development')
   compile project(':samples:apps')
-  compile project(':connectors:iotf')
+  compile project(':connectors:iotp')
   compile ext_classpath
 }
 

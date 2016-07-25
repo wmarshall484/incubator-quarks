@@ -98,7 +98,7 @@
       <pathelement location="${target.java8.ext}/slf4j-1.7.12/slf4j-jdk14-1.7.12.jar"/>
     </path>
 
-    <!-- expects a property of component.path e.g. connectors/iotf -->
+    <!-- expects a property of component.path e.g. connectors/iotp -->
     <!-- only called by non-core components -->
     <macrodef name="setup.component">
 	<sequential>

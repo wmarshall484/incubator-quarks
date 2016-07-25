@@ -20,7 +20,7 @@ edgent=../../..
 
 # Runs IBM Watson IoT Plaform Quickstart sample.
 #
-# runiotfqucikstart.sh
+# runiotpquickstart.sh
 #
 # This connectors to the Qucikstart IBM Watson IoT Platform service
 # which requires no registration at all.
@@ -31,4 +31,4 @@ edgent=../../..
 
 export CLASSPATH=${edgent}/samples/lib/edgent.samples.connectors.jar
 
-java org.apache.edgent.samples.connectors.iotf.IotfQuickstart
+java org.apache.edgent.samples.connectors.iotp.IotpQuickstart

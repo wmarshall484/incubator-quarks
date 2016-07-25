@@ -18,7 +18,7 @@ under the License.
  */
 package org.apache.edgent.test.svt.apps;
 
-import org.apache.edgent.test.svt.apps.iotf.AbstractIotfApplication;
+import org.apache.edgent.test.svt.apps.iotp.AbstractIotpApplication;
 import org.apache.edgent.topology.Topology;
 
 /**
@@ -34,7 +34,7 @@ import org.apache.edgent.topology.Topology;
  * Argument: specify pathname to application properties file. If running in
  * Eclipse, you can specify GpsObdAnalyticsApplication.properties.
  */
-public class FleetManagementAnalyticsClientApplication extends AbstractIotfApplication {
+public class FleetManagementAnalyticsClientApplication extends AbstractIotpApplication {
 
     public static void main(String[] args) throws Exception {
         if (args.length < 1)

@@ -17,7 +17,7 @@ specific language governing permissions and limitations
 under the License.
 */
 
-package org.apache.edgent.connectors.iotf;
+package org.apache.edgent.connectors.iotp;
 
 import java.io.File;
 import java.util.Arrays;
@@ -27,10 +27,10 @@ import java.util.Set;
 
 import org.apache.edgent.connectors.iot.IotDevice;
 import org.apache.edgent.connectors.iot.QoS;
-import org.apache.edgent.connectors.iotf.runtime.IotfConnector;
-import org.apache.edgent.connectors.iotf.runtime.IotfDeviceCommands;
-import org.apache.edgent.connectors.iotf.runtime.IotfDeviceEventsFixed;
-import org.apache.edgent.connectors.iotf.runtime.IotfDeviceEventsFunction;
+import org.apache.edgent.connectors.iotp.runtime.IotpConnector;
+import org.apache.edgent.connectors.iotp.runtime.IotpDeviceCommands;
+import org.apache.edgent.connectors.iotp.runtime.IotpDeviceEventsFixed;
+import org.apache.edgent.connectors.iotp.runtime.IotpDeviceEventsFunction;
 import org.apache.edgent.function.Function;
 import org.apache.edgent.function.UnaryOperator;
 import org.apache.edgent.topology.TSink;
@@ -46,7 +46,7 @@ import com.ibm.iotf.client.device.Command;
  * <BR>
  * IBM Watson IoT Platform is a cloud based internet of things
  * scale message hub that provides a device model on top of MQTT.
- * {@code IotfDevice} implements the generic device model {@link IotDevice}
+ * {@code IotpDevice} implements the generic device model {@link IotDevice}
  * and thus can be used as a connector for
  * {@link org.apache.edgent.providers.iot.IotProvider}.
  * <BR>
@@ -55,9 +55,9 @@ import com.ibm.iotf.client.device.Command;
  * 
  * @see org.apache.edgent.connectors.iot Edgent generic device model
  * @see <a href="http://www.ibm.com/internet-of-things/iot-platform.html">IBM Watson IoT Platform</a>
- * @see org.apache.edgent.samples.connectors.iotf.IotfSensors Sample application
+ * @see org.apache.edgent.samples.connectors.iotp.IotpSensors Sample application
  */
-public class IotfDevice implements IotDevice {
+public class IotpDevice implements IotDevice {
     
     /**
      * Device type identifier ({@value}) used when using the Quickstart service.
@@ -65,7 +65,7 @@ public class IotfDevice implements IotDevice {
      */
     public static final String QUICKSTART_DEVICE_TYPE = "iotsamples-edgent";
 
-    private final IotfConnector connector;
+    private final IotpConnector connector;
     private final Topology topology;
     private TStream<Command> commandStream;
 
@@ -92,7 +92,7 @@ public class IotfDevice implements IotDevice {
      * options.setProperty("auth-method", "token");
      * options.setProperty("auth-token", "AJfKQV@&amp;bBo@VX6Dcg");
      * 
-     * IotDevice iotDevice = new IotfDevice(options);
+     * IotDevice iotDevice = new IotpDevice(options);
      * </code>
      * </pre>
 
@@ -105,9 +105,9 @@ public class IotfDevice implements IotDevice {
      * @param topology
      *            the connector's associated {@code Topology}.
      */
-    public IotfDevice(Topology topology, Properties options) {
+    public IotpDevice(Topology topology, Properties options) {
         this.topology = topology;
-        this.connector = new IotfConnector(options);
+        this.connector = new IotpConnector(options);
     }
 
     /**
@@ -144,13 +144,13 @@ public class IotfDevice implements IotDevice {
      * @param topology the connector's associated {@code Topology}.
      * @param optionsFile File containing connection information.
      */
-    public IotfDevice(Topology topology, File optionsFile) {
+    public IotpDevice(Topology topology, File optionsFile) {
         this.topology = topology;
-        this.connector = new IotfConnector(optionsFile);
+        this.connector = new IotpConnector(optionsFile);
     }
     
     /**
-     * Create an {@code IotfDevice} connector to the Quickstart service.
+     * Create an {@code IotpDevice} connector to the Quickstart service.
      * Quickstart service requires no-sign up to use to allow evaluation
      * but has limitations on functionality, such as only supporting
      * device events and only one message per second.
@@ -160,14 +160,14 @@ public class IotfDevice implements IotDevice {
      * @return Connector to the Quickstart service.
      * 
      * @see <a href="https://quickstart.internetofthings.ibmcloud.com">Quickstart</a>
-     * @see org.apache.edgent.samples.connectors.iotf.IotfQuickstart Quickstart sample application
+     * @see org.apache.edgent.samples.connectors.iotp.IotpQuickstart Quickstart sample application
      */
-    public static IotfDevice quickstart(Topology topology, String deviceId) {
+    public static IotpDevice quickstart(Topology topology, String deviceId) {
         Properties options = new Properties();
         options.setProperty("org", "quickstart");
         options.setProperty("type", QUICKSTART_DEVICE_TYPE);
         options.setProperty("id", deviceId);
-        return new IotfDevice(topology, options);
+        return new IotpDevice(topology, options);
     }
 
     /**
@@ -193,7 +193,7 @@ public class IotfDevice implements IotDevice {
     public TSink<JsonObject> events(TStream<JsonObject> stream, Function<JsonObject, String> eventId,
             UnaryOperator<JsonObject> payload,
             Function<JsonObject, Integer> qos) {
-        return stream.sink(new IotfDeviceEventsFunction(connector, eventId, payload, qos));
+        return stream.sink(new IotpDeviceEventsFunction(connector, eventId, payload, qos));
     }
     
     /**
@@ -213,7 +213,7 @@ public class IotfDevice implements IotDevice {
      * @see QoS
      */
     public TSink<JsonObject> events(TStream<JsonObject> stream, String eventId, int qos) {
-        return stream.sink(new IotfDeviceEventsFixed(connector, eventId, qos));
+        return stream.sink(new IotpDeviceEventsFixed(connector, eventId, qos));
     }
 
     /**
@@ -273,7 +273,7 @@ public class IotfDevice implements IotDevice {
     
     private TStream<Command> allCommands() {
         if (commandStream == null)
-            commandStream = topology.events(new IotfDeviceCommands(connector));
+            commandStream = topology.events(new IotpDeviceCommands(connector));
         return commandStream;
     }
 

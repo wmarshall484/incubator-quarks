@@ -123,7 +123,7 @@
         <ant dir="connectors/serial" target="@{target}" useNativeBasedir="true"/>
         <ant dir="connectors/file" target="@{target}" useNativeBasedir="true"/>
         <ant dir="connectors/http" target="@{target}" useNativeBasedir="true"/>
-        <ant dir="connectors/iotf" target="@{target}" useNativeBasedir="true"/>
+        <ant dir="connectors/iotp" target="@{target}" useNativeBasedir="true"/>
         <ant dir="connectors/jdbc" target="@{target}" useNativeBasedir="true"/>
         <ant dir="connectors/kafka" target="@{target}" useNativeBasedir="true"/>
         <ant dir="connectors/mqtt" target="@{target}" useNativeBasedir="true"/>
@@ -234,7 +234,7 @@
         <fileset dir="${basedir}/connectors/csv/src/main/java" includes="**/*.java"/>
         <fileset dir="${basedir}/connectors/file/src/main/java" includes="**/*.java"/>
         <fileset dir="${basedir}/connectors/iot/src/main/java" includes="**/*.java"/>
-        <fileset dir="${basedir}/connectors/iotf/src/main/java" includes="**/*.java"/>
+        <fileset dir="${basedir}/connectors/iotp/src/main/java" includes="**/*.java"/>
         <fileset dir="${basedir}/connectors/jdbc/src/main/java" includes="**/*.java"/>
         <fileset dir="${basedir}/connectors/kafka/src/main/java" includes="**/*.java"/>
         <fileset dir="${basedir}/connectors/mqtt/src/main/java" includes="**/*.java"/>
@@ -300,7 +300,7 @@
       additionalparam="-Xdoclint:none"
       Overview="edgent_overview.html"
       failonwarning="true"
-      excludepackagenames="org.apache.edgent.connectors.runtime,org.apache.edgent.connectors.*.runtime,org.apache.edgent.console.*,org.apache.edgent.samples.scenarios.iotf.range.sensor"
+      excludepackagenames="org.apache.edgent.connectors.runtime,org.apache.edgent.connectors.*.runtime,org.apache.edgent.console.*,org.apache.edgent.samples.scenarios.iotp.range.sensor"
       >
       <sourcepath>
          <dirset dir="${basedir}">

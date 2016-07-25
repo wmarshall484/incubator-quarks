@@ -14,14 +14,14 @@
  specific language governing permissions and limitations
  under the License.
  -->
-<project name="edgent.connectors.iotf" default="all"
+<project name="edgent.connectors.iotp" default="all"
     xmlns:jacoco="antlib:org.jacoco.ant"
     >
     <description>
-        Build IOTF connectors.
+        Build Watson IoT Platform connector.
     </description>
 
-  <property name="component.path" value="connectors/iotf"/>
+  <property name="component.path" value="connectors/iotp"/>
   <import file="../../common-build.xml"/>
 
   <path id="compile.classpath">
